@@ -245,22 +245,49 @@
   .form-success.show{ display:flex; }
   .capture.hidden{ display:none; }
 
-  .trade-note{
-    font-size:13.5px;
-    color:var(--steel-dim);
+  .secondary-actions{
+    display:flex;
+    gap:12px;
     margin-top:30px;
     padding-top:24px;
     border-top:0.5px solid var(--line);
+    width:100%;
+    max-width:560px;
+    flex-wrap:wrap;
+    justify-content:center;
   }
-  .trade-note a{
-    color:var(--cyan);
+  .secondary-btn{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:'Inter', sans-serif;
+    font-size:13.5px;
+    font-weight:500;
+    color:var(--steel);
+    background:transparent;
+    border:0.5px solid var(--line);
+    border-radius:8px;
+    padding:11px 18px;
     text-decoration:none;
-    border-bottom:1px solid rgba(31,169,207,0.4);
-    transition:color 0.15s ease, border-color 0.15s ease;
+    cursor:pointer;
+    transition:color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    flex:1 1 auto;
+    justify-content:center;
+    white-space:nowrap;
   }
-  .trade-note a:hover{
+  .secondary-btn svg{
+    width:16px;
+    height:16px;
+    flex-shrink:0;
+  }
+  .secondary-btn:hover{
     color:var(--cyan-bright);
-    border-color:var(--cyan-bright);
+    border-color:var(--cyan);
+    background:rgba(31,169,207,0.06);
+  }
+  .secondary-btn:focus-visible{
+    outline:2px solid var(--cyan-bright);
+    outline-offset:2px;
   }
 
   /* ---------- footer ---------- */
@@ -308,6 +335,181 @@
     outline:2px solid var(--cyan-bright);
     outline-offset:2px;
   }
+
+  /* ---------- feature submission modal ---------- */
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(4,5,5,0.82);
+    backdrop-filter:blur(4px);
+    z-index:50;
+    display:none;
+    align-items:flex-start;
+    justify-content:center;
+    overflow-y:auto;
+    padding:48px 20px;
+  }
+  .modal-overlay.open{ display:flex; }
+
+  .modal-box{
+    background:var(--panel);
+    border:0.5px solid var(--line);
+    border-radius:14px;
+    max-width:520px;
+    width:100%;
+    padding:32px clamp(20px, 5vw, 36px) 36px;
+    position:relative;
+    box-shadow:0 30px 80px rgba(0,0,0,0.5);
+  }
+
+  .modal-close{
+    position:absolute;
+    top:18px;
+    right:18px;
+    width:32px;
+    height:32px;
+    border-radius:8px;
+    border:0.5px solid var(--line);
+    background:transparent;
+    color:var(--steel);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:color 0.15s ease, border-color 0.15s ease;
+  }
+  .modal-close:hover{ color:var(--cyan-bright); border-color:var(--cyan); }
+  .modal-close svg{ width:16px; height:16px; }
+
+  .modal-eyebrow{
+    font-family:'Inter', sans-serif;
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    margin-bottom:10px;
+  }
+  .modal-title{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:28px;
+    text-transform:uppercase;
+    color:var(--white);
+    margin-bottom:8px;
+    letter-spacing:0.01em;
+  }
+  .modal-sub{
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+    color:var(--steel);
+    margin-bottom:26px;
+    line-height:1.5;
+  }
+
+  .field-group{
+    margin-bottom:18px;
+    text-align:left;
+  }
+  .field-group label{
+    display:block;
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    font-weight:500;
+    color:var(--steel);
+    margin-bottom:7px;
+  }
+  .field-group input[type="text"],
+  .field-group input[type="email"],
+  .field-group textarea{
+    width:100%;
+    background:#0C0F10;
+    border:0.5px solid var(--line);
+    border-radius:6px;
+    padding:12px 14px;
+    font-family:'Inter', sans-serif;
+    font-size:14.5px;
+    color:var(--white);
+    outline:none;
+    transition:border-color 0.15s ease;
+    resize:vertical;
+  }
+  .field-group textarea{ min-height:90px; }
+  .field-group input:focus,
+  .field-group textarea:focus{
+    border-color:var(--cyan);
+    box-shadow:0 0 0 3px rgba(31,169,207,0.16);
+  }
+
+  .checkbox-row{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    margin-bottom:24px;
+  }
+  .checkbox-row input[type="checkbox"]{
+    margin-top:3px;
+    width:16px;
+    height:16px;
+    accent-color:var(--cyan-bright);
+    flex-shrink:0;
+  }
+  .checkbox-row label{
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    color:var(--steel);
+    line-height:1.45;
+  }
+
+  .modal-submit{
+    width:100%;
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    background:var(--cyan-bright);
+    color:#03171D;
+    border:none;
+    border-radius:6px;
+    padding:14px;
+    cursor:pointer;
+    transition:background 0.15s ease, transform 0.12s ease;
+  }
+  .modal-submit:hover{ background:#62D6F5; }
+  .modal-submit:active{ transform:scale(0.98); }
+
+  .modal-step{ display:block; }
+  .modal-step.hidden{ display:none; }
+
+  .modal-next-note{
+    font-family:'Inter', sans-serif;
+    font-size:13.5px;
+    color:var(--steel);
+    line-height:1.6;
+    margin-bottom:22px;
+  }
+  .modal-photo-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    width:100%;
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    background:var(--cyan-bright);
+    color:#03171D;
+    border:none;
+    border-radius:6px;
+    padding:14px;
+    text-decoration:none;
+    transition:background 0.15s ease;
+  }
+  .modal-photo-btn:hover{ background:#62D6F5; }
+  .modal-photo-btn svg{ width:18px; height:18px; }
 
   @media (max-width: 520px){
     .capture-row{ flex-direction:column; }
@@ -370,7 +572,16 @@
           <span>You're on the list — we'll be in touch before launch.</span>
         </div>
 
-        <p class="trade-note">Automotive business or have a build worth featuring? <a href="mailto:info@performanceconnect.ca">Get in touch</a></p>
+        <div class="secondary-actions">
+          <a href="mailto:info@performanceconnect.ca" class="secondary-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+            <span>Automotive business? Get in touch</span>
+          </a>
+          <button type="button" class="secondary-btn" id="open-feature-form">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg>
+            <span>Feature my car</span>
+          </button>
+        </div>
       </div>
     </main>
 
@@ -398,6 +609,57 @@
         </a>
       </div>
     </footer>
+  </div>
+
+  <!-- Feature My Car modal -->
+  <div class="modal-overlay" id="feature-modal-overlay">
+    <div class="modal-box">
+      <button type="button" class="modal-close" id="close-feature-form" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+
+      <!-- Step 1: details form -->
+      <div class="modal-step" id="modal-step-1">
+        <p class="modal-eyebrow">Feature my build</p>
+        <h2 class="modal-title">Show us your whip</h2>
+        <p class="modal-sub">Tell us about your car. You'll add photos in the next step.</p>
+
+        <form id="feature-details-form">
+          <div class="field-group">
+            <label for="feat-name">Name / Instagram handle</label>
+            <input type="text" id="feat-name" required autocomplete="name">
+          </div>
+          <div class="field-group">
+            <label for="feat-email">Email address</label>
+            <input type="email" id="feat-email" required autocomplete="email">
+          </div>
+          <div class="field-group">
+            <label for="feat-vehicle">Vehicle make, model, year</label>
+            <input type="text" id="feat-vehicle" placeholder="e.g. 1995 Nissan 240SX" required>
+          </div>
+          <div class="field-group">
+            <label for="feat-about">Tell us about your car</label>
+            <textarea id="feat-about" placeholder="What's been done to it? What's the story?" required></textarea>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="feat-consent" required>
+            <label for="feat-consent">I confirm I own these photos and give Performance Connect permission to repost with credit</label>
+          </div>
+          <button type="submit" class="modal-submit">Continue to photos</button>
+        </form>
+      </div>
+
+      <!-- Step 2: hand off to Google for photo upload -->
+      <div class="modal-step hidden" id="modal-step-2">
+        <p class="modal-eyebrow">Almost done</p>
+        <h2 class="modal-title">Add your photos</h2>
+        <p class="modal-next-note">Your details are saved. Tap below to add 1–5 photos of your build — it'll open in a new tab, already filled in with what you just told us.</p>
+        <a href="#" target="_blank" rel="noopener" class="modal-photo-btn" id="photo-upload-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          <span>Add photos &amp; submit</span>
+        </a>
+      </div>
+    </div>
   </div>
 
   <iframe name="signup-target" style="display:none;" aria-hidden="true"></iframe>
@@ -437,6 +699,71 @@
       document.querySelector('.bg-video-wrap').style.display = 'none';
     });
   }
+
+  // ---------- Feature My Car modal ----------
+  var FORM_ID = '1FAIpQLSfotoegdFpAmy-QgJz3ZY1rE30hJJn5t8gJ0B_qijSrQf3GaA';
+  var ENTRY_NAME = 'entry.961621343';
+  var ENTRY_EMAIL = 'entry.970319707';
+  var ENTRY_VEHICLE = 'entry.554243933';
+  var ENTRY_ABOUT = 'entry.770860172';
+  var ENTRY_CONSENT = 'entry.1069835717';
+  // This must match the exact text of the checkbox option in the live
+  // Google Form, since Google Forms checkboxes submit their visible label
+  // as the value.
+  var CONSENT_VALUE = 'I confirm I own these photos and give Performance Connect permission to repost with credit';
+
+  var overlay = document.getElementById('feature-modal-overlay');
+  var openBtn = document.getElementById('open-feature-form');
+  var closeBtn = document.getElementById('close-feature-form');
+  var step1 = document.getElementById('modal-step-1');
+  var step2 = document.getElementById('modal-step-2');
+  var detailsForm = document.getElementById('feature-details-form');
+  var photoLink = document.getElementById('photo-upload-link');
+
+  function openModal(){
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(){
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  openBtn.addEventListener('click', openModal);
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', function(e){
+    if(e.target === overlay){ closeModal(); }
+  });
+
+  detailsForm.addEventListener('submit', function(e){
+    e.preventDefault();
+
+    var name = document.getElementById('feat-name').value.trim();
+    var email = document.getElementById('feat-email').value.trim();
+    var vehicle = document.getElementById('feat-vehicle').value.trim();
+    var about = document.getElementById('feat-about').value.trim();
+    var consent = document.getElementById('feat-consent').checked;
+
+    if(!name || !email || !vehicle || !about || !consent){ return; }
+
+    // We intentionally do NOT submit to Google here. The actual submission
+    // happens once on Google's site after the photo upload step, using the
+    // pre-filled link below — this keeps each build to exactly one row in
+    // the responses sheet (text + photos together), instead of a duplicate
+    // partial entry from this step and a second complete one after upload.
+    var prefillUrl = 'https://docs.google.com/forms/d/e/' + FORM_ID + '/viewform'
+      + '?usp=pp_url'
+      + '&' + ENTRY_NAME + '=' + encodeURIComponent(name)
+      + '&' + ENTRY_EMAIL + '=' + encodeURIComponent(email)
+      + '&' + ENTRY_VEHICLE + '=' + encodeURIComponent(vehicle)
+      + '&' + ENTRY_ABOUT + '=' + encodeURIComponent(about)
+      + '&' + ENTRY_CONSENT + '=' + encodeURIComponent(CONSENT_VALUE);
+
+    photoLink.href = prefillUrl;
+
+    step1.classList.add('hidden');
+    step2.classList.remove('hidden');
+  });
 </script>
 
 </body>
