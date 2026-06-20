@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Performance Connect — Coming soon</title>
+<meta name="description" content="The marketplace for performance cars, parts, and the people who build them. JDM, Euro, USDM — every scene, one platform.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#070808;
+    --panel:#111415;
+    --line:#23292b;
+    --cyan:#1FA9CF;
+    --cyan-bright:#3DC9F0;
+    --steel:#8FA0A6;
+    --steel-dim:#5C6A6E;
+    --white:#F2F6F7;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html{background:var(--black);}
+
+  body{
+    background:var(--black);
+    color:var(--white);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
+  }
+
+  a{color:inherit;}
+
+  /* ---------- video background ---------- */
+  .bg-video-wrap{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    overflow:hidden;
+    background:var(--black);
+  }
+  .bg-video-wrap video{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    object-position:center;
+    opacity:0.65;
+    filter:grayscale(0.1) contrast(1.05);
+  }
+  .bg-scrim{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    background:
+      linear-gradient(180deg, rgba(7,8,8,0.35) 0%, rgba(7,8,8,0.25) 40%, rgba(7,8,8,0.55) 75%, rgba(7,8,8,0.85) 100%),
+      radial-gradient(ellipse at center, rgba(7,8,8,0.1) 0%, rgba(7,8,8,0.55) 100%);
+    pointer-events:none;
+  }
+  .bg-grid{
+    position:fixed;
+    inset:0;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 64px 64px;
+    pointer-events:none;
+    z-index:0;
+  }
+
+  /* ---------- layout ---------- */
+  .page{
+    position:relative;
+    z-index:1;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:32px clamp(20px, 6vw, 64px) 0;
+  }
+
+  .wordmark{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:0.18em;
+    color:var(--white);
+  }
+  .wordmark span{ color:var(--cyan-bright); }
+
+  .locale-tag{
+    font-family:'Inter', sans-serif;
+    font-size:12px;
+    letter-spacing:0.08em;
+    color:var(--steel-dim);
+    border:0.5px solid var(--line);
+    padding:6px 12px;
+    border-radius:999px;
+  }
+
+  main{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:60px clamp(20px, 6vw, 64px);
+  }
+
+  .hero{
+    max-width:760px;
+    width:100%;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-shadow:0 2px 16px rgba(0,0,0,0.6);
+  }
+
+  .logo-mark{
+    width:min(58vw, 230px);
+    height:auto;
+    margin-bottom:8px;
+    filter:drop-shadow(0 0 28px rgba(31,169,207,0.25));
+  }
+
+  .eyebrow{
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    font-weight:500;
+    letter-spacing:0.22em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    margin-bottom:22px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .eyebrow::before, .eyebrow::after{
+    content:"";
+    width:30px;
+    height:1px;
+    background:linear-gradient(to right, transparent, var(--cyan));
+  }
+  .eyebrow::after{
+    background:linear-gradient(to left, transparent, var(--cyan));
+  }
+
+  h1{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:clamp(40px, 8vw, 84px);
+    line-height:1.0;
+    letter-spacing:0.01em;
+    text-transform:uppercase;
+    color:var(--white);
+    margin-bottom:18px;
+  }
+  h1 .accent{ color:var(--cyan-bright); }
+
+  .subline{
+    font-family:'Inter', sans-serif;
+    font-size:clamp(16px, 2.4vw, 19px);
+    color:var(--steel);
+    font-weight:400;
+    margin-bottom:44px;
+    letter-spacing:0.01em;
+  }
+
+  /* ---------- email capture ---------- */
+  .capture{
+    width:100%;
+    max-width:440px;
+    margin-bottom:18px;
+  }
+  .capture-row{
+    display:flex;
+    gap:10px;
+    width:100%;
+  }
+  .capture input[type="email"]{
+    flex:1;
+    min-width:0;
+    background:var(--panel);
+    border:0.5px solid var(--line);
+    border-radius:6px;
+    padding:14px 16px;
+    font-family:'Inter', sans-serif;
+    font-size:15px;
+    color:var(--white);
+    outline:none;
+    transition:border-color 0.15s ease;
+  }
+  .capture input[type="email"]::placeholder{ color:var(--steel-dim); }
+  .capture input[type="email"]:focus{
+    border-color:var(--cyan);
+    box-shadow:0 0 0 3px rgba(31,169,207,0.18);
+  }
+
+  .btn{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    background:var(--cyan-bright);
+    color:#03171D;
+    border:none;
+    border-radius:6px;
+    padding:0 24px;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:transform 0.12s ease, background 0.15s ease;
+  }
+  .btn:hover{ background:#62D6F5; }
+  .btn:active{ transform:scale(0.97); }
+  .btn:focus-visible{ outline:2px solid var(--white); outline-offset:2px; }
+
+  .form-note{
+    font-size:13px;
+    color:var(--steel-dim);
+    margin-top:14px;
+  }
+
+  .form-success{
+    display:none;
+    align-items:center;
+    gap:10px;
+    font-family:'Inter', sans-serif;
+    font-size:15px;
+    color:var(--cyan-bright);
+    padding:14px 0;
+  }
+  .form-success.show{ display:flex; }
+  .capture.hidden{ display:none; }
+
+  .trade-note{
+    font-size:13.5px;
+    color:var(--steel-dim);
+    margin-top:30px;
+    padding-top:24px;
+    border-top:0.5px solid var(--line);
+  }
+  .trade-note a{
+    color:var(--cyan);
+    text-decoration:none;
+    border-bottom:1px solid rgba(31,169,207,0.4);
+    transition:color 0.15s ease, border-color 0.15s ease;
+  }
+  .trade-note a:hover{
+    color:var(--cyan-bright);
+    border-color:var(--cyan-bright);
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    padding:28px clamp(20px, 6vw, 64px) 36px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-top:0.5px solid var(--line);
+    flex-wrap:wrap;
+    gap:12px;
+  }
+
+  .footer-left{
+    font-size:13px;
+    color:var(--steel-dim);
+  }
+
+  .socials{
+    display:flex;
+    gap:18px;
+    align-items:center;
+  }
+  .socials a{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:34px;
+    height:34px;
+    border-radius:8px;
+    color:var(--steel);
+    border:0.5px solid var(--line);
+    transition:color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+  .socials a svg{
+    width:17px;
+    height:17px;
+  }
+  .socials a:hover{
+    color:var(--cyan-bright);
+    border-color:var(--cyan);
+    background:rgba(31,169,207,0.08);
+  }
+  .socials a:focus-visible{
+    outline:2px solid var(--cyan-bright);
+    outline-offset:2px;
+  }
+
+  @media (max-width: 520px){
+    .capture-row{ flex-direction:column; }
+    .btn{ padding:14px 24px; }
+    footer{
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+    }
+    header{
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      text-align:center;
+    }
+    main{
+      padding-top:32px;
+      padding-bottom:40px;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <div class="bg-video-wrap" aria-hidden="true">
+    <video autoplay muted loop playsinline poster="">
+      <source src="background.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="bg-scrim" aria-hidden="true"></div>
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <div class="page">
+    <header>
+      <div class="wordmark">PERFORMANCE<span>CONNECT</span></div>
+      <div class="locale-tag">PERFORMANCECONNECT.CA</div>
+    </header>
+
+    <main>
+      <div class="hero">
+        <img class="logo-mark" src="logo_transparent.png" alt="Performance Connect logo">
+
+        <p class="eyebrow">Launching soon</p>
+
+        <h1>Buy. Sell. Build.<br><span class="accent">Connect.</span></h1>
+        <p class="subline">Every scene. One platform.<br>The marketplace for performance cars, parts, and the people who build them.</p>
+
+        <form class="capture" id="signup-form" action="https://app.kit.com/forms/9590783/subscriptions" method="post" data-sv-form="9590783" target="signup-target">
+          <div class="capture-row">
+            <label for="email" class="visually-hidden" style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);">Email address</label>
+            <input type="email" id="email" name="email_address" placeholder="you@email.com" required autocomplete="email">
+            <button type="submit" class="btn">Notify me</button>
+          </div>
+          <p class="form-note">Be first to list, browse, and join the community at launch.</p>
+        </form>
+
+        <div class="form-success" id="form-success" role="status">
+          <span>You're on the list — we'll be in touch before launch.</span>
+        </div>
+
+        <p class="trade-note">Automotive business or have a build worth featuring? <a href="mailto:info@performanceconnect.ca">Get in touch</a></p>
+      </div>
+    </main>
+
+    <footer>
+      <div class="footer-left">© 2026 Performance Connect. Built for the build.</div>
+      <div class="socials">
+        <a href="#" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="5"/>
+            <circle cx="12" cy="12" r="4"/>
+            <circle cx="17.2" cy="6.8" r="1"/>
+          </svg>
+        </a>
+        <a href="#" aria-label="TikTok">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M16 4v9.5a3.5 3.5 0 1 1-3.5-3.5"/>
+            <path d="M16 4c0 2.5 2 4.5 4.5 4.5"/>
+          </svg>
+        </a>
+        <a href="#" aria-label="YouTube">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2.5" y="6" width="19" height="12" rx="4"/>
+            <path d="M10.5 9.5l4.5 2.5-4.5 2.5z" fill="currentColor" stroke="none"/>
+          </svg>
+        </a>
+      </div>
+    </footer>
+  </div>
+
+  <iframe name="signup-target" style="display:none;" aria-hidden="true"></iframe>
+
+<script>
+  var signupForm = document.getElementById('signup-form');
+
+  signupForm.addEventListener('submit', function(e){
+    var emailInput = document.getElementById('email');
+    if(!emailInput.checkValidity()){
+      e.preventDefault();
+      emailInput.reportValidity();
+      return;
+    }
+
+    var submitBtn = signupForm.querySelector('button[type="submit"]');
+    submitBtn.textContent = 'Sending...';
+    submitBtn.disabled = true;
+
+    // Let the form submit normally into the hidden iframe (target="signup-target")
+    // so the browser handles the cross-domain POST natively — this avoids
+    // CORS issues that a fetch()/AJAX call to a different domain would hit.
+    // We show our own success message after a short delay rather than
+    // waiting on a cross-origin response we can't read anyway.
+    setTimeout(function(){
+      document.querySelector('.capture').classList.add('hidden');
+      document.getElementById('form-success').classList.add('show');
+    }, 600);
+  });
+
+  // If the background video file is missing or fails to load, hide the
+  // empty video element gracefully so the page still looks intentional
+  // (solid black background with grid) instead of showing a broken frame.
+  var bgVideo = document.querySelector('.bg-video-wrap video');
+  if (bgVideo) {
+    bgVideo.addEventListener('error', function(){
+      document.querySelector('.bg-video-wrap').style.display = 'none';
+    });
+  }
+</script>
+
+</body>
+</html>
