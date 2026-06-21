@@ -110,6 +110,20 @@
     border-radius:999px;
   }
 
+  .site-nav{
+    display:flex;
+    align-items:center;
+  }
+  .nav-link{
+    font-family:'Inter', sans-serif;
+    font-size:13.5px;
+    font-weight:500;
+    color:var(--steel);
+    text-decoration:none;
+    transition:color 0.15s ease;
+  }
+  .nav-link:hover{ color:var(--cyan-bright); }
+
   main{
     flex:1;
     display:flex;
@@ -542,6 +556,9 @@
   <div class="page">
     <header>
       <div class="wordmark">PERFORMANCE<span>CONNECT</span></div>
+      <nav class="site-nav">
+        <a href="blog.html" class="nav-link">Blog</a>
+      </nav>
       <div class="locale-tag">PERFORMANCECONNECT.CA</div>
     </header>
 

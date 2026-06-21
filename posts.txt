@@ -1,0 +1,17 @@
+[
+  {
+    "id": "civic-type-r-2026-manual-future",
+    "title": "Honda's Civic Type R Survives in America — But Its Future Might Not Include a Manual",
+    "date": "2026-06-21",
+    "excerpt": "Honda just confirmed the 2026 Civic Type R keeps its spot in American showrooms. But Europe already said goodbye, and rumors are building about what comes next.",
+    "tags": ["Honda", "JDM", "Civic Type R"],
+    "body": [
+      "Honda just confirmed the 2026 Civic Type R will keep its spot in American showrooms — for now. But the news isn't all good, and it comes wrapped in a bigger story about where Honda's hot hatch is headed next.",
+      "**The good news first.** While speculation swirled that the Type R could disappear from the US lineup, Honda quietly put that to rest by releasing 2026 pricing: $46,895 before destination, $48,090 with it. That's another price bump, but the car itself is unchanged — still the 315-horsepower, 2.0-liter turbo-four, still backed by a 6-speed manual, still front-wheel drive only. This is the same car that set the FWD record at the Nurburgring at 7:44.881, so \"unchanged\" here means \"still one of the best front-drive cars money can buy.\"",
+      "**Europe didn't get the same news.** Back in June, Honda confirmed the Type R is being discontinued across Europe, marking the send-off with a 40-unit \"Ultimate Edition\" — pearl white paint, black roof, red decals, carbon-fiber rear wing and sill plates. Only 10 of those 40 are headed to the UK. The reasoning is mostly regulatory: European emissions targets are squeezing out higher-polluting performance models across the industry, and the Type R isn't the only one feeling it.",
+      "**Here's the part that should actually worry Type R fans.** Honda hasn't confirmed anything officially, but there's real speculation building that the next-generation Civic Type R could borrow a more powerful version of the hybrid powertrain debuting in the revived Honda Prelude — complete with the Prelude's S+ Shift system that simulates gear changes rather than using a real manual gearbox. If that happens, the current FL5-generation Type R could go down as the last manual, non-hybrid version of the car ever made.",
+      "For now, the manual Type R is still here, still naturally — well, turbocharged — exciting, and still buyable in the US. If you've been on the fence, the writing might be on the wall for how long that lasts."
+    ],
+    "sourceNote": "Sources: Honda Civic Type R 2026 US pricing announcement; Honda Europe Civic Type R Ultimate Edition release."
+  }
+]

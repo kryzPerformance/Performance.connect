@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<!--
+  PERFORMANCE CONNECT — BLOG
+  =================================================
+  TO ADD A NEW POST: you never need to touch this file.
+  Just open posts.json and add a new entry to the array,
+  following the same format as the existing post. Save,
+  re-upload posts.json (and this file, unchanged), done.
+
+  Field guide for posts.json:
+    id          - short unique slug, no spaces (used internally)
+    title       - the headline
+    date        - format YYYY-MM-DD, used for sorting (newest first)
+    excerpt     - 1-2 sentence summary shown in the post list
+    tags        - array of short topic words, shown as pills
+    body        - array of paragraphs. Wrap text in ** ** for bold.
+    sourceNote  - small italic credit line at the end of the post
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog — Performance Connect</title>
+<meta name="description" content="News, builds, and stories from the performance car world — curated by Performance Connect.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#070808;
+    --panel:#111415;
+    --line:#23292b;
+    --cyan:#1FA9CF;
+    --cyan-bright:#3DC9F0;
+    --steel:#8FA0A6;
+    --steel-dim:#5C6A6E;
+    --white:#F2F6F7;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{background:var(--black);}
+  body{
+    background:var(--black);
+    color:var(--white);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+  }
+  a{color:inherit;}
+
+  .bg-grid{
+    position:fixed;
+    inset:0;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size:64px 64px;
+    pointer-events:none;
+    z-index:0;
+  }
+
+  .page{
+    position:relative;
+    z-index:1;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:28px clamp(20px, 6vw, 64px);
+    border-bottom:0.5px solid var(--line);
+    flex-wrap:wrap;
+    gap:14px;
+  }
+  .wordmark{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    text-decoration:none;
+  }
+  .wordmark img{ height:34px; width:auto; }
+  .wordmark span{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:0.18em;
+    color:var(--white);
+  }
+  .wordmark span .accent{ color:var(--cyan-bright); }
+  .back-link{
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    font-weight:500;
+    color:var(--steel);
+    text-decoration:none;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    transition:color 0.15s ease;
+  }
+  .back-link:hover{ color:var(--cyan-bright); }
+  .back-link svg{ width:15px; height:15px; }
+
+  main{
+    flex:1;
+    width:100%;
+    max-width:760px;
+    margin:0 auto;
+    padding:60px clamp(20px, 6vw, 0px) 80px;
+  }
+
+  /* ---------- list view ---------- */
+  .blog-hero{
+    margin-bottom:50px;
+  }
+  .eyebrow{
+    font-family:'Inter', sans-serif;
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    margin-bottom:14px;
+  }
+  .blog-hero h1{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:clamp(34px, 6vw, 48px);
+    text-transform:uppercase;
+    letter-spacing:0.01em;
+    line-height:1.05;
+    margin-bottom:14px;
+  }
+  .blog-hero p{
+    font-size:15.5px;
+    color:var(--steel);
+    line-height:1.6;
+    max-width:520px;
+  }
+
+  .post-list{
+    display:flex;
+    flex-direction:column;
+    gap:0;
+  }
+  .post-card{
+    display:block;
+    text-decoration:none;
+    padding:30px 0;
+    border-top:0.5px solid var(--line);
+    cursor:pointer;
+    transition:opacity 0.15s ease;
+  }
+  .post-card:first-child{ border-top:0.5px solid var(--line); }
+  .post-card:hover{ opacity:0.85; }
+
+  .post-date{
+    font-family:'Inter', sans-serif;
+    font-size:12.5px;
+    font-weight:500;
+    color:var(--steel-dim);
+    letter-spacing:0.04em;
+    margin-bottom:10px;
+  }
+  .post-card h2{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:clamp(22px, 4vw, 28px);
+    text-transform:uppercase;
+    line-height:1.15;
+    color:var(--white);
+    margin-bottom:10px;
+  }
+  .post-excerpt{
+    font-size:15px;
+    color:var(--steel);
+    line-height:1.6;
+    margin-bottom:16px;
+  }
+  .tag-row{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .tag{
+    font-family:'Inter', sans-serif;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    border:0.5px solid rgba(31,169,207,0.3);
+    background:rgba(31,169,207,0.06);
+    border-radius:999px;
+    padding:5px 12px;
+  }
+
+  .empty-state{
+    padding:40px 0;
+    color:var(--steel-dim);
+    font-size:14.5px;
+    text-align:center;
+    border-top:0.5px solid var(--line);
+  }
+
+  /* ---------- single post view ---------- */
+  .post-view{ display:none; }
+  .post-view.active{ display:block; }
+  .list-view.hidden{ display:none; }
+
+  .post-view-date{
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    font-weight:500;
+    color:var(--steel-dim);
+    margin-bottom:16px;
+  }
+  .post-view h1{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:clamp(30px, 6vw, 44px);
+    text-transform:uppercase;
+    line-height:1.08;
+    margin-bottom:22px;
+  }
+  .post-view .tag-row{ margin-bottom:34px; }
+  .post-body p{
+    font-size:16.5px;
+    line-height:1.75;
+    color:#D7E0E2;
+    margin-bottom:22px;
+  }
+  .post-body strong{ color:var(--white); }
+  .source-note{
+    font-size:13px;
+    color:var(--steel-dim);
+    font-style:italic;
+    margin-top:36px;
+    padding-top:24px;
+    border-top:0.5px solid var(--line);
+  }
+
+  footer{
+    padding:28px clamp(20px, 6vw, 64px) 36px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    border-top:0.5px solid var(--line);
+    gap:10px;
+    text-align:center;
+  }
+  .footer-text{
+    font-size:13px;
+    color:var(--steel-dim);
+  }
+</style>
+</head>
+<body>
+
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <div class="page">
+    <header>
+      <a href="index.html" class="wordmark">
+        <img src="logo_transparent.png" alt="Performance Connect">
+        <span>PERFORMANCE<span class="accent">CONNECT</span></span>
+      </a>
+      <a href="index.html" class="back-link" id="header-back-link" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back to all posts
+      </a>
+    </header>
+
+    <main>
+      <!-- LIST VIEW -->
+      <div class="list-view" id="list-view">
+        <div class="blog-hero">
+          <p class="eyebrow">The Feed</p>
+          <h1>News &amp; Stories</h1>
+          <p>Performance car news, OEM updates, and stories from the scene — curated for the build culture.</p>
+        </div>
+        <div class="post-list" id="post-list"></div>
+      </div>
+
+      <!-- SINGLE POST VIEW -->
+      <article class="post-view" id="post-view">
+        <div class="post-view-date" id="pv-date"></div>
+        <h1 id="pv-title"></h1>
+        <div class="tag-row" id="pv-tags"></div>
+        <div class="post-body" id="pv-body"></div>
+        <p class="source-note" id="pv-source"></p>
+      </article>
+    </main>
+
+    <footer>
+      <div class="footer-text">© 2026 Performance Connect</div>
+    </footer>
+  </div>
+
+<script>
+  var listView = document.getElementById('list-view');
+  var postView = document.getElementById('post-view');
+  var postListEl = document.getElementById('post-list');
+  var headerBackLink = document.getElementById('header-back-link');
+
+  function formatDate(dateStr){
+    var d = new Date(dateStr + 'T00:00:00');
+    var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+  }
+
+  // Converts **bold** markdown-style syntax to <strong> tags, and
+  // escapes any raw HTML in the source text first so post content
+  // can't accidentally break the page layout.
+  function renderParagraph(text){
+    var div = document.createElement('div');
+    div.textContent = text;
+    var escaped = div.innerHTML;
+    return escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  }
+
+  function renderTags(tags){
+    return tags.map(function(t){ return '<span class="tag">' + t + '</span>'; }).join('');
+  }
+
+  function showList(){
+    listView.classList.remove('hidden');
+    postView.classList.remove('active');
+    headerBackLink.style.display = 'none';
+    window.scrollTo(0,0);
+    history.replaceState(null, '', window.location.pathname);
+  }
+
+  function showPost(post){
+    document.getElementById('pv-date').textContent = formatDate(post.date);
+    document.getElementById('pv-title').textContent = post.title;
+    document.getElementById('pv-tags').innerHTML = renderTags(post.tags || []);
+    document.getElementById('pv-body').innerHTML = post.body.map(function(p){
+      return '<p>' + renderParagraph(p) + '</p>';
+    }).join('');
+    document.getElementById('pv-source').textContent = post.sourceNote || '';
+    document.getElementById('pv-source').style.display = post.sourceNote ? 'block' : 'none';
+
+    listView.classList.add('hidden');
+    postView.classList.add('active');
+    headerBackLink.style.display = 'flex';
+    window.scrollTo(0,0);
+    history.replaceState(null, '', '#' + post.id);
+  }
+
+  fetch('posts.json')
+    .then(function(res){ return res.json(); })
+    .then(function(posts){
+      // newest first
+      posts.sort(function(a,b){ return new Date(b.date) - new Date(a.date); });
+
+      if(posts.length === 0){
+        postListEl.innerHTML = '<div class="empty-state">No posts yet — check back soon.</div>';
+        return;
+      }
+
+      posts.forEach(function(post){
+        var card = document.createElement('a');
+        card.className = 'post-card';
+        card.href = '#' + post.id;
+        card.innerHTML =
+          '<div class="post-date">' + formatDate(post.date) + '</div>' +
+          '<h2>' + post.title + '</h2>' +
+          '<p class="post-excerpt">' + post.excerpt + '</p>' +
+          '<div class="tag-row">' + renderTags(post.tags || []) + '</div>';
+        card.addEventListener('click', function(e){
+          e.preventDefault();
+          showPost(post);
+        });
+        postListEl.appendChild(card);
+      });
+
+      // If the page was loaded with a #post-id already in the URL
+      // (e.g. someone shared a direct link to a post), open it.
+      var hash = window.location.hash.replace('#','');
+      if(hash){
+        var match = posts.filter(function(p){ return p.id === hash; })[0];
+        if(match){ showPost(match); }
+      }
+    })
+    .catch(function(err){
+      postListEl.innerHTML = '<div class="empty-state">Couldn\'t load posts right now. Try refreshing.</div>';
+      console.error('Failed to load posts.json', err);
+    });
+
+  headerBackLink.addEventListener('click', function(e){
+    e.preventDefault();
+    showList();
+  });
+</script>
+
+</body>
+</html>
