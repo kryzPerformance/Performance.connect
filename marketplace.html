@@ -346,6 +346,343 @@
     font-size:13px;
     color:var(--steel-dim);
   }
+  /* ---------- create listing button ---------- */
+  .create-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    background:var(--cyan-bright);
+    color:#03171D;
+    border:none;
+    border-radius:8px;
+    padding:13px 26px;
+    cursor:pointer;
+    margin-top:24px;
+    transition:background 0.15s ease, transform 0.12s ease;
+  }
+  .create-btn svg{ width:18px; height:18px; }
+  .create-btn:hover{ background:#62D6F5; }
+  .create-btn:active{ transform:scale(0.97); }
+  .create-btn:focus-visible{ outline:2px solid var(--white); outline-offset:2px; }
+
+  /* ---------- listing modal ---------- */
+  .lmodal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(4,5,5,0.85);
+    backdrop-filter:blur(6px);
+    z-index:100;
+    display:none;
+    align-items:flex-start;
+    justify-content:center;
+    overflow-y:auto;
+    padding:40px 16px 60px;
+  }
+  .lmodal-overlay.open{ display:flex; }
+
+  .lmodal{
+    background:#0E1112;
+    border:0.5px solid #23292b;
+    border-radius:16px;
+    max-width:640px;
+    width:100%;
+    position:relative;
+    box-shadow:0 40px 100px rgba(0,0,0,0.6);
+    overflow:hidden;
+  }
+
+  /* top strip */
+  .lmodal-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:22px 28px 20px;
+    border-bottom:0.5px solid #23292b;
+  }
+  .lmodal-title{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-style:italic;
+    font-size:22px;
+    text-transform:uppercase;
+    letter-spacing:0.01em;
+    color:var(--white);
+  }
+  .lmodal-close{
+    width:32px; height:32px;
+    border-radius:8px;
+    border:0.5px solid #23292b;
+    background:transparent;
+    color:var(--steel);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:color 0.15s, border-color 0.15s;
+    flex-shrink:0;
+  }
+  .lmodal-close:hover{ color:var(--cyan-bright); border-color:var(--cyan); }
+  .lmodal-close svg{ width:16px; height:16px; }
+
+  /* step progress bar */
+  .lmodal-progress{
+    display:flex;
+    gap:4px;
+    padding:0 28px 20px;
+    margin-top:18px;
+  }
+  .progress-step{
+    height:3px;
+    flex:1;
+    background:#23292b;
+    border-radius:2px;
+    transition:background 0.25s ease;
+  }
+  .progress-step.done{ background:var(--cyan); }
+  .progress-step.active{ background:var(--cyan-bright); }
+
+  .lmodal-body{ padding:0 28px 28px; }
+
+  /* step panels */
+  .lstep{ display:none; }
+  .lstep.active{ display:block; }
+
+  .step-eyebrow{
+    font-family:'Inter', sans-serif;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    margin-bottom:6px;
+  }
+  .step-heading{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-style:italic;
+    font-size:20px;
+    text-transform:uppercase;
+    color:var(--white);
+    margin-bottom:18px;
+  }
+
+  /* category selector (step 1) */
+  .cat-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-bottom:28px;
+  }
+  .cat-btn{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    padding:20px 14px 16px;
+    background:#111415;
+    border:1px solid #23292b;
+    border-radius:10px;
+    cursor:pointer;
+    transition:border-color 0.15s, background 0.15s;
+    text-align:center;
+  }
+  .cat-btn img{ width:52px; height:auto; }
+  .cat-btn span{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-style:italic;
+    font-size:15px;
+    text-transform:uppercase;
+    color:var(--white);
+    letter-spacing:0.01em;
+  }
+  .cat-btn:hover{
+    border-color:rgba(31,169,207,0.5);
+    background:#161B1C;
+  }
+  .cat-btn.selected{
+    border-color:var(--cyan-bright);
+    background:rgba(31,169,207,0.08);
+  }
+  .cat-btn.selected span{ color:var(--cyan-bright); }
+
+  /* form fields */
+  .fgroup{
+    margin-bottom:16px;
+  }
+  .fgroup label{
+    display:block;
+    font-family:'Inter', sans-serif;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--steel);
+    letter-spacing:0.04em;
+    margin-bottom:7px;
+    text-transform:uppercase;
+  }
+  .fgroup input[type="text"],
+  .fgroup input[type="number"],
+  .fgroup input[type="email"],
+  .fgroup select,
+  .fgroup textarea{
+    width:100%;
+    background:#070808;
+    border:0.5px solid #23292b;
+    border-radius:7px;
+    padding:11px 14px;
+    font-family:'Inter', sans-serif;
+    font-size:14.5px;
+    color:var(--white);
+    outline:none;
+    transition:border-color 0.15s, box-shadow 0.15s;
+    appearance:none;
+    -webkit-appearance:none;
+  }
+  .fgroup select{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238FA0A6' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 14px center;
+    padding-right:36px;
+    cursor:pointer;
+  }
+  .fgroup textarea{ min-height:90px; resize:vertical; }
+  .fgroup input:focus,
+  .fgroup select:focus,
+  .fgroup textarea:focus{
+    border-color:var(--cyan);
+    box-shadow:0 0 0 3px rgba(31,169,207,0.14);
+  }
+  .fgroup select option{ background:#0E1112; color:var(--white); }
+
+  /* row of fields side by side */
+  .frow{
+    display:grid;
+    gap:12px;
+    margin-bottom:16px;
+  }
+  .frow-2{ grid-template-columns:1fr 1fr; }
+  .frow-3{ grid-template-columns:1fr 1fr 1fr; }
+  .frow .fgroup{ margin-bottom:0; }
+
+  /* fitment toggle */
+  .fitment-toggle{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px 14px;
+    background:#070808;
+    border:0.5px solid #23292b;
+    border-radius:7px;
+    margin-bottom:12px;
+    cursor:pointer;
+  }
+  .fitment-toggle input[type="checkbox"]{
+    width:16px; height:16px;
+    accent-color:var(--cyan-bright);
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .fitment-toggle label{
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+    color:var(--steel);
+    cursor:pointer;
+    user-select:none;
+  }
+  .fitment-toggle:has(input:checked){ border-color:rgba(31,169,207,0.4); }
+  #fitment-fields{ margin-top:12px; }
+
+  /* photo upload zone */
+  .photo-zone{
+    border:1px dashed #23292b;
+    border-radius:8px;
+    padding:28px 20px;
+    text-align:center;
+    cursor:pointer;
+    transition:border-color 0.15s, background 0.15s;
+    margin-bottom:16px;
+  }
+  .photo-zone:hover{ border-color:var(--cyan); background:rgba(31,169,207,0.04); }
+  .photo-zone input{ display:none; }
+  .photo-zone svg{ width:28px; height:28px; color:var(--steel-dim); margin-bottom:10px; }
+  .photo-zone p{
+    font-size:13.5px;
+    color:var(--steel);
+    margin:0;
+    line-height:1.5;
+  }
+  .photo-zone p span{ color:var(--cyan); }
+  .photo-previews{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:10px;
+  }
+  .photo-thumb{
+    width:60px;
+    height:60px;
+    border-radius:6px;
+    object-fit:cover;
+    border:0.5px solid #23292b;
+  }
+
+  /* modal action buttons */
+  .lmodal-actions{
+    display:flex;
+    gap:10px;
+    margin-top:24px;
+  }
+  .btn-back{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    background:transparent;
+    color:var(--steel);
+    border:0.5px solid #23292b;
+    border-radius:7px;
+    padding:12px 20px;
+    cursor:pointer;
+    transition:color 0.15s, border-color 0.15s;
+  }
+  .btn-back:hover{ color:var(--white); border-color:var(--steel); }
+  .btn-next{
+    flex:1;
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    background:var(--cyan-bright);
+    color:#03171D;
+    border:none;
+    border-radius:7px;
+    padding:13px;
+    cursor:pointer;
+    transition:background 0.15s, transform 0.12s;
+  }
+  .btn-next:hover{ background:#62D6F5; }
+  .btn-next:active{ transform:scale(0.98); }
+
+  /* hint text */
+  .field-hint{
+    font-size:12px;
+    color:var(--steel-dim);
+    margin-top:6px;
+  }
+
+  .section-rule{
+    border:none;
+    border-top:0.5px solid #23292b;
+    margin:20px 0;
+  }
+
 </style>
 </head>
 <body>
@@ -371,6 +708,10 @@
         <p class="eyebrow">The Marketplace</p>
         <h1>Vehicles. Parts. Wheels. <span class="accent">Tools.</span></h1>
         <p>One platform for everything performance — built for the build culture. Browsing, listing, and buying are launching soon.</p>
+        <button class="create-btn" id="open-listing-modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          List something
+        </button>
       </div>
 
       <div class="pillar-grid">
@@ -439,41 +780,401 @@
     </footer>
   </div>
 
-<script>
-  // Touch hover state for mobile
-  var cards = document.querySelectorAll('.pillar-card');
+<!-- ============================================================
+     CREATE LISTING MODAL
+     ============================================================ -->
+<div class="lmodal-overlay" id="lmodal-overlay">
+  <div class="lmodal" id="lmodal">
 
+    <div class="lmodal-head">
+      <div class="lmodal-title" id="lmodal-title">Create a listing</div>
+      <button class="lmodal-close" id="lmodal-close" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="lmodal-progress" id="lmodal-progress">
+      <div class="progress-step active" id="prog-1"></div>
+      <div class="progress-step" id="prog-2"></div>
+      <div class="progress-step" id="prog-3"></div>
+    </div>
+
+    <div class="lmodal-body">
+
+      <!-- ── STEP 1: Choose category ── -->
+      <div class="lstep active" id="lstep-1">
+        <p class="step-eyebrow">Step 1 of 3</p>
+        <p class="step-heading">What are you listing?</p>
+        <div class="cat-grid">
+          <button class="cat-btn" data-cat="vehicles">
+            <img src="vehicles_icon.png" alt="">
+            <span>Vehicles</span>
+          </button>
+          <button class="cat-btn" data-cat="wheels">
+            <img src="wheels_icon.png" alt="">
+            <span>Wheels &amp; Tires</span>
+          </button>
+          <button class="cat-btn" data-cat="parts">
+            <img src="parts_icon.png" alt="">
+            <span>Parts</span>
+          </button>
+          <button class="cat-btn" data-cat="tools">
+            <img src="tools_icon.png" alt="">
+            <span>Tools</span>
+          </button>
+        </div>
+        <div class="lmodal-actions">
+          <button class="btn-next" id="step1-next" disabled>Continue</button>
+        </div>
+      </div>
+
+      <!-- ── STEP 2: Listing details (swaps per category) ── -->
+      <div class="lstep" id="lstep-2">
+        <p class="step-eyebrow">Step 2 of 3</p>
+        <p class="step-heading" id="step2-heading">Vehicle details</p>
+
+        <!-- VEHICLES -->
+        <div id="form-vehicles" class="cat-form" style="display:none;">
+          <div class="frow frow-3">
+            <div class="fgroup"><label>Make</label><input type="text" id="v-make" placeholder="Honda"></div>
+            <div class="fgroup"><label>Model</label><input type="text" id="v-model" placeholder="Civic Si"></div>
+            <div class="fgroup"><label>Year</label><input type="number" id="v-year" placeholder="2009" min="1960" max="2026"></div>
+          </div>
+          <div class="frow frow-2">
+            <div class="fgroup">
+              <label>Scene</label>
+              <select id="v-scene">
+                <option value="">Select scene</option>
+                <option>JDM</option>
+                <option>Euro</option>
+                <option>USDM</option>
+                <option>Domestic</option>
+              </select>
+            </div>
+            <div class="fgroup"><label>Mileage (km)</label><input type="number" id="v-mileage" placeholder="95000"></div>
+          </div>
+          <div class="frow frow-2">
+            <div class="fgroup">
+              <label>Transmission</label>
+              <select id="v-trans">
+                <option value="">Select</option>
+                <option>Manual</option>
+                <option>Automatic</option>
+                <option>CVT</option>
+                <option>DCT</option>
+              </select>
+            </div>
+            <div class="fgroup">
+              <label>Drivetrain</label>
+              <select id="v-drive">
+                <option value="">Select</option>
+                <option>FWD</option>
+                <option>RWD</option>
+                <option>AWD</option>
+                <option>4WD</option>
+              </select>
+            </div>
+          </div>
+          <div class="frow frow-2">
+            <div class="fgroup">
+              <label>Condition</label>
+              <select id="v-cond">
+                <option value="">Select</option>
+                <option>Excellent</option>
+                <option>Good</option>
+                <option>Fair</option>
+                <option>Project</option>
+              </select>
+            </div>
+            <div class="fgroup"><label>Asking price ($)</label><input type="number" id="v-price" placeholder="12500"></div>
+          </div>
+          <div class="fgroup"><label>Location (city)</label><input type="text" id="v-location" placeholder="Toronto, ON"></div>
+          <div class="fgroup"><label>Description &amp; mod list</label><textarea id="v-desc" placeholder="Tell buyers what makes this build special — mods, maintenance history, any known issues..."></textarea></div>
+        </div>
+
+        <!-- WHEELS & TIRES -->
+        <div id="form-wheels" class="cat-form" style="display:none;">
+          <div class="fgroup">
+            <label>What's included</label>
+            <select id="w-included">
+              <option value="">Select</option>
+              <option>Wheels only</option>
+              <option>Tires only</option>
+              <option>Wheels + Tires</option>
+            </select>
+          </div>
+          <div class="frow frow-3">
+            <div class="fgroup"><label>Diameter (in)</label><input type="number" id="w-diam" placeholder="18"></div>
+            <div class="fgroup"><label>Width (in)</label><input type="number" id="w-width" placeholder="8.5" step="0.5"></div>
+            <div class="fgroup"><label>Offset (ET)</label><input type="number" id="w-offset" placeholder="35"></div>
+          </div>
+          <div class="frow frow-2">
+            <div class="fgroup"><label>Bolt pattern</label><input type="text" id="w-bolt" placeholder="5x114.3"></div>
+            <div class="fgroup"><label>Tire size</label><input type="text" id="w-tiresize" placeholder="225/40R18"></div>
+          </div>
+          <div class="frow frow-2">
+            <div class="fgroup"><label>Brand</label><input type="text" id="w-brand" placeholder="Enkei"></div>
+            <div class="fgroup">
+              <label>Condition</label>
+              <select id="w-cond">
+                <option value="">Select</option>
+                <option>New</option>
+                <option>Like New</option>
+                <option>Used — Good</option>
+                <option>Used — Fair</option>
+              </select>
+            </div>
+          </div>
+          <div class="frow frow-2">
+            <div class="fgroup"><label>Asking price ($)</label><input type="number" id="w-price" placeholder="1200"></div>
+            <div class="fgroup"><label>Location (city)</label><input type="text" id="w-location" placeholder="Toronto, ON"></div>
+          </div>
+          <div class="fgroup"><label>Description</label><textarea id="w-desc" placeholder="Any curb rash, center caps included, studs, spacers, etc."></textarea></div>
+        </div>
+
+        <!-- PARTS -->
+        <div id="form-parts" class="cat-form" style="display:none;">
+          <div class="fgroup"><label>Part title</label><input type="text" id="p-title" placeholder="K&N Cold Air Intake — FG2 Civic Si"></div>
+          <div class="frow frow-2">
+            <div class="fgroup">
+              <label>Sub-category</label>
+              <select id="p-subcat">
+                <option value="">Select</option>
+                <option>Engine &amp; Drivetrain</option>
+                <option>Suspension &amp; Chassis</option>
+                <option>Exterior &amp; Body</option>
+                <option>Interior</option>
+                <option>Electronics &amp; Gauges</option>
+                <option>Exhaust &amp; Intake</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="fgroup">
+              <label>Condition</label>
+              <select id="p-cond">
+                <option value="">Select</option>
+                <option>New</option>
+                <option>Like New</option>
+                <option>Used</option>
+                <option>For Parts</option>
+              </select>
+            </div>
+          </div>
+          <hr class="section-rule">
+          <p class="step-eyebrow" style="margin-bottom:10px;">Fitment</p>
+          <div class="fitment-toggle">
+            <input type="checkbox" id="universal-fit" name="universal-fit">
+            <label for="universal-fit">Universal fit — this part fits most/all vehicles</label>
+          </div>
+          <div id="fitment-fields">
+            <div class="frow frow-3">
+              <div class="fgroup"><label>Make</label><input type="text" id="p-make" placeholder="Honda"></div>
+              <div class="fgroup"><label>Model</label><input type="text" id="p-model" placeholder="Civic Si"></div>
+              <div class="fgroup"><label>Scene</label>
+                <select id="p-scene">
+                  <option value="">Any</option>
+                  <option>JDM</option>
+                  <option>Euro</option>
+                  <option>USDM</option>
+                  <option>Domestic</option>
+                </select>
+              </div>
+            </div>
+            <div class="frow frow-2">
+              <div class="fgroup"><label>Year from</label><input type="number" id="p-year-from" placeholder="2006" min="1960" max="2026"></div>
+              <div class="fgroup"><label>Year to</label><input type="number" id="p-year-to" placeholder="2011" min="1960" max="2026"></div>
+            </div>
+          </div>
+          <hr class="section-rule">
+          <div class="frow frow-2">
+            <div class="fgroup"><label>Asking price ($)</label><input type="number" id="p-price" placeholder="150"></div>
+            <div class="fgroup"><label>Location (city)</label><input type="text" id="p-location" placeholder="Toronto, ON"></div>
+          </div>
+          <div class="fgroup"><label>Description</label><textarea id="p-desc" placeholder="Part number, install notes, reason for selling, any damage..."></textarea></div>
+        </div>
+
+        <!-- TOOLS -->
+        <div id="form-tools" class="cat-form" style="display:none;">
+          <div class="fgroup"><label>Tool / equipment title</label><input type="text" id="t-title" placeholder="Snap-on 3/8 Torque Wrench"></div>
+          <div class="frow frow-2">
+            <div class="fgroup">
+              <label>Sub-category</label>
+              <select id="t-subcat">
+                <option value="">Select</option>
+                <option>Hand Tools</option>
+                <option>Diagnostic &amp; Scan Tools</option>
+                <option>Lifts, Jacks &amp; Stands</option>
+                <option>Shop Equipment</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="fgroup">
+              <label>Condition</label>
+              <select id="t-cond">
+                <option value="">Select</option>
+                <option>New</option>
+                <option>Like New</option>
+                <option>Used — Good</option>
+                <option>Used — Fair</option>
+              </select>
+            </div>
+          </div>
+          <div class="frow frow-2">
+            <div class="fgroup"><label>Brand / Model</label><input type="text" id="t-brand" placeholder="Snap-on FRHM72F"></div>
+            <div class="fgroup"><label>Asking price ($)</label><input type="number" id="t-price" placeholder="250"></div>
+          </div>
+          <div class="fgroup"><label>Location (city)</label><input type="text" id="t-location" placeholder="Toronto, ON"></div>
+          <div class="fgroup"><label>Description</label><textarea id="t-desc" placeholder="What's included, any wear, calibration history if relevant..."></textarea></div>
+        </div>
+
+        <div class="lmodal-actions">
+          <button class="btn-back" id="step2-back">Back</button>
+          <button class="btn-next" id="step2-next">Continue to photos</button>
+        </div>
+      </div>
+
+      <!-- ── STEP 3: Photos ── -->
+      <div class="lstep" id="lstep-3">
+        <p class="step-eyebrow">Step 3 of 3</p>
+        <p class="step-heading">Add photos</p>
+
+        <label class="photo-zone" id="photo-zone" for="photo-input">
+          <input type="file" id="photo-input" accept="image/*" multiple>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          <p>Tap to add photos<br><span>Up to 10 images — first photo is the cover</span></p>
+          <div class="photo-previews" id="photo-previews"></div>
+        </label>
+        <p class="field-hint">Clear photos from multiple angles = more serious enquiries. Include any damage in your shots.</p>
+
+        <div class="lmodal-actions">
+          <button class="btn-back" id="step3-back">Back</button>
+          <button class="btn-next" id="step3-submit">Preview listing</button>
+        </div>
+      </div>
+
+    </div><!-- /lmodal-body -->
+  </div><!-- /lmodal -->
+</div><!-- /lmodal-overlay -->
+
+<script>
+  // ── Touch hover state for pillar cards ──
+  var cards = document.querySelectorAll('.pillar-card');
   cards.forEach(function(card){
     card.addEventListener('touchstart', function(){
       cards.forEach(function(c){ c.classList.remove('touch-active'); });
       card.classList.add('touch-active');
     }, { passive: true });
   });
-
   document.addEventListener('touchstart', function(e){
-    var tappedInsideCard = e.target.closest('.pillar-card');
-    if(!tappedInsideCard){
+    if(!e.target.closest('.pillar-card')){
       cards.forEach(function(c){ c.classList.remove('touch-active'); });
     }
   }, { passive: true });
 
-  // Per-card video fade-in: each video fades from opacity 0 to 0.45
-  // once it has enough data to play. If a video file is missing or
-  // fails to load, the card just shows its solid panel background
-  // (the .card-video div stays but the video element hides itself),
-  // so the page never looks broken.
+  // ── Per-card video fade-in ──
   document.querySelectorAll('.card-video video').forEach(function(video){
-    video.addEventListener('canplay', function(){
-      video.classList.add('loaded');
-    });
-    video.addEventListener('error', function(){
-      video.style.display = 'none';
-    });
-    // If browser already cached/preloaded and canplay already fired
-    if(video.readyState >= 3){
-      video.classList.add('loaded');
-    }
+    video.addEventListener('canplay', function(){ video.classList.add('loaded'); });
+    video.addEventListener('error', function(){ video.style.display = 'none'; });
+    if(video.readyState >= 3){ video.classList.add('loaded'); }
   });
+
+  // ── Listing modal ──
+  var overlay = document.getElementById('lmodal-overlay');
+  var step    = 1;
+  var selectedCat = null;
+
+  function openModal(){
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    goStep(1);
+  }
+  function closeModal(){
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('open-listing-modal').addEventListener('click', openModal);
+  document.getElementById('lmodal-close').addEventListener('click', closeModal);
+  overlay.addEventListener('click', function(e){
+    if(e.target === overlay){ closeModal(); }
+  });
+
+  function goStep(n){
+    step = n;
+    // show correct step panel
+    document.querySelectorAll('.lstep').forEach(function(s, i){
+      s.classList.toggle('active', i + 1 === n);
+    });
+    // update progress bar
+    [1,2,3].forEach(function(i){
+      var el = document.getElementById('prog-' + i);
+      el.className = 'progress-step' + (i < n ? ' done' : i === n ? ' active' : '');
+    });
+    // update modal title
+    var titles = { 1:'Create a listing', 2:'Listing details', 3:'Add photos' };
+    document.getElementById('lmodal-title').textContent = titles[n];
+    // scroll modal to top
+    document.getElementById('lmodal').scrollTop = 0;
+  }
+
+  // Step 1 — category selection
+  document.querySelectorAll('.cat-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.cat-btn').forEach(function(b){ b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      selectedCat = btn.dataset.cat;
+      document.getElementById('step1-next').disabled = false;
+    });
+  });
+
+  document.getElementById('step1-next').addEventListener('click', function(){
+    if(!selectedCat) return;
+    // show correct form
+    document.querySelectorAll('.cat-form').forEach(function(f){ f.style.display = 'none'; });
+    document.getElementById('form-' + selectedCat).style.display = 'block';
+    // update heading
+    var headings = { vehicles:'Vehicle details', wheels:'Wheel &amp; tire details', parts:'Part details', tools:'Tool details' };
+    document.getElementById('step2-heading').innerHTML = headings[selectedCat];
+    goStep(2);
+  });
+
+  // Step 2 — back + continue
+  document.getElementById('step2-back').addEventListener('click', function(){ goStep(1); });
+  document.getElementById('step2-next').addEventListener('click', function(){ goStep(3); });
+
+  // Step 3 — back + submit (placeholder)
+  document.getElementById('step3-back').addEventListener('click', function(){ goStep(2); });
+  document.getElementById('step3-submit').addEventListener('click', function(){
+    // Supabase submission goes here once backend is wired
+    alert('Listing preview coming once backend is connected to Supabase.');
+  });
+
+  // Universal fit toggle — hides/shows fitment fields
+  var universalCheck = document.getElementById('universal-fit');
+  var fitmentFields  = document.getElementById('fitment-fields');
+  if(universalCheck){
+    universalCheck.addEventListener('change', function(){
+      fitmentFields.style.display = universalCheck.checked ? 'none' : 'block';
+    });
+  }
+
+  // Photo upload preview
+  document.getElementById('photo-input').addEventListener('change', function(e){
+    var previews = document.getElementById('photo-previews');
+    previews.innerHTML = '';
+    var files = Array.from(e.target.files).slice(0, 10);
+    files.forEach(function(file){
+      var reader = new FileReader();
+      reader.onload = function(ev){
+        var img = document.createElement('img');
+        img.className = 'photo-thumb';
+        img.src = ev.target.result;
+        previews.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
 </script>
 
 </body>
