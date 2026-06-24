@@ -332,6 +332,119 @@
     }
   }
 
+  /* ---------- filter buttons ---------- */
+  .filter-btn{
+    font-family:'Inter', sans-serif;
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--steel);
+    background:transparent;
+    border:0.5px solid var(--line);
+    border-radius:999px;
+    padding:7px 16px;
+    cursor:pointer;
+    transition:color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+  .filter-btn:hover{ color:var(--white); border-color:var(--steel); }
+  .filter-btn.active{
+    color:var(--cyan-bright);
+    border-color:var(--cyan);
+    background:rgba(31,169,207,0.08);
+  }
+
+  /* ---------- listing cards ---------- */
+  .listings-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+    gap:18px;
+  }
+  .listings-loading, .listings-empty{
+    grid-column:1/-1;
+    text-align:center;
+    padding:48px 0;
+    color:var(--steel-dim);
+    font-size:14.5px;
+  }
+  .listing-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    overflow:hidden;
+    transition:border-color 0.2s ease, transform 0.2s ease;
+    cursor:pointer;
+  }
+  .listing-card:hover{
+    border-color:rgba(31,169,207,0.4);
+    transform:translateY(-2px);
+  }
+  .listing-thumb{
+    width:100%;
+    aspect-ratio:4/3;
+    object-fit:cover;
+    background:var(--panel-hover);
+    display:block;
+  }
+  .listing-thumb-placeholder{
+    width:100%;
+    aspect-ratio:4/3;
+    background:var(--panel-hover);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .listing-thumb-placeholder svg{
+    width:32px;
+    height:32px;
+    color:var(--line);
+  }
+  .listing-body{ padding:14px 16px 16px; }
+  .listing-cat{
+    font-size:10.5px;
+    font-weight:700;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    margin-bottom:6px;
+  }
+  .listing-title{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:17px;
+    text-transform:uppercase;
+    letter-spacing:0.01em;
+    color:var(--white);
+    margin-bottom:6px;
+    line-height:1.2;
+  }
+  .listing-meta{
+    font-size:13px;
+    color:var(--steel);
+    margin-bottom:10px;
+  }
+  .listing-footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding-top:10px;
+    border-top:0.5px solid var(--line);
+    margin-top:4px;
+  }
+  .listing-price{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:18px;
+    color:var(--white);
+  }
+  .listing-ig{
+    font-size:12px;
+    color:var(--cyan);
+    text-decoration:none;
+    font-weight:500;
+  }
+  .listing-ig:hover{ color:var(--cyan-bright); }
+
   footer{
     padding:28px clamp(20px, 6vw, 64px) 36px;
     display:flex;
@@ -684,6 +797,7 @@
   }
 
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -773,6 +887,27 @@
         </div>
 
       </div>
+
+      <!-- Live listings -->
+      <div id="listings-section" style="margin-top:56px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+          <div>
+            <p class="eyebrow" style="margin-bottom:6px;">Live listings</p>
+            <h2 style="font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;font-size:clamp(22px,4vw,30px);text-transform:uppercase;letter-spacing:0.01em;">What's for sale right now</h2>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;" id="filter-btns">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="vehicles">Vehicles</button>
+            <button class="filter-btn" data-filter="wheels">Wheels</button>
+            <button class="filter-btn" data-filter="parts">Parts</button>
+            <button class="filter-btn" data-filter="tools">Tools</button>
+          </div>
+        </div>
+        <div id="listings-grid" class="listings-grid">
+          <div class="listings-loading">Loading listings...</div>
+        </div>
+      </div>
+
     </main>
 
     <footer>
@@ -1033,10 +1168,23 @@
         </div>
       </div>
 
-      <!-- ── STEP 3: Photos ── -->
+      <!-- ── STEP 3: Photos + contact ── -->
       <div class="lstep" id="lstep-3">
         <p class="step-eyebrow">Step 3 of 3</p>
-        <p class="step-heading">Add photos</p>
+        <p class="step-heading">Photos &amp; contact</p>
+
+        <div class="fgroup" style="margin-bottom:18px;">
+          <label>Listing title <span style="color:var(--steel-dim);font-weight:400;">(required)</span></label>
+          <input type="text" id="listing-title" placeholder="e.g. 2009 Honda Civic Si — clean build">
+        </div>
+
+        <div class="fgroup" style="margin-bottom:18px;">
+          <label>Instagram handle <span style="color:var(--steel-dim);font-weight:400;">(how buyers reach you)</span></label>
+          <div style="display:flex;align-items:center;gap:0;">
+            <span style="background:var(--panel);border:1px solid var(--line);border-right:none;border-radius:6px 0 0 6px;padding:11px 12px;color:var(--steel-dim);font-size:15px;white-space:nowrap;">@</span>
+            <input type="text" id="listing-instagram" placeholder="yourhandle" style="border-radius:0 6px 6px 0;border-left:none;">
+          </div>
+        </div>
 
         <label class="photo-zone" id="photo-zone" for="photo-input">
           <input type="file" id="photo-input" accept="image/*" multiple>
@@ -1046,9 +1194,11 @@
         </label>
         <p class="field-hint">Clear photos from multiple angles = more serious enquiries. Include any damage in your shots.</p>
 
+        <div id="submit-error" style="display:none;color:#E46B6B;font-size:13.5px;margin-bottom:12px;padding:10px 14px;background:rgba(228,107,107,0.08);border:1px solid rgba(228,107,107,0.25);border-radius:6px;"></div>
+
         <div class="lmodal-actions">
           <button class="btn-back" id="step3-back">Back</button>
-          <button class="btn-next" id="step3-submit">Preview listing</button>
+          <button class="btn-next" id="step3-submit">Post listing</button>
         </div>
       </div>
 
@@ -1142,12 +1292,277 @@
   document.getElementById('step2-back').addEventListener('click', function(){ goStep(1); });
   document.getElementById('step2-next').addEventListener('click', function(){ goStep(3); });
 
-  // Step 3 — back + submit (placeholder)
-  document.getElementById('step3-back').addEventListener('click', function(){ goStep(2); });
-  document.getElementById('step3-submit').addEventListener('click', function(){
-    // Supabase submission goes here once backend is wired
-    alert('Listing preview coming once backend is connected to Supabase.');
+  // ── Supabase client ──
+  var SUPABASE_URL = 'https://myapluhgfpnyjsfrflhd.supabase.co';
+  var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15YXBsdWhnZnBueWpzZnJmbGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwODcxNDYsImV4cCI6MjA5NzY2MzE0Nn0.j_Xe_J1uvBA-w4Sag1tl3Yp7zqlaEmkQzt2eO6xz1vg';
+  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // ── Collect form data by category ──
+  function collectFormData(cat){
+    var data = { category: cat, details: {} };
+    if(cat === 'vehicles'){
+      data.title = (document.getElementById('v-make').value + ' ' + document.getElementById('v-model').value + ' ' + document.getElementById('v-year').value).trim();
+      data.price = parseFloat(document.getElementById('v-price').value) || null;
+      data.condition = document.getElementById('v-cond').value;
+      data.location = document.getElementById('v-location').value;
+      data.description = document.getElementById('v-desc').value;
+      data.details = {
+        make: document.getElementById('v-make').value,
+        model: document.getElementById('v-model').value,
+        year: document.getElementById('v-year').value,
+        scene: document.getElementById('v-scene').value,
+        mileage: document.getElementById('v-mileage').value,
+        transmission: document.getElementById('v-trans').value,
+        drivetrain: document.getElementById('v-drive').value
+      };
+    } else if(cat === 'wheels'){
+      data.title = (document.getElementById('w-brand').value + ' ' + document.getElementById('w-diam').value + '" wheels').trim();
+      data.price = parseFloat(document.getElementById('w-price').value) || null;
+      data.condition = document.getElementById('w-cond').value;
+      data.location = document.getElementById('w-location').value;
+      data.description = document.getElementById('w-desc').value;
+      data.details = {
+        includes: document.getElementById('w-included').value,
+        diameter: document.getElementById('w-diam').value,
+        width: document.getElementById('w-width').value,
+        offset: document.getElementById('w-offset').value,
+        bolt_pattern: document.getElementById('w-bolt').value,
+        tire_size: document.getElementById('w-tiresize').value,
+        brand: document.getElementById('w-brand').value
+      };
+    } else if(cat === 'parts'){
+      data.title = document.getElementById('p-title').value;
+      data.price = parseFloat(document.getElementById('p-price').value) || null;
+      data.condition = document.getElementById('p-cond').value;
+      data.location = document.getElementById('p-location').value;
+      data.description = document.getElementById('p-desc').value;
+      var universal = document.getElementById('universal-fit').checked;
+      data.details = {
+        subcategory: document.getElementById('p-subcat').value,
+        universal_fit: universal,
+        fitment_make: universal ? null : document.getElementById('p-make').value,
+        fitment_model: universal ? null : document.getElementById('p-model').value,
+        fitment_year_from: universal ? null : document.getElementById('p-year-from').value,
+        fitment_year_to: universal ? null : document.getElementById('p-year-to').value,
+        scene: universal ? null : document.getElementById('p-scene').value
+      };
+    } else if(cat === 'tools'){
+      data.title = document.getElementById('t-title').value;
+      data.price = parseFloat(document.getElementById('t-price').value) || null;
+      data.condition = document.getElementById('t-cond').value;
+      data.location = document.getElementById('t-location').value;
+      data.description = document.getElementById('t-desc').value;
+      data.details = {
+        subcategory: document.getElementById('t-subcat').value,
+        brand: document.getElementById('t-brand').value
+      };
+    }
+    // override title if user typed one in step 3
+    var customTitle = document.getElementById('listing-title').value.trim();
+    if(customTitle) data.title = customTitle;
+    data.instagram = document.getElementById('listing-instagram').value.replace(/^@/, '').trim();
+    return data;
+  }
+
+  // ── Upload photos to Supabase Storage ──
+  async function uploadPhotos(files, listingId){
+    var urls = [];
+    for(var i = 0; i < files.length; i++){
+      var file = files[i];
+      var ext = file.name.split('.').pop();
+      var path = listingId + '/' + i + '.' + ext;
+      var res = await sb.storage.from('listing-photos').upload(path, file, { upsert: true });
+      if(res.error){
+        console.error('Photo upload error:', res.error);
+        continue;
+      }
+      var pub = sb.storage.from('listing-photos').getPublicUrl(path);
+      urls.push(pub.data.publicUrl);
+    }
+    return urls;
+  }
+
+  // ── Submit handler ──
+  document.getElementById('step3-submit').addEventListener('click', async function(){
+    var btn = document.getElementById('step3-submit');
+    var errEl = document.getElementById('submit-error');
+    errEl.style.display = 'none';
+
+    // Validate required fields
+    var titleVal = document.getElementById('listing-title').value.trim();
+    var igVal = document.getElementById('listing-instagram').value.trim();
+    if(!titleVal){ showError('Please add a listing title.'); return; }
+    if(!igVal){ showError('Please add your Instagram handle so buyers can reach you.'); return; }
+
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+
+    function showError(msg){
+      errEl.textContent = msg;
+      errEl.style.display = 'block';
+      btn.textContent = 'Post listing';
+      btn.disabled = false;
+    }
+
+    try {
+      var formData = collectFormData(selectedCat);
+
+      // 1. Insert listing row (without photos first, so we have the ID)
+      var insertRes = await sb.from('listings').insert([{
+        category:    formData.category,
+        title:       formData.title,
+        price:       formData.price,
+        condition:   formData.condition,
+        location:    formData.location,
+        description: formData.description,
+        instagram:   formData.instagram,
+        details:     formData.details,
+        photo_urls:  [],
+        status:      'active'
+      }]).select().single();
+
+      if(insertRes.error) throw insertRes.error;
+      var listing = insertRes.data;
+
+      // 2. Upload photos
+      var photoFiles = Array.from(document.getElementById('photo-input').files).slice(0, 10);
+      var photoUrls = [];
+      if(photoFiles.length > 0){
+        btn.textContent = 'Uploading photos...';
+        photoUrls = await uploadPhotos(photoFiles, listing.id);
+        // Update listing with photo URLs
+        if(photoUrls.length > 0){
+          await sb.from('listings').update({ photo_urls: photoUrls }).eq('id', listing.id);
+        }
+      }
+
+      // 3. Success
+      closeModal();
+      resetForm();
+      loadListings();
+
+      // Show brief success message
+      var banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#0E6E8C;color:#fff;font-family:Inter,sans-serif;font-size:14px;padding:12px 24px;border-radius:8px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+      banner.textContent = '✓ Listing posted successfully!';
+      document.body.appendChild(banner);
+      setTimeout(function(){ banner.remove(); }, 4000);
+
+    } catch(err){
+      console.error('Submission error:', err);
+      showError('Something went wrong. Please try again.');
+    }
   });
+
+  // ── Reset form after submission ──
+  function resetForm(){
+    selectedCat = null;
+    document.querySelectorAll('.cat-btn').forEach(function(b){ b.classList.remove('selected'); });
+    document.getElementById('step1-next').disabled = true;
+    document.getElementById('listing-title').value = '';
+    document.getElementById('listing-instagram').value = '';
+    document.getElementById('photo-input').value = '';
+    document.getElementById('photo-previews').innerHTML = '';
+    ['v-make','v-model','v-year','v-mileage','v-location','v-desc',
+     'w-diam','w-width','w-offset','w-bolt','w-tiresize','w-brand','w-location','w-desc',
+     'p-title','p-make','p-model','p-year-from','p-year-to','p-location','p-desc',
+     't-title','t-brand','t-location','t-desc'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.value = '';
+    });
+    ['v-scene','v-trans','v-drive','v-cond','v-price',
+     'w-included','w-cond','w-price',
+     'p-subcat','p-cond','p-price','p-scene',
+     't-subcat','t-cond','t-price'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.selectedIndex = 0;
+    });
+    var universalCheck = document.getElementById('universal-fit');
+    if(universalCheck){ universalCheck.checked = false; }
+    var fitmentFields = document.getElementById('fitment-fields');
+    if(fitmentFields){ fitmentFields.style.display = 'block'; }
+  }
+
+  // ── Load and display listings ──
+  var activeFilter = 'all';
+
+  async function loadListings(){
+    var grid = document.getElementById('listings-grid');
+    grid.innerHTML = '<div class="listings-loading">Loading listings...</div>';
+
+    var query = sb.from('listings').select('*').eq('status','active').order('created_at', { ascending: false });
+    if(activeFilter !== 'all') query = query.eq('category', activeFilter);
+
+    var res = await query;
+    if(res.error){
+      grid.innerHTML = '<div class="listings-empty">Couldn\'t load listings right now.</div>';
+      return;
+    }
+    var listings = res.data;
+    if(!listings || listings.length === 0){
+      grid.innerHTML = '<div class="listings-empty">No listings yet — be the first to post one.</div>';
+      return;
+    }
+    grid.innerHTML = '';
+    listings.forEach(function(listing){
+      grid.appendChild(buildCard(listing));
+    });
+  }
+
+  function buildCard(l){
+    var card = document.createElement('div');
+    card.className = 'listing-card';
+
+    var thumb = '';
+    if(l.photo_urls && l.photo_urls.length > 0){
+      thumb = '<img class="listing-thumb" src="' + l.photo_urls[0] + '" alt="' + escHtml(l.title) + '" loading="lazy">';
+    } else {
+      thumb = '<div class="listing-thumb-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
+    }
+
+    var catLabel = { vehicles:'Vehicle', wheels:'Wheels & Tires', parts:'Part', tools:'Tool' }[l.category] || l.category;
+    var meta = [];
+    if(l.location) meta.push(l.location);
+    if(l.condition) meta.push(l.condition);
+    var metaStr = meta.join(' · ');
+
+    var price = l.price ? '$' + Number(l.price).toLocaleString() : 'Make offer';
+    var igLink = l.instagram
+      ? '<a class="listing-ig" href="https://instagram.com/' + escHtml(l.instagram) + '" target="_blank" rel="noopener">@' + escHtml(l.instagram) + '</a>'
+      : '';
+
+    card.innerHTML =
+      thumb +
+      '<div class="listing-body">' +
+        '<div class="listing-cat">' + catLabel + '</div>' +
+        '<div class="listing-title">' + escHtml(l.title) + '</div>' +
+        (metaStr ? '<div class="listing-meta">' + escHtml(metaStr) + '</div>' : '') +
+        '<div class="listing-footer">' +
+          '<span class="listing-price">' + price + '</span>' +
+          igLink +
+        '</div>' +
+      '</div>';
+
+    return card;
+  }
+
+  function escHtml(str){
+    if(!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Filter buttons ──
+  document.querySelectorAll('.filter-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      activeFilter = btn.dataset.filter;
+      loadListings();
+    });
+  });
+
+  // ── Load listings on page load ──
+  loadListings();
 
   // Universal fit toggle — hides/shows fitment fields
   var universalCheck = document.getElementById('universal-fit');
