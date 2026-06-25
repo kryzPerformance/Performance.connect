@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Listing — Performance Connect</title>
+<meta name="description" content="Listing details on Performance Connect.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#070808;--panel:#111415;--panel-2:#161B1C;--line:#23292b;
+    --cyan:#1FA9CF;--cyan-bright:#3DC9F0;
+    --steel:#8FA0A6;--steel-dim:#5C6A6E;--white:#F2F6F7;--red:#E84545;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{background:var(--black);scroll-behavior:smooth;}
+  body{background:var(--black);color:var(--white);font-family:'Inter',sans-serif;min-height:100vh;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:'Inter',sans-serif;cursor:pointer;border:none;background:none;}
+
+  .bg-grid{
+    position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      linear-gradient(to right,rgba(255,255,255,0.015) 1px,transparent 1px),
+      linear-gradient(to bottom,rgba(255,255,255,0.015) 1px,transparent 1px);
+    background-size:64px 64px;
+  }
+
+  /* HEADER */
+  .site-header{
+    position:sticky;top:0;z-index:100;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px clamp(16px,5vw,48px);
+    background:rgba(7,8,8,0.88);backdrop-filter:blur(12px);
+    border-bottom:0.5px solid var(--line);gap:12px;
+  }
+  .back-btn{
+    display:flex;align-items:center;gap:8px;
+    font-size:13px;font-weight:500;color:var(--steel);
+    transition:color 0.15s;padding:6px 0;cursor:pointer;
+  }
+  .back-btn:hover{color:var(--cyan-bright);}
+  .back-btn svg{width:16px;height:16px;flex-shrink:0;}
+  .wordmark{
+    display:flex;align-items:center;gap:10px;
+    font-family:'Rajdhani',sans-serif;font-weight:700;
+    font-size:13px;letter-spacing:0.18em;color:var(--white);
+  }
+  .wordmark img{height:26px;width:auto;}
+  .wordmark .accent{color:var(--cyan-bright);}
+  .header-actions{display:flex;align-items:center;gap:10px;}
+  .icon-btn{
+    display:flex;align-items:center;justify-content:center;
+    width:36px;height:36px;border-radius:8px;
+    border:0.5px solid var(--line);background:var(--panel);
+    color:var(--steel);transition:all 0.15s;cursor:pointer;
+  }
+  .icon-btn:hover{color:var(--cyan-bright);border-color:var(--cyan);}
+  .icon-btn svg{width:16px;height:16px;}
+
+  /* STATE SCREENS */
+  .state-screen{
+    position:relative;z-index:1;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-height:60vh;gap:16px;text-align:center;padding:40px 20px;
+  }
+  .spinner{
+    width:36px;height:36px;border:2px solid var(--line);
+    border-top-color:var(--cyan-bright);border-radius:50%;
+    animation:spin 0.8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .state-screen p{color:var(--steel);font-size:14.5px;max-width:320px;line-height:1.6;}
+  .state-screen a{color:var(--cyan);font-size:13px;}
+
+  /* MAIN LAYOUT */
+  .listing-page{
+    position:relative;z-index:1;
+    max-width:1280px;margin:0 auto;
+    padding:32px clamp(16px,5vw,48px) 80px;
+    display:grid;
+    grid-template-columns:1fr 440px;
+    grid-template-areas:"gallery details" "related related";
+    gap:40px 48px;align-items:start;
+  }
+
+  /* GALLERY */
+  .gallery{grid-area:gallery;position:sticky;top:72px;display:flex;flex-direction:column;gap:12px;}
+  .gallery-main{
+    position:relative;width:100%;aspect-ratio:4/3;
+    background:var(--panel);border-radius:14px;overflow:hidden;border:0.5px solid var(--line);
+  }
+  .gallery-main img{
+    width:100%;height:100%;object-fit:cover;object-position:center;
+    display:block;transition:opacity 0.2s ease;
+  }
+  .no-photo{
+    width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+    color:var(--steel-dim);flex-direction:column;gap:10px;font-size:13px;
+  }
+  .no-photo svg{width:40px;height:40px;opacity:0.35;}
+  .gallery-nav{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;
+    padding:0 12px;pointer-events:none;
+  }
+  .gallery-arrow{
+    pointer-events:all;width:36px;height:36px;border-radius:50%;
+    background:rgba(7,8,8,0.65);backdrop-filter:blur(4px);
+    border:0.5px solid rgba(255,255,255,0.1);color:var(--white);
+    display:flex;align-items:center;justify-content:center;
+    transition:background 0.15s,opacity 0.15s;opacity:0.8;cursor:pointer;
+  }
+  .gallery-arrow:hover{background:rgba(31,169,207,0.3);opacity:1;}
+  .gallery-arrow svg{width:16px;height:16px;}
+  .gallery-arrow.hidden{opacity:0;pointer-events:none;}
+  .gallery-dots{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;}
+  .gallery-dot{
+    width:6px;height:6px;border-radius:50%;
+    background:rgba(255,255,255,0.35);transition:all 0.2s;cursor:pointer;
+  }
+  .gallery-dot.active{background:var(--cyan-bright);width:18px;border-radius:3px;}
+  .gallery-thumbs{
+    display:flex;gap:8px;overflow-x:auto;
+    scrollbar-width:none;-ms-overflow-style:none;padding-bottom:2px;
+  }
+  .gallery-thumbs::-webkit-scrollbar{display:none;}
+  .gallery-thumb{
+    flex-shrink:0;width:68px;height:54px;border-radius:7px;overflow:hidden;
+    border:2px solid transparent;cursor:pointer;transition:border-color 0.15s;
+  }
+  .gallery-thumb.active{border-color:var(--cyan-bright);}
+  .gallery-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+
+  /* DETAILS */
+  .details{grid-area:details;}
+  .listing-category-tag{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+    color:var(--cyan-bright);margin-bottom:12px;
+  }
+  .listing-category-tag::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--cyan-bright);flex-shrink:0;}
+  .listing-title{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;
+    font-size:clamp(26px,4vw,36px);text-transform:uppercase;
+    line-height:1.05;letter-spacing:0.01em;color:var(--white);margin-bottom:16px;
+  }
+  .listing-price{
+    font-family:'Rajdhani',sans-serif;font-weight:700;
+    font-size:clamp(28px,4vw,38px);color:var(--cyan-bright);margin-bottom:24px;
+  }
+  .listing-price.make-offer{font-size:22px;color:var(--steel);}
+
+  /* CTAs */
+  .cta-row{display:flex;flex-direction:column;gap:10px;margin-bottom:28px;}
+  .btn-ig{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    padding:14px 20px;border-radius:10px;
+    background:var(--cyan-bright);color:#03171D;
+    font-size:14px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+    transition:background 0.15s;
+  }
+  .btn-ig:hover{background:#62D6F5;}
+  .btn-ig svg{width:18px;height:18px;flex-shrink:0;}
+  .btn-row-2{display:flex;gap:8px;}
+  .btn-secondary{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
+    padding:11px 14px;border-radius:10px;
+    border:0.5px solid var(--line);background:var(--panel);
+    color:var(--steel);font-size:13px;font-weight:500;transition:all 0.15s;
+  }
+  .btn-secondary:hover{color:var(--cyan-bright);border-color:var(--cyan);}
+  .btn-secondary svg{width:15px;height:15px;flex-shrink:0;}
+  .btn-secondary.save-btn{color:var(--steel-dim);cursor:default;}
+  .btn-secondary.save-btn:hover{color:var(--steel-dim);border-color:var(--line);}
+  .coming-soon-tag{
+    font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+    background:rgba(31,169,207,0.1);color:var(--cyan);padding:2px 6px;border-radius:4px;margin-left:4px;
+  }
+
+  /* SPECS */
+  .specs-section{margin-bottom:24px;}
+  .section-label{
+    font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--steel-dim);margin-bottom:14px;padding-bottom:10px;border-bottom:0.5px solid var(--line);
+  }
+  .spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+  .spec-item{padding:12px 0;border-bottom:0.5px solid rgba(35,41,43,0.6);}
+  .spec-k{font-size:11px;color:var(--steel-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;}
+  .spec-v{font-size:14.5px;color:var(--white);font-weight:500;}
+  .spec-v.highlight{color:var(--cyan-bright);}
+
+  /* DESCRIPTION */
+  .desc-section{margin-bottom:24px;}
+  .desc-body{font-size:14.5px;color:#C0CDD0;line-height:1.75;white-space:pre-wrap;word-break:break-word;}
+
+  /* SELLER */
+  .seller-strip{
+    display:flex;align-items:center;gap:14px;padding:16px;border-radius:12px;
+    background:var(--panel-2);border:0.5px solid var(--line);margin-bottom:24px;
+  }
+  .seller-avatar{
+    width:44px;height:44px;border-radius:50%;
+    background:var(--panel);border:0.5px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-size:18px;
+    color:var(--cyan-bright);flex-shrink:0;text-transform:uppercase;
+  }
+  .seller-info{flex:1;min-width:0;}
+  .seller-handle{font-size:14px;font-weight:600;color:var(--white);margin-bottom:2px;}
+  .seller-sub{font-size:12px;color:var(--steel-dim);}
+
+  /* FUTURE PLACEHOLDERS */
+  .future-row{display:flex;gap:8px;margin-bottom:24px;}
+  .future-pill{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+    padding:10px;border-radius:8px;border:0.5px dashed var(--line);
+    color:var(--steel-dim);font-size:11.5px;font-weight:500;cursor:default;opacity:0.65;
+  }
+  .future-pill svg{width:13px;height:13px;}
+
+  /* FOOTER META */
+  .listing-footer-meta{
+    display:flex;align-items:center;justify-content:space-between;
+    padding-top:18px;border-top:0.5px solid var(--line);margin-bottom:24px;
+  }
+  .posted-date{font-size:12px;color:var(--steel-dim);}
+  .report-btn{
+    font-size:12px;color:var(--steel-dim);
+    display:flex;align-items:center;gap:5px;transition:color 0.15s;
+  }
+  .report-btn:hover{color:var(--red);}
+  .report-btn svg{width:13px;height:13px;}
+
+  /* RELATED */
+  .related{grid-area:related;padding-top:40px;border-top:0.5px solid var(--line);}
+  .related-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px;}
+  .related-head h2{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;
+    font-size:22px;text-transform:uppercase;
+  }
+  .related-head a{font-size:12.5px;color:var(--cyan);transition:color 0.15s;}
+  .related-head a:hover{color:var(--cyan-bright);}
+  .related-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
+  .related-card{
+    display:block;background:var(--panel);border:0.5px solid var(--line);
+    border-radius:12px;overflow:hidden;transition:border-color 0.2s,transform 0.2s;
+  }
+  .related-card:hover{border-color:rgba(31,169,207,0.4);transform:translateY(-2px);}
+  .related-thumb{width:100%;aspect-ratio:3/2;background:var(--panel-2);overflow:hidden;}
+  .related-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .related-thumb .no-img{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--steel-dim);}
+  .related-thumb .no-img svg{width:28px;height:28px;opacity:0.4;}
+  .related-body{padding:12px 14px;}
+  .related-cat{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--cyan);margin-bottom:4px;}
+  .related-title{font-size:13.5px;font-weight:600;color:var(--white);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .related-price{font-size:14px;font-weight:700;color:var(--cyan-bright);}
+  .related-price.offer{color:var(--steel);font-size:13px;}
+
+  /* MOBILE */
+  @media(max-width:900px){
+    .listing-page{
+      grid-template-columns:1fr;
+      grid-template-areas:"gallery" "details" "related";
+      gap:24px;padding:20px clamp(12px,4vw,24px) 60px;
+    }
+    .gallery{position:static;top:auto;}
+    .wordmark{display:none;}
+  }
+  @media(max-width:480px){
+    .spec-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="bg-grid" aria-hidden="true"></div>
+
+<header class="site-header">
+  <div class="back-btn" id="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Back
+  </div>
+  <a href="index.html" class="wordmark">
+    <img src="logo_transparent.png" alt="Performance Connect">
+    <span>PERFORMANCE<span class="accent">CONNECT</span></span>
+  </a>
+  <div class="header-actions">
+    <button class="icon-btn" id="share-btn-header" title="Share listing">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="state-screen" id="state-loading">
+  <div class="spinner"></div>
+  <p>Loading listing...</p>
+</div>
+
+<div class="state-screen" id="state-error" style="display:none;">
+  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#5C6A6E" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+  <p id="state-error-msg">This listing couldn't be found or may have been removed.</p>
+  <a href="marketplace.html">← Back to marketplace</a>
+</div>
+
+<div class="listing-page" id="listing-page" style="display:none;">
+
+  <div class="gallery" id="gallery">
+    <div class="gallery-main" id="gallery-main">
+      <div class="no-photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        No photos
+      </div>
+    </div>
+    <div class="gallery-thumbs" id="gallery-thumbs" style="display:none;"></div>
+  </div>
+
+  <div class="details" id="details">
+    <div class="listing-category-tag" id="det-category"></div>
+    <h1 class="listing-title" id="det-title"></h1>
+    <div class="listing-price" id="det-price"></div>
+
+    <div class="cta-row">
+      <a class="btn-ig" id="cta-ig" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        Contact Seller on Instagram
+      </a>
+      <div class="btn-row-2">
+        <button class="btn-secondary" id="share-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+          Share
+        </button>
+        <button class="btn-secondary save-btn" title="Coming soon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          Save<span class="coming-soon-tag">Soon</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="specs-section" id="specs-section">
+      <div class="section-label">Details</div>
+      <div class="spec-grid" id="spec-grid"></div>
+    </div>
+
+    <div class="desc-section" id="desc-section" style="display:none;">
+      <div class="section-label">Description</div>
+      <div class="desc-body" id="det-desc"></div>
+    </div>
+
+    <div class="seller-strip">
+      <div class="seller-avatar" id="seller-avatar">?</div>
+      <div class="seller-info">
+        <div class="seller-handle" id="seller-handle">—</div>
+        <div class="seller-sub">Seller · Performance Connect</div>
+      </div>
+    </div>
+
+    <div class="future-row">
+      <div class="future-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Reviews<span class="coming-soon-tag">Soon</span>
+      </div>
+      <div class="future-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+        Garage Profile<span class="coming-soon-tag">Soon</span>
+      </div>
+    </div>
+
+    <div class="listing-footer-meta">
+      <span class="posted-date" id="det-posted"></span>
+      <a class="report-btn" id="report-btn" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+        Report listing
+      </a>
+    </div>
+  </div>
+
+  <div class="related" id="related">
+    <div class="related-head">
+      <h2>More like this</h2>
+      <a href="marketplace.html" id="related-browse-link">Browse all →</a>
+    </div>
+    <div class="related-grid" id="related-grid">
+      <div style="color:var(--steel-dim);font-size:13px;grid-column:1/-1;">Loading...</div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  var SUPABASE_URL = 'https://myapluhgfpnyjsfrflhd.supabase.co';
+  var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15YXBsdWhnZnBueWpzZnJmbGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwODcxNDYsImV4cCI6MjA5NzY2MzE0Nn0.j_Xe_J1uvBA-w4Sag1tl3Yp7zqlaEmkQzt2eO6xz1vg';
+  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  function esc(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function fmtDate(iso){ return new Date(iso).toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'}); }
+  function catLabel(c){ return {vehicles:'Vehicle',wheels:'Wheels & Tires',parts:'Parts',tools:'Tools',fluids:'Fluids & Products'}[c]||c; }
+
+  /* ── GALLERY ── */
+  var photos = [], cur = 0, touchX = 0;
+
+  function buildGallery(urls){
+    var main = document.getElementById('gallery-main');
+    var thumbsEl = document.getElementById('gallery-thumbs');
+    if(!urls||!urls.length) return;
+    photos = urls;
+    var multi = urls.length > 1;
+    main.innerHTML =
+      '<img id="gal-img" src="'+esc(urls[0])+'" alt="Listing photo">' +
+      '<div class="gallery-nav">' +
+        '<button class="gallery-arrow hidden" id="gal-prev" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>' +
+        '<button class="gallery-arrow'+(multi?'':' hidden')+'" id="gal-next" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></button>' +
+      '</div>' +
+      (multi ? '<div class="gallery-dots" id="gal-dots"></div>' : '');
+
+    if(multi){
+      var dotsEl=document.getElementById('gal-dots');
+      urls.forEach(function(_,i){
+        var d=document.createElement('div');
+        d.className='gallery-dot'+(i===0?' active':'');
+        d.onclick=function(){goPhoto(i);};
+        dotsEl.appendChild(d);
+      });
+      thumbsEl.style.display='flex';
+      urls.forEach(function(u,i){
+        var t=document.createElement('div');
+        t.className='gallery-thumb'+(i===0?' active':'');
+        t.innerHTML='<img src="'+esc(u)+'" alt="Photo '+(i+1)+'" loading="lazy">';
+        t.onclick=function(){goPhoto(i);};
+        thumbsEl.appendChild(t);
+      });
+    }
+
+    document.getElementById('gal-prev').onclick=function(){goPhoto(cur-1);};
+    document.getElementById('gal-next').onclick=function(){goPhoto(cur+1);};
+    main.addEventListener('touchstart',function(e){touchX=e.touches[0].clientX;},{passive:true});
+    main.addEventListener('touchend',function(e){var dx=e.changedTouches[0].clientX-touchX;if(Math.abs(dx)>40)goPhoto(cur+(dx<0?1:-1));},{passive:true});
+  }
+
+  function goPhoto(n){
+    if(!photos.length) return;
+    cur=Math.max(0,Math.min(n,photos.length-1));
+    var img=document.getElementById('gal-img');
+    if(img){img.style.opacity='0';setTimeout(function(){img.src=photos[cur];img.style.opacity='1';},180);}
+    var p=document.getElementById('gal-prev'),nx=document.getElementById('gal-next');
+    if(p)p.classList.toggle('hidden',cur===0);
+    if(nx)nx.classList.toggle('hidden',cur===photos.length-1);
+    document.querySelectorAll('.gallery-dot').forEach(function(d,i){d.classList.toggle('active',i===cur);});
+    document.querySelectorAll('.gallery-thumb').forEach(function(t,i){t.classList.toggle('active',i===cur);});
+  }
+
+  /* ── SPECS ── */
+  function addSpec(grid,k,v,hi){
+    if(v===null||v===undefined||v==='') return;
+    var el=document.createElement('div');
+    el.className='spec-item';
+    el.innerHTML='<div class="spec-k">'+esc(k)+'</div><div class="spec-v'+(hi?' highlight':'')+'">'+esc(String(v))+'</div>';
+    grid.appendChild(el);
+  }
+
+  function buildSpecs(l){
+    var grid=document.getElementById('spec-grid');
+    grid.innerHTML='';
+    var d=l.details||{};
+    addSpec(grid,'Condition',l.condition);
+    addSpec(grid,'Location',l.location);
+    if(l.category==='vehicles'){
+      addSpec(grid,'Make',d.make);addSpec(grid,'Model',d.model);addSpec(grid,'Year',d.year);
+      addSpec(grid,'Scene',d.scene);
+      addSpec(grid,'Mileage',d.mileage?Number(d.mileage).toLocaleString()+' km':null);
+      addSpec(grid,'Transmission',d.transmission);addSpec(grid,'Drivetrain',d.drivetrain);
+    } else if(l.category==='wheels'){
+      addSpec(grid,'Includes',d.includes);
+      addSpec(grid,'Diameter',d.diameter?d.diameter+'"':null);
+      addSpec(grid,'Width',d.width?d.width+'"':null);
+      addSpec(grid,'Offset',d.offset?'ET'+d.offset:null);
+      addSpec(grid,'Bolt Pattern',d.bolt_pattern);addSpec(grid,'Tire Size',d.tire_size);addSpec(grid,'Brand',d.brand);
+    } else if(l.category==='parts'){
+      addSpec(grid,'Type',d.subcategory);
+      if(d.universal_fit){ addSpec(grid,'Fitment','Universal Fit',true); }
+      else {
+        var fs=[d.fitment_make,d.fitment_model,d.fitment_year_from&&d.fitment_year_to?d.fitment_year_from+'–'+d.fitment_year_to:''].filter(Boolean).join(' ');
+        addSpec(grid,'Fitment',fs||null);addSpec(grid,'Scene',d.scene);
+      }
+    } else if(l.category==='tools'){
+      addSpec(grid,'Type',d.subcategory);addSpec(grid,'Brand / Model',d.brand);
+    } else if(l.category==='fluids'){
+      addSpec(grid,'Type',d.subcategory);addSpec(grid,'Brand',d.brand);addSpec(grid,'Quantity',d.quantity);
+    }
+    if(!grid.children.length) document.getElementById('specs-section').style.display='none';
+  }
+
+  /* ── RELATED ── */
+  async function loadRelated(cat,id){
+    var grid=document.getElementById('related-grid');
+    var res=await sb.from('listings').select('id,title,category,price,photo_urls')
+      .eq('status','active').eq('category',cat).neq('id',id)
+      .order('created_at',{ascending:false}).limit(4);
+    if(res.error||!res.data||!res.data.length){
+      grid.innerHTML='<div style="color:var(--steel-dim);font-size:13px;grid-column:1/-1;">No other listings in this category yet.</div>';
+      return;
+    }
+    grid.innerHTML='';
+    res.data.forEach(function(r){
+      var thumb=r.photo_urls&&r.photo_urls.length
+        ?'<img src="'+esc(r.photo_urls[0])+'" alt="'+esc(r.title)+'" loading="lazy">'
+        :'<div class="no-img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
+      var price=r.price?'<div class="related-price">$'+Number(r.price).toLocaleString()+'</div>':'<div class="related-price offer">Make offer</div>';
+      var card=document.createElement('a');
+      card.className='related-card';card.href='listing.html?id='+r.id;
+      card.innerHTML='<div class="related-thumb">'+thumb+'</div><div class="related-body"><div class="related-cat">'+esc(catLabel(r.category))+'</div><div class="related-title">'+esc(r.title)+'</div>'+price+'</div>';
+      grid.appendChild(card);
+    });
+  }
+
+  /* ── SHARE ── */
+  function doShare(title){
+    if(navigator.share){ navigator.share({title:title,url:window.location.href}); }
+    else {
+      navigator.clipboard.writeText(window.location.href).then(function(){
+        var t=document.createElement('div');
+        t.style.cssText='position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#111415;color:#F2F6F7;font-size:13px;padding:10px 20px;border-radius:8px;z-index:9999;border:0.5px solid #23292b;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+        t.textContent='Link copied to clipboard';
+        document.body.appendChild(t);
+        setTimeout(function(){t.remove();},2500);
+      });
+    }
+  }
+
+  /* ── MAIN ── */
+  (async function(){
+    var params=new URLSearchParams(window.location.search);
+    var id=params.get('id');
+
+    function showError(msg){
+      document.getElementById('state-loading').style.display='none';
+      document.getElementById('state-error').style.display='flex';
+      if(msg) document.getElementById('state-error-msg').textContent=msg;
+    }
+
+    if(!id){ showError('No listing ID provided. Please go back and try again.'); return; }
+
+    var res=await sb.from('listings').select('*').eq('id',id).single();
+    if(res.error||!res.data){ showError("This listing couldn't be found. It may have been removed or sold."); return; }
+    var l=res.data;
+
+    document.title=l.title+' — Performance Connect';
+    document.getElementById('state-loading').style.display='none';
+    document.getElementById('listing-page').style.display='grid';
+
+    // Gallery
+    if(l.photo_urls&&l.photo_urls.length) buildGallery(l.photo_urls);
+
+    // Category / title / price
+    document.getElementById('det-category').textContent=catLabel(l.category);
+    document.getElementById('det-title').textContent=l.title;
+    var pe=document.getElementById('det-price');
+    if(l.price){pe.textContent='$'+Number(l.price).toLocaleString();}
+    else{pe.textContent='Make offer';pe.classList.add('make-offer');}
+
+    // Instagram CTA
+    var ig=document.getElementById('cta-ig');
+    if(l.instagram){
+      ig.href='https://instagram.com/'+encodeURIComponent(l.instagram);
+      ig.innerHTML=ig.innerHTML.replace('Contact Seller on Instagram','Contact @'+esc(l.instagram)+' on Instagram');
+    } else { ig.style.display='none'; }
+
+    // Specs
+    buildSpecs(l);
+
+    // Description
+    if(l.description&&l.description.trim()){
+      document.getElementById('desc-section').style.display='block';
+      document.getElementById('det-desc').textContent=l.description;
+    }
+
+    // Seller
+    var handle=l.instagram||'seller';
+    document.getElementById('seller-avatar').textContent=handle.charAt(0).toUpperCase();
+    document.getElementById('seller-handle').textContent=l.instagram?'@'+l.instagram:'Anonymous seller';
+
+    // Posted date
+    document.getElementById('det-posted').textContent='Posted '+fmtDate(l.created_at);
+
+    // Report
+    document.getElementById('report-btn').href=
+      'mailto:info@performanceconnect.ca?subject='+encodeURIComponent('Report Listing #'+l.id)+
+      '&body='+encodeURIComponent('I am reporting listing #'+l.id+' ("'+l.title+'") for the following reason:\n\n');
+
+    // Share
+    document.getElementById('share-btn').onclick=function(){doShare(l.title);};
+    document.getElementById('share-btn-header').onclick=function(){doShare(l.title);};
+
+    // Back button
+    document.getElementById('back-btn').onclick=function(){
+      if(document.referrer&&document.referrer.includes(window.location.host)){history.back();}
+      else{window.location.href='marketplace.html';}
+    };
+
+    // Related
+    document.getElementById('related-browse-link').href='marketplace.html';
+    loadRelated(l.category,l.id);
+  })();
+</script>
+</body>
+</html>
