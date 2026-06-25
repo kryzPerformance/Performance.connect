@@ -172,7 +172,7 @@
 
   @media (min-width: 980px){
     .pillar-grid{
-      grid-template-columns:repeat(4, 1fr);
+      grid-template-columns:repeat(5, 1fr);
     }
   }
 
@@ -812,6 +812,7 @@
       </a>
       <nav class="site-nav">
         <a href="marketplace.html" class="nav-link is-current">Marketplace</a>
+        <a href="affiliates.html" class="nav-link">Affiliates</a>
         <a href="blog.html" class="nav-link">Blog</a>
       </nav>
       <div class="locale-tag">PERFORMANCECONNECT.CA</div>
@@ -820,7 +821,7 @@
     <main>
       <div class="page-hero">
         <p class="eyebrow">The Marketplace</p>
-        <h1>Vehicles. Parts. Wheels. <span class="accent">Tools.</span></h1>
+        <h1>Vehicles. Parts. Wheels. Tools. <span class="accent">Fluids.</span></h1>
         <p>One platform for everything performance — built for the build culture. Browsing, listing, and buying are launching soon.</p>
         <button class="create-btn" id="open-listing-modal">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
@@ -883,6 +884,20 @@
           </div>
           <div class="pillar-name">Tools</div>
           <p class="pillar-desc">Hand tools, diagnostics, and shop equipment for the work itself.</p>
+          <span class="pillar-badge">Coming Soon</span>
+        </div>
+
+        <div class="pillar-card" tabindex="0">
+          <div class="card-video">
+            <video autoplay muted loop playsinline>
+              <source src="bg-fluids.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="pillar-icon">
+            <img src="fluids_icon.png" alt="">
+          </div>
+          <div class="pillar-name">Fluids &amp; Products</div>
+          <p class="pillar-desc">Oils, fluids, detailing products, and consumables for every build.</p>
           <span class="pillar-badge">Coming Soon</span>
         </div>
 
@@ -956,6 +971,10 @@
           <button class="cat-btn" data-cat="tools">
             <img src="tools_icon.png" alt="">
             <span>Tools</span>
+          </button>
+          <button class="cat-btn" data-cat="fluids">
+            <img src="fluids_icon.png" alt="">
+            <span>Fluids &amp; Products</span>
           </button>
         </div>
         <div class="lmodal-actions">
@@ -1162,6 +1181,42 @@
           <div class="fgroup"><label>Description</label><textarea id="t-desc" placeholder="What's included, any wear, calibration history if relevant..."></textarea></div>
         </div>
 
+        <div id="form-fluids" class="cat-form" style="display:none;">
+          <div class="fgroup"><label>Product title</label><input type="text" id="fl-title" placeholder="Motul 300V 5W-40 Full Synthetic — 4L"></div>
+          <div class="frow frow-2">
+            <div class="fgroup">
+              <label>Sub-category</label>
+              <select id="fl-subcat">
+                <option value="">Select</option>
+                <option>Engine Oil</option>
+                <option>Transmission Fluid</option>
+                <option>Brake Fluid</option>
+                <option>Coolant</option>
+                <option>Differential Fluid</option>
+                <option>Detailing Products</option>
+                <option>Cleaning Products</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="fgroup">
+              <label>Condition</label>
+              <select id="fl-cond">
+                <option value="">Select</option>
+                <option>New / Sealed</option>
+                <option>Opened — Unused</option>
+                <option>Partially Used</option>
+              </select>
+            </div>
+          </div>
+          <div class="frow frow-2">
+            <div class="fgroup"><label>Brand</label><input type="text" id="fl-brand" placeholder="Motul, Castrol, Meguiar's..."></div>
+            <div class="fgroup"><label>Asking price ($)</label><input type="number" id="fl-price" placeholder="45"></div>
+          </div>
+          <div class="fgroup"><label>Quantity / size</label><input type="text" id="fl-qty" placeholder="e.g. 4L jug, 2 bottles, case of 12"></div>
+          <div class="fgroup"><label>Location (city)</label><input type="text" id="fl-location" placeholder="Toronto, ON"></div>
+          <div class="fgroup"><label>Description</label><textarea id="fl-desc" placeholder="Spec, viscosity, what it's for, expiry if applicable..."></textarea></div>
+        </div>
+
         <div class="lmodal-actions">
           <button class="btn-back" id="step2-back">Back</button>
           <button class="btn-next" id="step2-next">Continue to photos</button>
@@ -1283,7 +1338,7 @@
     document.querySelectorAll('.cat-form').forEach(function(f){ f.style.display = 'none'; });
     document.getElementById('form-' + selectedCat).style.display = 'block';
     // update heading
-    var headings = { vehicles:'Vehicle details', wheels:'Wheel &amp; tire details', parts:'Part details', tools:'Tool details' };
+    var headings = { vehicles:'Vehicle details', wheels:'Wheel &amp; tire details', parts:'Part details', tools:'Tool details', fluids:'Fluids &amp; product details' };
     document.getElementById('step2-heading').innerHTML = headings[selectedCat];
     goStep(2);
   });
@@ -1355,6 +1410,17 @@
       data.details = {
         subcategory: document.getElementById('t-subcat').value,
         brand: document.getElementById('t-brand').value
+      };
+    } else if(cat === 'fluids'){
+      data.title = document.getElementById('fl-title').value;
+      data.price = parseFloat(document.getElementById('fl-price').value) || null;
+      data.condition = document.getElementById('fl-cond').value;
+      data.location = document.getElementById('fl-location').value;
+      data.description = document.getElementById('fl-desc').value;
+      data.details = {
+        subcategory: document.getElementById('fl-subcat').value,
+        brand: document.getElementById('fl-brand').value,
+        quantity: document.getElementById('fl-qty').value
       };
     }
     // override title if user typed one in step 3
