@@ -1483,15 +1483,38 @@
 
       console.log('[uploadPhotos] Uploading file [' + j + '] → ' + path + ' ...');
 
+      // ── DIAGNOSTIC: verify file is readable before sending ──
+      alert(JSON.stringify({
+        step:       'PRE-UPLOAD file check',
+        index:      j,
+        name:       file.name,
+        size_bytes: file.size,
+        size_kb:    (file.size / 1024).toFixed(1),
+        type:       file.type,
+        is_File:    file instanceof File,
+        path:       path,
+        bucket:     BUCKET
+      }));
+
+      if (file.size === 0) {
+        var zeroErr = '[uploadPhotos] File [' + j + '] has size 0 — it is empty and cannot be uploaded.';
+        console.error(zeroErr);
+        alert(zeroErr);
+        throw new Error(zeroErr);
+      }
+
+      // Upload without contentType override — let the browser set it
+      // naturally from the File object to avoid mismatches
       var res = await sb.storage.from(BUCKET).upload(path, file, {
-        upsert: true,
-        contentType: file.type || 'image/jpeg'
+        upsert: true
       });
 
-      // ── DIAGNOSTIC: shows result on screen regardless of success or failure ──
+      // ── DIAGNOSTIC: full upload result ──
       alert(JSON.stringify({
+        step:    'UPLOAD result',
         path:    path,
         success: !res.error,
+        data:    res.data,
         error:   res.error
       }));
 
@@ -1628,6 +1651,16 @@
           .update(updatePayload)
           .eq('id', listing.id)
           .select();
+
+        // ── DIAGNOSTIC: always show update result on screen ──
+        alert(JSON.stringify({
+          step:        'UPDATE photo_urls',
+          listing_id:  listing.id,
+          urls_sent:   photoUrls,
+          error:       updateRes.error,
+          rows_updated: updateRes.data ? updateRes.data.length : 0,
+          returned_row: updateRes.data ? updateRes.data[0] : null
+        }));
 
         console.log('[submit] Update response:', JSON.stringify(updateRes, null, 2));
 
