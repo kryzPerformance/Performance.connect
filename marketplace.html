@@ -1431,49 +1431,143 @@
   }
 
   // ── Upload photos to Supabase Storage ──
-  async function uploadPhotos(files, listingId){
-    var urls = [];
-    for(var i = 0; i < files.length; i++){
-      var file = files[i];
-      var ext = file.name.split('.').pop();
-      var path = listingId + '/' + i + '.' + ext;
-      var res = await sb.storage.from('listing-photos').upload(path, file, { upsert: true });
-      if(res.error){
-        console.error('Photo upload error:', res.error);
-        continue;
-      }
-      var pub = sb.storage.from('listing-photos').getPublicUrl(path);
-      urls.push(pub.data.publicUrl);
+  async function uploadPhotos(files, listingId) {
+
+    // ── PRE-FLIGHT CHECKS ──────────────────────────────────────────
+    var BUCKET = 'listing-photos';
+
+    if (!listingId) {
+      var msg = '[uploadPhotos] ABORT: listingId is undefined or null. Cannot build upload path.';
+      console.error(msg);
+      alert(msg);
+      throw new Error(msg);
     }
-    return urls;
+
+    if (!files || files.length === 0) {
+      var msg2 = '[uploadPhotos] ABORT: files array is empty or undefined.';
+      console.error(msg2);
+      alert(msg2);
+      throw new Error(msg2);
+    }
+
+    console.log('━━━ UPLOAD PRE-FLIGHT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('[uploadPhotos] Number of files selected :', files.length);
+    console.log('[uploadPhotos] Listing ID               :', listingId);
+    console.log('[uploadPhotos] Listing ID type          :', typeof listingId);
+    console.log('[uploadPhotos] Bucket name              :', BUCKET);
+
+    // Force listingId to string — bigint primary keys can behave
+    // unexpectedly as folder path segments in Storage
+    var folderName = 'listing-' + String(listingId);
+    console.log('[uploadPhotos] Storage folder           :', folderName);
+
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i];
+      var uploadPath = folderName + '/' + i + '.' + f.name.split('.').pop().toLowerCase();
+      console.log('── File [' + i + '] ─────────────────────────────────────────');
+      console.log('  name        :', f.name);
+      console.log('  size        :', f.size, 'bytes (', (f.size / 1024).toFixed(1), 'KB )');
+      console.log('  type        :', f.type);
+      console.log('  is File?    :', f instanceof File);
+      console.log('  upload path :', uploadPath);
+    }
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+    // ── UPLOAD LOOP ────────────────────────────────────────────────
+    var photoUrls = [];
+
+    for (var j = 0; j < files.length; j++) {
+      var file = files[j];
+      var ext  = file.name.split('.').pop().toLowerCase();
+      var path = folderName + '/' + j + '.' + ext;
+
+      console.log('[uploadPhotos] Uploading file [' + j + '] → ' + path + ' ...');
+
+      var res = await sb.storage.from(BUCKET).upload(path, file, {
+        upsert: true,
+        contentType: file.type || 'image/jpeg'
+      });
+
+      // ── DIAGNOSTIC: shows result on screen regardless of success or failure ──
+      alert(JSON.stringify({
+        path:    path,
+        success: !res.error,
+        error:   res.error
+      }));
+
+      // Log the COMPLETE raw response — both data and error
+      console.log('[uploadPhotos] Raw Supabase response for file [' + j + '] :');
+      console.log(JSON.stringify(res, null, 2));
+
+      if (res.error) {
+        var errMsg = '[uploadPhotos] UPLOAD FAILED for file [' + j + '] (' + file.name + ')\n\n'
+          + 'Error message : ' + (res.error.message || 'none') + '\n'
+          + 'Error status  : ' + (res.error.statusCode || res.error.status || 'none') + '\n'
+          + 'Error name    : ' + (res.error.name || 'none') + '\n'
+          + 'Full error    : ' + JSON.stringify(res.error);
+        console.error(errMsg);
+        alert(errMsg);
+        throw new Error(errMsg);
+      }
+
+      // Generate public URL
+      var pubRes = sb.storage.from(BUCKET).getPublicUrl(path);
+      console.log('[uploadPhotos] getPublicUrl response for [' + j + '] :', JSON.stringify(pubRes));
+
+      if (!pubRes.data || !pubRes.data.publicUrl) {
+        var urlErr = '[uploadPhotos] getPublicUrl returned no URL for path: ' + path + '\n\nFull response: ' + JSON.stringify(pubRes);
+        console.error(urlErr);
+        alert(urlErr);
+        throw new Error(urlErr);
+      }
+
+      var publicUrl = pubRes.data.publicUrl;
+      console.log('[uploadPhotos] Public URL [' + j + '] :', publicUrl);
+      photoUrls.push(publicUrl);
+    }
+
+    // ── POST-UPLOAD VERIFICATION ───────────────────────────────────
+    console.log('[uploadPhotos] All uploads complete. Generated URLs:');
+    console.log(JSON.stringify(photoUrls, null, 2));
+
+    if (photoUrls.length !== files.length) {
+      var mismatch = '[uploadPhotos] URL count mismatch! Expected ' + files.length + ' but got ' + photoUrls.length + '. Some uploads may have failed silently.';
+      console.error(mismatch);
+      alert(mismatch);
+      throw new Error(mismatch);
+    }
+
+    return photoUrls;
   }
 
   // ── Submit handler ──
   document.getElementById('step3-submit').addEventListener('click', async function(){
-    var btn = document.getElementById('step3-submit');
-    var errEl = document.getElementById('submit-error');
+    var btn    = document.getElementById('step3-submit');
+    var errEl  = document.getElementById('submit-error');
     errEl.style.display = 'none';
 
     // Validate required fields
     var titleVal = document.getElementById('listing-title').value.trim();
-    var igVal = document.getElementById('listing-instagram').value.trim();
-    if(!titleVal){ showError('Please add a listing title.'); return; }
-    if(!igVal){ showError('Please add your Instagram handle so buyers can reach you.'); return; }
+    var igVal    = document.getElementById('listing-instagram').value.trim();
+    if (!titleVal) { showError('Please add a listing title.'); return; }
+    if (!igVal)    { showError('Please add your Instagram handle so buyers can reach you.'); return; }
 
     btn.textContent = 'Saving...';
-    btn.disabled = true;
+    btn.disabled    = true;
 
-    function showError(msg){
-      errEl.textContent = msg;
-      errEl.style.display = 'block';
-      btn.textContent = 'Post listing';
-      btn.disabled = false;
+    function showError(msg) {
+      errEl.textContent    = msg;
+      errEl.style.display  = 'block';
+      btn.textContent      = 'Post listing';
+      btn.disabled         = false;
     }
 
     try {
       var formData = collectFormData(selectedCat);
 
-      // 1. Insert listing row (without photos first, so we have the ID)
+      // ── 1. INSERT LISTING ROW ──────────────────────────────────
+      console.log('[submit] Inserting listing row into Supabase...');
+
       var insertRes = await sb.from('listings').insert([{
         category:    formData.category,
         title:       formData.title,
@@ -1487,36 +1581,88 @@
         status:      'active'
       }]).select().single();
 
-      if(insertRes.error) throw insertRes.error;
-      var listing = insertRes.data;
+      console.log('[submit] Insert response:', JSON.stringify(insertRes, null, 2));
 
-      // 2. Upload photos
-      var photoFiles = Array.from(document.getElementById('photo-input').files).slice(0, 10);
+      if (insertRes.error) {
+        var iErr = '[submit] INSERT FAILED: ' + JSON.stringify(insertRes.error);
+        console.error(iErr);
+        alert(iErr);
+        throw insertRes.error;
+      }
+
+      var listing = insertRes.data;
+      console.log('[submit] Listing created. Full data:', JSON.stringify(listing, null, 2));
+      console.log('[submit] listing.id =', listing.id, '| type:', typeof listing.id);
+
+      if (!listing.id && listing.id !== 0) {
+        var noId = '[submit] listing.id is missing from insert response. Cannot upload photos.';
+        console.error(noId);
+        alert(noId);
+        throw new Error(noId);
+      }
+
+      // ── 2. UPLOAD PHOTOS ────────────────────────────────────────
+      var photoInput = document.getElementById('photo-input');
+      var photoFiles = Array.from(photoInput.files).slice(0, 10);
+
+      console.log('[submit] Photo files selected:', photoFiles.length);
+
       var photoUrls = [];
-      if(photoFiles.length > 0){
-        btn.textContent = 'Uploading photos...';
+      if (photoFiles.length > 0) {
+        btn.textContent = 'Uploading photos... (0/' + photoFiles.length + ')';
         photoUrls = await uploadPhotos(photoFiles, listing.id);
-        // Update listing with photo URLs
-        if(photoUrls.length > 0){
-          await sb.from('listings').update({ photo_urls: photoUrls }).eq('id', listing.id);
+        console.log('[submit] Photo upload complete. URLs:', JSON.stringify(photoUrls));
+      } else {
+        console.log('[submit] No photos selected — skipping upload.');
+      }
+
+      // ── 3. UPDATE LISTING WITH PHOTO URLS ───────────────────────
+      if (photoUrls.length > 0) {
+        var updatePayload = { photo_urls: photoUrls };
+        console.log('[submit] Sending update to listings table:');
+        console.log('  listing.id    :', listing.id);
+        console.log('  update payload:', JSON.stringify(updatePayload, null, 2));
+
+        var updateRes = await sb
+          .from('listings')
+          .update(updatePayload)
+          .eq('id', listing.id)
+          .select();
+
+        console.log('[submit] Update response:', JSON.stringify(updateRes, null, 2));
+
+        if (updateRes.error) {
+          var uErr = '[submit] UPDATE FAILED: ' + JSON.stringify(updateRes.error);
+          console.error(uErr);
+          alert(uErr);
+          throw updateRes.error;
+        }
+
+        if (!updateRes.data || updateRes.data.length === 0) {
+          var noUpdate = '[submit] UPDATE returned no rows. The listing may not have been found by id=' + listing.id + '. Check RLS update policy.';
+          console.warn(noUpdate);
+          alert(noUpdate);
+        } else {
+          console.log('[submit] Update confirmed. Updated row:', JSON.stringify(updateRes.data[0], null, 2));
         }
       }
 
-      // 3. Success
+      // ── 4. SUCCESS ───────────────────────────────────────────────
+      console.log('[submit] Listing fully saved. Closing modal.');
       closeModal();
       resetForm();
       loadListings();
 
-      // Show brief success message
       var banner = document.createElement('div');
       banner.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#0E6E8C;color:#fff;font-family:Inter,sans-serif;font-size:14px;padding:12px 24px;border-radius:8px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
       banner.textContent = '✓ Listing posted successfully!';
       document.body.appendChild(banner);
       setTimeout(function(){ banner.remove(); }, 4000);
 
-    } catch(err){
-      console.error('Submission error:', err);
-      showError('Something went wrong. Please try again.');
+    } catch(err) {
+      console.error('[submit] Caught exception:', err);
+      console.error('[submit] Error message:', err && err.message ? err.message : String(err));
+      showError('Error: ' + (err && err.message ? err.message : JSON.stringify(err)));
     }
   });
 
