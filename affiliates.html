@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Affiliates & Partners — Performance Connect</title>
+<meta name="description" content="Find performance shops, OEM dealers, tire shops, and tool stores across the GTA — curated by Performance Connect.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root{
+    --black:#070808;--panel:#111415;--line:#23292b;
+    --cyan:#1FA9CF;--cyan-bright:#3DC9F0;
+    --steel:#8FA0A6;--steel-dim:#5C6A6E;--white:#F2F6F7;
+    --col-oem:#3DC9F0;--col-tire:#F0B83D;--col-tool:#3DF08A;
+    --col-perf:#F03D6E;--col-after:#C43DF0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--black);color:var(--white);font-family:'Inter',sans-serif;height:100%;}
+  a{color:inherit;}
+
+  .bg-grid{
+    position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      linear-gradient(to right,rgba(255,255,255,0.02) 1px,transparent 1px),
+      linear-gradient(to bottom,rgba(255,255,255,0.02) 1px,transparent 1px);
+    background-size:64px 64px;
+  }
+  .page{position:relative;z-index:1;display:flex;flex-direction:column;min-height:100vh;}
+
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px clamp(16px,5vw,56px);border-bottom:0.5px solid var(--line);
+    flex-wrap:wrap;gap:12px;position:relative;z-index:10;
+    background:rgba(7,8,8,0.92);backdrop-filter:blur(8px);
+  }
+  .wordmark{display:flex;align-items:center;gap:12px;text-decoration:none;}
+  .wordmark img{height:30px;width:auto;}
+  .wordmark span{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.18em;color:var(--white);}
+  .wordmark span .accent{color:var(--cyan-bright);}
+  .site-nav{display:flex;align-items:center;gap:24px;}
+  .nav-link{font-size:13px;font-weight:500;color:var(--steel);text-decoration:none;transition:color 0.15s;}
+  .nav-link:hover,.nav-link.is-current{color:var(--cyan-bright);}
+  .locale-tag{font-size:11px;letter-spacing:0.08em;color:var(--steel-dim);border:0.5px solid var(--line);padding:5px 11px;border-radius:999px;}
+
+  .page-hero{padding:32px clamp(16px,5vw,56px) 20px;display:flex;flex-direction:column;gap:12px;}
+  .eyebrow{font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--cyan);}
+  .page-hero h1{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;
+    font-size:clamp(28px,5vw,42px);text-transform:uppercase;letter-spacing:0.01em;line-height:1.05;
+  }
+  .page-hero h1 .accent{color:var(--cyan-bright);}
+  .page-hero p{font-size:14px;color:var(--steel);line-height:1.6;max-width:500px;}
+
+  .filter-bar{padding:0 clamp(16px,5vw,56px) 18px;display:flex;gap:8px;flex-wrap:wrap;}
+  .filter-pill{
+    display:flex;align-items:center;gap:7px;
+    font-size:11.5px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;
+    padding:7px 14px;border-radius:999px;cursor:pointer;border:1px solid transparent;
+    transition:all 0.2s ease;user-select:none;
+  }
+  .filter-pill .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .filter-pill[data-cat="oem"]   .dot{background:var(--col-oem);}
+  .filter-pill[data-cat="tire"]  .dot{background:var(--col-tire);}
+  .filter-pill[data-cat="tool"]  .dot{background:var(--col-tool);}
+  .filter-pill[data-cat="perf"]  .dot{background:var(--col-perf);}
+  .filter-pill[data-cat="after"] .dot{background:var(--col-after);}
+  .filter-pill.active{background:rgba(31,169,207,0.08);border-color:rgba(31,169,207,0.3);color:var(--white);}
+  .filter-pill:not(.active){background:var(--panel);border-color:var(--line);color:var(--steel-dim);}
+  .filter-pill:hover{border-color:rgba(31,169,207,0.4);color:var(--white);}
+
+  .map-count{
+    padding:0 clamp(16px,5vw,56px) 12px;
+    font-size:12.5px;color:var(--steel-dim);
+  }
+  .map-count span{color:var(--cyan-bright);font-weight:600;}
+
+  .map-wrap{flex:1;position:relative;min-height:0;}
+  #map{width:100%;height:calc(100vh - 310px);min-height:380px;background:var(--black);}
+
+  /* Leaflet overrides */
+  .leaflet-control-zoom a{background:var(--panel)!important;color:var(--cyan-bright)!important;border-color:var(--line)!important;}
+  .leaflet-control-attribution{background:rgba(7,8,8,0.75)!important;color:var(--steel-dim)!important;font-size:10px!important;}
+  .leaflet-control-attribution a{color:var(--steel-dim)!important;}
+  .leaflet-popup-content-wrapper{
+    background:var(--panel)!important;border:1px solid var(--line)!important;
+    border-radius:12px!important;box-shadow:0 12px 40px rgba(0,0,0,0.5)!important;
+    color:var(--white)!important;padding:0!important;
+  }
+  .leaflet-popup-tip{background:var(--panel)!important;}
+  .leaflet-popup-content{margin:0!important;width:auto!important;}
+  .leaflet-popup-close-button{color:var(--steel)!important;top:10px!important;right:12px!important;font-size:18px!important;}
+
+  /* Popup card */
+  .popup-card{min-width:230px;max-width:290px;padding:16px 18px 14px;}
+  .popup-cat-tag{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+    padding:3px 9px;border-radius:999px;margin-bottom:9px;
+  }
+  .popup-cat-tag .dot{width:6px;height:6px;border-radius:50%;}
+  .popup-name{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;
+    font-size:19px;text-transform:uppercase;line-height:1.1;color:var(--white);margin-bottom:5px;
+  }
+  .popup-address{font-size:12px;color:var(--steel);margin-bottom:5px;line-height:1.4;}
+  .popup-notes{font-size:11.5px;color:var(--steel-dim);margin-bottom:11px;font-style:italic;}
+  .popup-links{display:flex;gap:7px;flex-wrap:wrap;}
+  .popup-link{font-size:11px;font-weight:600;padding:5px 11px;border-radius:6px;text-decoration:none;transition:background 0.15s,color 0.15s;}
+  .popup-link.primary{background:var(--cyan-bright);color:#03171D;}
+  .popup-link.primary:hover{background:#62D6F5;}
+  .popup-link.secondary{background:transparent;border:0.5px solid var(--line);color:var(--steel);}
+  .popup-link.secondary:hover{color:var(--cyan-bright);border-color:var(--cyan);}
+
+  /* Custom marker */
+  .pc-marker{
+    display:flex;align-items:center;justify-content:center;
+    width:30px;height:30px;border-radius:50%;border:2px solid;
+    box-shadow:0 2px 8px rgba(0,0,0,0.6);transition:transform 0.15s;
+  }
+  .pc-marker:hover{transform:scale(1.15);}
+  .pc-marker svg{width:14px;height:14px;}
+
+  /* Loading state */
+  .map-loading{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    background:var(--black);z-index:5;flex-direction:column;gap:12px;
+    font-size:13px;color:var(--steel);
+  }
+  .map-loading .spinner{
+    width:32px;height:32px;border:2px solid var(--line);border-top-color:var(--cyan-bright);
+    border-radius:50%;animation:spin 0.8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  footer{padding:20px clamp(16px,5vw,56px);display:flex;flex-direction:column;align-items:center;border-top:0.5px solid var(--line);gap:6px;text-align:center;}
+  .footer-text{font-size:12px;color:var(--steel-dim);}
+
+  @media(max-width:520px){
+    header{flex-direction:column;align-items:center;text-align:center;}
+    #map{height:calc(100vh - 380px);}
+  }
+</style>
+</head>
+<body>
+<div class="bg-grid" aria-hidden="true"></div>
+
+<div class="page">
+  <header>
+    <a href="index.html" class="wordmark">
+      <img src="logo_transparent.png" alt="Performance Connect">
+      <span>PERFORMANCE<span class="accent">CONNECT</span></span>
+    </a>
+    <nav class="site-nav">
+      <a href="marketplace.html" class="nav-link">Marketplace</a>
+      <a href="affiliates.html" class="nav-link is-current">Affiliates</a>
+      <a href="blog.html" class="nav-link">Blog</a>
+    </nav>
+    <div class="locale-tag">PERFORMANCECONNECT.CA</div>
+  </header>
+
+  <div class="page-hero">
+    <p class="eyebrow">GTA Partners</p>
+    <h1>Find your <span class="accent">people.</span></h1>
+    <p>Performance shops, OEM dealers, tire specialists, and tool stores across the GTA — vetted and onboarded by Performance Connect.</p>
+  </div>
+
+  <div class="filter-bar" id="filter-bar">
+    <button class="filter-pill active" data-cat="oem"><span class="dot"></span>OEM Dealers</button>
+    <button class="filter-pill active" data-cat="tire"><span class="dot"></span>Tire Shops</button>
+    <button class="filter-pill active" data-cat="tool"><span class="dot"></span>Tool Stores</button>
+    <button class="filter-pill active" data-cat="perf"><span class="dot"></span>Performance Shops</button>
+    <button class="filter-pill active" data-cat="after"><span class="dot"></span>Aftermarket Parts</button>
+  </div>
+
+  <div class="map-count" id="map-count">&nbsp;</div>
+
+  <div class="map-wrap">
+    <div class="map-loading" id="map-loading">
+      <div class="spinner"></div>
+      Loading partners...
+    </div>
+    <div id="map"></div>
+  </div>
+
+  <footer>
+    <div class="footer-text">
+      Want your shop on the map?
+      <a href="mailto:info@performanceconnect.ca" style="color:var(--cyan);margin-left:4px;">Get in touch</a>
+    </div>
+  </footer>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ============================================================
+// CATEGORY CONFIG
+// To add a new category: add an entry here and a filter pill
+// in the HTML above. Everything else wires up automatically.
+// ============================================================
+var catConfig = {
+  oem: {
+    color:'#3DC9F0', label:'OEM Dealer',
+    icon:'<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'
+  },
+  tire: {
+    color:'#F0B83D', label:'Tire Shop',
+    icon:'<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
+  },
+  tool: {
+    color:'#3DF08A', label:'Tool Store',
+    icon:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'
+  },
+  perf: {
+    color:'#F03D6E', label:'Performance Shop',
+    icon:'<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'
+  },
+  after: {
+    color:'#C43DF0', label:'Aftermarket Parts',
+    icon:'<circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
+  }
+};
+
+// ============================================================
+// MAP INIT
+// ============================================================
+var map = L.map('map', {
+  center:[43.7184,-79.5181],
+  zoom:11,
+  zoomControl:true
+});
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+  attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+  subdomains:'abcd',maxZoom:19
+}).addTo(map);
+
+// ============================================================
+// MARKER HELPERS
+// ============================================================
+function makeIcon(cat){
+  var cfg = catConfig[cat] || catConfig.oem;
+  var html = '<div class="pc-marker" style="background:' + cfg.color + '22;border-color:' + cfg.color + ';">' +
+    '<svg viewBox="0 0 24 24" style="color:' + cfg.color + '">' + cfg.icon + '</svg></div>';
+  return L.divIcon({className:'',html:html,iconSize:[30,30],iconAnchor:[15,15],popupAnchor:[0,-18]});
+}
+
+function makePopupHTML(loc){
+  var cfg = catConfig[loc.cat] || catConfig.oem;
+  var webBtn  = loc.web      ? '<a href="' + loc.web + '" target="_blank" rel="noopener" class="popup-link primary">Visit website</a>' : '';
+  var phoneBtn= loc.phone    ? '<a href="tel:' + loc.phone.replace(/[^0-9+]/g,'') + '" class="popup-link secondary">' + loc.phone + '</a>' : '';
+  var igBtn   = loc.instagram? '<a href="https://instagram.com/' + loc.instagram.replace('@','') + '" target="_blank" rel="noopener" class="popup-link secondary">' + loc.instagram + '</a>' : '';
+  var notes   = loc.notes    ? '<div class="popup-notes">' + loc.notes + '</div>' : '';
+  return '<div class="popup-card">' +
+    '<div class="popup-cat-tag" style="background:' + cfg.color + '18;color:' + cfg.color + '">' +
+      '<span class="dot" style="background:' + cfg.color + '"></span>' + cfg.label +
+    '</div>' +
+    '<div class="popup-name">' + loc.name + '</div>' +
+    '<div class="popup-address">' + loc.address + '</div>' +
+    notes +
+    '<div class="popup-links">' + webBtn + phoneBtn + igBtn + '</div>' +
+  '</div>';
+}
+
+// ============================================================
+// LOAD AFFILIATES FROM JSON
+// ============================================================
+var allMarkers = {}; // { cat: [L.marker, ...] }
+Object.keys(catConfig).forEach(function(c){ allMarkers[c] = []; });
+
+var activeCats = {};
+Object.keys(catConfig).forEach(function(c){ activeCats[c] = true; });
+
+function updateCount(){
+  var visible = 0;
+  Object.keys(allMarkers).forEach(function(c){
+    if(activeCats[c]) visible += allMarkers[c].length;
+  });
+  var total = 0;
+  Object.keys(allMarkers).forEach(function(c){ total += allMarkers[c].length; });
+  var el = document.getElementById('map-count');
+  if(total === 0){
+    el.innerHTML = 'No partners added yet — <a href="mailto:info@performanceconnect.ca" style="color:var(--cyan)">be the first</a>.';
+  } else {
+    el.innerHTML = 'Showing <span>' + visible + '</span> of <span>' + total + '</span> partners';
+  }
+}
+
+fetch('affiliates.json')
+  .then(function(r){ return r.json(); })
+  .then(function(locations){
+    document.getElementById('map-loading').style.display = 'none';
+
+    if(!locations || locations.length === 0){
+      updateCount();
+      return;
+    }
+
+    locations.forEach(function(loc){
+      var cat = loc.cat && catConfig[loc.cat] ? loc.cat : 'oem';
+      var marker = L.marker([loc.lat, loc.lng], { icon: makeIcon(cat) })
+        .bindPopup(makePopupHTML(loc), { maxWidth:320, closeButton:true })
+        .addTo(map);
+      allMarkers[cat].push(marker);
+    });
+
+    // fit map to all markers
+    var allLatLngs = locations.map(function(l){ return [l.lat, l.lng]; });
+    if(allLatLngs.length > 1){
+      map.fitBounds(allLatLngs, { padding:[40,40] });
+    }
+
+    updateCount();
+  })
+  .catch(function(err){
+    document.getElementById('map-loading').innerHTML =
+      '<div style="color:var(--steel)">Could not load partner data.<br>Try refreshing.</div>';
+    console.error('affiliates.json load error:', err);
+  });
+
+// ============================================================
+// FILTER PILLS
+// ============================================================
+document.getElementById('filter-bar').addEventListener('click', function(e){
+  var pill = e.target.closest('.filter-pill');
+  if(!pill) return;
+  var cat = pill.dataset.cat;
+  activeCats[cat] = !activeCats[cat];
+  pill.classList.toggle('active', activeCats[cat]);
+
+  allMarkers[cat].forEach(function(m){
+    if(activeCats[cat]){ m.addTo(map); } else { map.removeLayer(m); }
+  });
+
+  updateCount();
+});
+
+// close popup on tap outside marker on mobile
+map.on('click', function(){ map.closePopup(); });
+</script>
+</body>
+</html>
