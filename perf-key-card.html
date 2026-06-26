@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Performance Key Card — Performance Connect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#070808;
+    --panel:#111415;
+    --line:#23292b;
+    --cyan:#1FA9CF;
+    --cyan-bright:#3DC9F0;
+    --steel:#8FA0A6;
+    --steel-dim:#5C6A6E;
+    --white:#F2F6F7;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ background:#070808; font-family:'Inter',sans-serif; }
+
+  /* ── page shell ── */
+  .page{
+    min-height:100vh;
+    display:flex;align-items:center;justify-content:center;
+    padding:40px 20px;
+    background:var(--black);
+  }
+
+  /* ── card ── */
+  .card{
+    width:520px;
+    background:#0A0C0D;
+    border:1px solid #1E2527;
+    border-radius:20px;
+    overflow:hidden;
+    position:relative;
+    box-shadow:0 32px 80px rgba(0,0,0,0.7), 0 0 0 0.5px rgba(31,169,207,0.08);
+  }
+
+  /* subtle hex texture overlay */
+  .card::before{
+    content:'';
+    position:absolute;inset:0;
+    background-image:url("data:image/svg+xml,%3Csvg width='60' height='52' viewBox='0 0 60 52' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 17.3V34.6L30 52L0 34.6V17.3L30 0Z' fill='none' stroke='rgba(31,169,207,0.04)' stroke-width='1'/%3E%3C/svg%3E");
+    background-size:60px 52px;
+    pointer-events:none;z-index:0;
+  }
+
+  /* top cyan gradient bar */
+  .card-top-bar{
+    height:3px;
+    background:linear-gradient(90deg, transparent 0%, var(--cyan) 30%, var(--cyan-bright) 50%, var(--cyan) 70%, transparent 100%);
+  }
+
+  .card-inner{ position:relative;z-index:1;padding:36px 40px 32px; }
+
+  /* logo section */
+  .logo-section{
+    display:flex;flex-direction:column;align-items:center;
+    margin-bottom:28px;padding-bottom:24px;
+    border-bottom:0.5px solid rgba(35,41,43,0.8);
+  }
+  .logo-section img{ height:90px;width:auto;margin-bottom:0; }
+
+  /* heading */
+  .card-heading{
+    text-align:center;margin-bottom:24px;
+  }
+  .card-heading h1{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;
+    font-size:28px;text-transform:uppercase;letter-spacing:0.02em;
+    color:var(--white);line-height:1.1;margin-bottom:6px;
+  }
+  .card-heading h1 .accent{ color:var(--cyan-bright); }
+  .card-heading p{
+    font-size:13.5px;color:var(--steel);line-height:1.55;max-width:340px;margin:0 auto;
+  }
+
+  /* key block */
+  .key-block{
+    background:linear-gradient(135deg, rgba(31,169,207,0.07) 0%, rgba(61,201,240,0.03) 100%);
+    border:1px solid rgba(31,169,207,0.22);
+    border-radius:14px;
+    padding:26px 24px 20px;
+    margin-bottom:22px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+  /* glow behind key */
+  .key-block::before{
+    content:'';position:absolute;
+    bottom:-40px;left:50%;transform:translateX(-50%);
+    width:280px;height:80px;
+    background:radial-gradient(ellipse at center, rgba(61,201,240,0.18) 0%, transparent 70%);
+    pointer-events:none;
+  }
+  .key-label{
+    font-size:10px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;
+    color:var(--cyan);margin-bottom:14px;
+  }
+  .key-value{
+    font-family:'Rajdhani',sans-serif;font-weight:700;
+    font-size:42px;letter-spacing:0.14em;
+    color:var(--white);line-height:1;
+    margin-bottom:6px;
+    text-shadow:0 0 40px rgba(61,201,240,0.3);
+  }
+  .key-underline{
+    width:80px;height:1.5px;
+    background:linear-gradient(90deg, transparent, var(--cyan-bright), transparent);
+    margin:10px auto 12px;
+  }
+  .key-tagline{
+    font-size:10.5px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;
+    color:rgba(31,169,207,0.6);display:flex;align-items:center;justify-content:center;gap:6px;
+  }
+  .key-tagline svg{ width:12px;height:12px; }
+
+  /* features grid */
+  .features-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px;
+  }
+  .feature-item{
+    display:flex;align-items:center;gap:10px;
+    background:rgba(255,255,255,0.025);border:0.5px solid rgba(35,41,43,0.8);
+    border-radius:10px;padding:12px 14px;
+  }
+  .feature-icon{
+    width:32px;height:32px;border-radius:8px;
+    background:rgba(31,169,207,0.1);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .feature-icon svg{ width:15px;height:15px;color:var(--cyan-bright); }
+  .feature-text{ font-size:12px;font-weight:500;color:var(--steel);line-height:1.35; }
+
+  /* save section */
+  .save-section{
+    margin-bottom:20px;
+  }
+  .save-label{
+    font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;
+    color:var(--steel-dim);margin-bottom:10px;
+  }
+  .save-btns{ display:flex;gap:8px; }
+  .save-btn{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:11px 12px;border-radius:9px;
+    font-size:11.5px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;
+    cursor:pointer;border:none;transition:all 0.15s;
+  }
+  .save-btn svg{ width:14px;height:14px;flex-shrink:0; }
+  .save-btn.primary{background:var(--cyan-bright);color:#03171D;}
+  .save-btn.primary:hover{background:#62D6F5;}
+  .save-btn.secondary{background:rgba(255,255,255,0.04);border:0.5px solid var(--line);color:var(--steel);}
+  .save-btn.secondary:hover{color:var(--white);border-color:var(--steel);}
+
+  /* warning strip */
+  .warning-strip{
+    display:flex;align-items:flex-start;gap:12px;
+    background:rgba(31,169,207,0.05);border:0.5px solid rgba(31,169,207,0.15);
+    border-radius:10px;padding:14px 16px;margin-bottom:20px;
+  }
+  .warning-strip svg{ width:16px;height:16px;color:var(--cyan);flex-shrink:0;margin-top:1px; }
+  .warning-text{ font-size:12px;color:var(--steel);line-height:1.55; }
+  .warning-text strong{ color:var(--white);font-weight:600; }
+
+  /* footer tagline */
+  .card-footer{
+    text-align:center;padding-top:16px;border-top:0.5px solid rgba(35,41,43,0.6);
+    font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;
+    color:var(--steel-dim);
+  }
+  .card-footer .accent{ color:var(--cyan-bright); }
+
+  /* EXPORT: when printing/saving, force exact dimensions */
+  @media print{
+    body{background:#070808;}
+    .page{padding:0;}
+    .card{box-shadow:none;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="card" id="card">
+    <div class="card-top-bar"></div>
+    <div class="card-inner">
+
+      <!-- Logo -->
+      <div class="logo-section">
+        <img src="logo_transparent.png" alt="Performance Connect">
+      </div>
+
+      <!-- Heading -->
+      <div class="card-heading">
+        <h1>Your <span class="accent">Performance</span> Key</h1>
+        <p>This is your unique key to manage your listings and unlock your future garage profile.</p>
+      </div>
+
+      <!-- Key display -->
+      <div class="key-block">
+        <div class="key-label">Your Performance Key</div>
+        <div class="key-value" id="key-display">PC-8J4K-XP92</div>
+        <div class="key-underline"></div>
+        <div class="key-tagline">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Keep this key safe
+        </div>
+      </div>
+
+      <!-- Feature grid -->
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+          <div class="feature-text">Create Future<br>Listings</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+          <div class="feature-text">Edit Your<br>Listings</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          </div>
+          <div class="feature-text">Mark Listings<br>as Sold</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          </div>
+          <div class="feature-text">Delete Your<br>Listings</div>
+        </div>
+      </div>
+
+      <!-- Save actions -->
+      <div class="save-section">
+        <div class="save-label">Save your key</div>
+        <div class="save-btns">
+          <button class="save-btn primary" id="btn-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy Key
+          </button>
+          <button class="save-btn secondary" id="btn-qr">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3M17 17h3v3M14 20h3"/></svg>
+            Download QR
+          </button>
+          <button class="save-btn secondary" id="btn-img">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Save Image
+          </button>
+        </div>
+      </div>
+
+      <!-- Warning -->
+      <div class="warning-strip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div class="warning-text">
+          <strong>Important:</strong> You'll need this key to manage your listings. We don't store it anywhere else. Keep it safe.
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="card-footer">
+        One key. <span class="accent">All your builds.</span> All your listings.
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // Read key from URL param or use example
+  var params = new URLSearchParams(window.location.search);
+  var key = params.get('key') || 'PC-8J4K-XP92';
+  document.getElementById('key-display').textContent = key;
+
+  // Copy key
+  document.getElementById('btn-copy').addEventListener('click', function(){
+    navigator.clipboard.writeText(key).then(function(){
+      var btn = document.getElementById('btn-copy');
+      var orig = btn.innerHTML;
+      btn.textContent = '✓ Copied!';
+      setTimeout(function(){ btn.innerHTML = orig; }, 2000);
+    });
+  });
+
+  // QR code download
+  document.getElementById('btn-qr').addEventListener('click', function(){
+    var manageUrl = window.location.origin + '/manage.html?key=' + encodeURIComponent(key);
+    var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&bgcolor=070808&color=3DC9F0&margin=20&data=' + encodeURIComponent(manageUrl);
+    var a = document.createElement('a');
+    a.href = qrUrl; a.download = key + '-QR.png'; a.target = '_blank';
+    a.click();
+  });
+
+  // Save card as image using html2canvas
+  document.getElementById('btn-img').addEventListener('click', async function(){
+    var btn = this;
+    btn.textContent = 'Generating...';
+    btn.disabled = true;
+
+    // Load html2canvas dynamically
+    var script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    document.head.appendChild(script);
+    script.onload = async function(){
+      try {
+        var canvas = await html2canvas(document.getElementById('card'), {
+          backgroundColor: '#070808',
+          scale: 3,
+          useCORS: true,
+          allowTaint: false,
+          logging: false
+        });
+        var a = document.createElement('a');
+        a.download = key + '-PerformanceKey.png';
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+      } catch(e) {
+        alert('Could not save image. Try using a screenshot instead.');
+      }
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Save Image';
+      btn.disabled = false;
+    };
+  });
+</script>
+</body>
+</html>

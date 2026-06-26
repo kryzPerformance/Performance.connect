@@ -1413,7 +1413,9 @@
     </div>
 
     <div class="pk-manage-link">
-      <a href="manage.html" id="pk-manage-link">Manage my listings →</a>
+      <a href="perf-key-card.html" id="pk-card-link" target="_blank">View key card →</a>
+      &nbsp;&nbsp;·&nbsp;&nbsp;
+      <a href="manage.html" id="pk-manage-link">Manage listings →</a>
     </div>
 
     <button class="pk-close" id="pk-close">Done — view marketplace</button>
@@ -1789,6 +1791,7 @@
     document.getElementById('pk-key-display').textContent = perfKey;
     document.getElementById('pk-overlay').style.display = 'flex';
     document.getElementById('pk-manage-link').href = 'manage.html?key=' + encodeURIComponent(perfKey);
+    document.getElementById('pk-card-link').href = 'perf-key-card.html?key=' + encodeURIComponent(perfKey);
   }
 
   // Copy key to clipboard
@@ -1805,9 +1808,8 @@
   // QR code download — generates a QR linking to the manage page
   document.getElementById('pk-btn-qr').addEventListener('click', function(){
     var key = document.getElementById('pk-key-display').textContent;
-    var manageUrl = window.location.origin + '/manage.html?key=' + encodeURIComponent(key);
-    // Use QR Server API (free, no key needed)
-    var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&bgcolor=070808&color=3DC9F0&data=' + encodeURIComponent(manageUrl);
+    var cardUrl = window.location.origin + '/perf-key-card.html?key=' + encodeURIComponent(key);
+    var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&bgcolor=070808&color=3DC9F0&margin=20&data=' + encodeURIComponent(cardUrl);
     var a = document.createElement('a');
     a.href = qrUrl;
     a.download = key + '-QR.png';
