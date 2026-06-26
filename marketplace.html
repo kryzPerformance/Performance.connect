@@ -372,12 +372,21 @@
     border:1px solid var(--line);
     border-radius:12px;
     overflow:hidden;
-    transition:border-color 0.2s ease, transform 0.2s ease;
+    transition:border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     cursor:pointer;
+    display:block;
+    text-decoration:none;
+    color:inherit;
+    position:relative;
   }
   .listing-card:hover{
-    border-color:rgba(31,169,207,0.4);
-    transform:translateY(-2px);
+    border-color:rgba(31,169,207,0.45);
+    transform:translateY(-3px);
+    box-shadow:0 12px 32px rgba(0,0,0,0.4), 0 0 0 0.5px rgba(31,169,207,0.1);
+  }
+  .listing-thumb-wrap{
+    overflow:hidden;
+    width:100%;
   }
   .listing-thumb{
     width:100%;
@@ -385,6 +394,10 @@
     object-fit:cover;
     background:var(--panel-hover);
     display:block;
+    transition:transform 0.3s ease;
+  }
+  .listing-card:hover .listing-thumb{
+    transform:scale(1.03);
   }
   .listing-thumb-placeholder{
     width:100%;
@@ -411,15 +424,19 @@
   .listing-title{
     font-family:'Rajdhani', sans-serif;
     font-weight:700;
+    font-style:italic;
     font-size:17px;
     text-transform:uppercase;
     letter-spacing:0.01em;
     color:var(--white);
     margin-bottom:6px;
     line-height:1.2;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
   }
   .listing-meta{
-    font-size:13px;
+    font-size:12.5px;
     color:var(--steel);
     margin-bottom:10px;
   }
@@ -435,15 +452,25 @@
     font-family:'Rajdhani', sans-serif;
     font-weight:700;
     font-size:18px;
-    color:var(--white);
+    color:var(--cyan-bright);
   }
   .listing-ig{
-    font-size:12px;
-    color:var(--cyan);
-    text-decoration:none;
+    font-size:11.5px;
+    color:var(--steel-dim);
     font-weight:500;
+    pointer-events:none;
   }
-  .listing-ig:hover{ color:var(--cyan-bright); }
+  /* "View →" affordance that appears on hover */
+  .listing-card::after{
+    content:'View →';
+    position:absolute;
+    bottom:16px;right:16px;
+    font-size:11px;font-weight:600;letter-spacing:0.06em;
+    color:var(--cyan-bright);
+    opacity:0;transition:opacity 0.2s ease;
+    pointer-events:none;
+  }
+  .listing-card:hover::after{ opacity:1; }
 
   footer{
     padding:28px clamp(20px, 6vw, 64px) 36px;
@@ -1430,48 +1457,65 @@
     return data;
   }
 
+  // ============================================================
+  // DEBUG MODE
+  // Set to true when troubleshooting — never leave true in production.
+  // When false: no alerts, no console.log, clean UI errors only.
+  // ============================================================
+  const DEBUG = false;
+
+  function dbg() {
+    if (DEBUG) console.log.apply(console, arguments);
+  }
+  function dbgError() {
+    if (DEBUG) console.error.apply(console, arguments);
+  }
+  function dbgAlert(obj) {
+    if (DEBUG) alert(typeof obj === 'string' ? obj : JSON.stringify(obj));
+  }
+
   // ── Upload photos to Supabase Storage ──
   async function uploadPhotos(files, listingId) {
 
-    // ── PRE-FLIGHT CHECKS ──────────────────────────────────────────
     var BUCKET = 'listing-photos';
 
+    // ── PRE-FLIGHT CHECKS ──────────────────────────────────────────
     if (!listingId) {
       var msg = '[uploadPhotos] ABORT: listingId is undefined or null. Cannot build upload path.';
-      console.error(msg);
-      alert(msg);
+      dbgError(msg);
+      dbgAlert(msg);
       throw new Error(msg);
     }
 
     if (!files || files.length === 0) {
       var msg2 = '[uploadPhotos] ABORT: files array is empty or undefined.';
-      console.error(msg2);
-      alert(msg2);
+      dbgError(msg2);
+      dbgAlert(msg2);
       throw new Error(msg2);
     }
 
-    console.log('━━━ UPLOAD PRE-FLIGHT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('[uploadPhotos] Number of files selected :', files.length);
-    console.log('[uploadPhotos] Listing ID               :', listingId);
-    console.log('[uploadPhotos] Listing ID type          :', typeof listingId);
-    console.log('[uploadPhotos] Bucket name              :', BUCKET);
+    dbg('━━━ UPLOAD PRE-FLIGHT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    dbg('[uploadPhotos] Number of files selected :', files.length);
+    dbg('[uploadPhotos] Listing ID               :', listingId);
+    dbg('[uploadPhotos] Listing ID type          :', typeof listingId);
+    dbg('[uploadPhotos] Bucket name              :', BUCKET);
 
     // Force listingId to string — bigint primary keys can behave
     // unexpectedly as folder path segments in Storage
     var folderName = 'listing-' + String(listingId);
-    console.log('[uploadPhotos] Storage folder           :', folderName);
+    dbg('[uploadPhotos] Storage folder           :', folderName);
 
     for (var i = 0; i < files.length; i++) {
       var f = files[i];
       var uploadPath = folderName + '/' + i + '.' + f.name.split('.').pop().toLowerCase();
-      console.log('── File [' + i + '] ─────────────────────────────────────────');
-      console.log('  name        :', f.name);
-      console.log('  size        :', f.size, 'bytes (', (f.size / 1024).toFixed(1), 'KB )');
-      console.log('  type        :', f.type);
-      console.log('  is File?    :', f instanceof File);
-      console.log('  upload path :', uploadPath);
+      dbg('── File [' + i + '] ─────────────────────────────────────────');
+      dbg('  name        :', f.name);
+      dbg('  size        :', f.size, 'bytes (', (f.size / 1024).toFixed(1), 'KB )');
+      dbg('  type        :', f.type);
+      dbg('  is File?    :', f instanceof File);
+      dbg('  upload path :', uploadPath);
     }
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    dbg('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     // ── UPLOAD LOOP ────────────────────────────────────────────────
     var photoUrls = [];
@@ -1481,10 +1525,10 @@
       var ext  = file.name.split('.').pop().toLowerCase();
       var path = folderName + '/' + j + '.' + ext;
 
-      console.log('[uploadPhotos] Uploading file [' + j + '] → ' + path + ' ...');
+      dbg('[uploadPhotos] Uploading file [' + j + '] → ' + path + ' ...');
 
       // ── DIAGNOSTIC: verify file is readable before sending ──
-      alert(JSON.stringify({
+      dbgAlert({
         step:       'PRE-UPLOAD file check',
         index:      j,
         name:       file.name,
@@ -1494,13 +1538,13 @@
         is_File:    file instanceof File,
         path:       path,
         bucket:     BUCKET
-      }));
+      });
 
       if (file.size === 0) {
         var zeroErr = '[uploadPhotos] File [' + j + '] has size 0 — it is empty and cannot be uploaded.';
-        console.error(zeroErr);
-        alert(zeroErr);
-        throw new Error(zeroErr);
+        dbgError(zeroErr);
+        dbgAlert(zeroErr);
+        throw new Error('One of your photos appears to be empty. Please choose a different photo.');
       }
 
       // Upload without contentType override — let the browser set it
@@ -1510,17 +1554,17 @@
       });
 
       // ── DIAGNOSTIC: full upload result ──
-      alert(JSON.stringify({
+      dbgAlert({
         step:    'UPLOAD result',
         path:    path,
         success: !res.error,
         data:    res.data,
         error:   res.error
-      }));
+      });
 
       // Log the COMPLETE raw response — both data and error
-      console.log('[uploadPhotos] Raw Supabase response for file [' + j + '] :');
-      console.log(JSON.stringify(res, null, 2));
+      dbg('[uploadPhotos] Raw Supabase response for file [' + j + '] :');
+      dbg(JSON.stringify(res, null, 2));
 
       if (res.error) {
         var errMsg = '[uploadPhotos] UPLOAD FAILED for file [' + j + '] (' + file.name + ')\n\n'
@@ -1528,36 +1572,36 @@
           + 'Error status  : ' + (res.error.statusCode || res.error.status || 'none') + '\n'
           + 'Error name    : ' + (res.error.name || 'none') + '\n'
           + 'Full error    : ' + JSON.stringify(res.error);
-        console.error(errMsg);
-        alert(errMsg);
-        throw new Error(errMsg);
+        dbgError(errMsg);
+        dbgAlert(errMsg);
+        throw new Error('Photo upload failed. Please check your connection and try again.');
       }
 
       // Generate public URL
       var pubRes = sb.storage.from(BUCKET).getPublicUrl(path);
-      console.log('[uploadPhotos] getPublicUrl response for [' + j + '] :', JSON.stringify(pubRes));
+      dbg('[uploadPhotos] getPublicUrl response for [' + j + '] :', JSON.stringify(pubRes));
 
       if (!pubRes.data || !pubRes.data.publicUrl) {
         var urlErr = '[uploadPhotos] getPublicUrl returned no URL for path: ' + path + '\n\nFull response: ' + JSON.stringify(pubRes);
-        console.error(urlErr);
-        alert(urlErr);
-        throw new Error(urlErr);
+        dbgError(urlErr);
+        dbgAlert(urlErr);
+        throw new Error('Could not generate photo URL. Please try again.');
       }
 
       var publicUrl = pubRes.data.publicUrl;
-      console.log('[uploadPhotos] Public URL [' + j + '] :', publicUrl);
+      dbg('[uploadPhotos] Public URL [' + j + '] :', publicUrl);
       photoUrls.push(publicUrl);
     }
 
     // ── POST-UPLOAD VERIFICATION ───────────────────────────────────
-    console.log('[uploadPhotos] All uploads complete. Generated URLs:');
-    console.log(JSON.stringify(photoUrls, null, 2));
+    dbg('[uploadPhotos] All uploads complete. Generated URLs:');
+    dbg(JSON.stringify(photoUrls, null, 2));
 
     if (photoUrls.length !== files.length) {
       var mismatch = '[uploadPhotos] URL count mismatch! Expected ' + files.length + ' but got ' + photoUrls.length + '. Some uploads may have failed silently.';
-      console.error(mismatch);
-      alert(mismatch);
-      throw new Error(mismatch);
+      dbgError(mismatch);
+      dbgAlert(mismatch);
+      throw new Error('Some photos did not upload correctly. Please try again.');
     }
 
     return photoUrls;
@@ -1589,7 +1633,7 @@
       var formData = collectFormData(selectedCat);
 
       // ── 1. INSERT LISTING ROW ──────────────────────────────────
-      console.log('[submit] Inserting listing row into Supabase...');
+      dbg('[submit] Inserting listing row into Supabase...');
 
       var insertRes = await sb.from('listings').insert([{
         category:    formData.category,
@@ -1604,47 +1648,47 @@
         status:      'active'
       }]).select().single();
 
-      console.log('[submit] Insert response:', JSON.stringify(insertRes, null, 2));
+      dbg('[submit] Insert response:', JSON.stringify(insertRes, null, 2));
 
       if (insertRes.error) {
         var iErr = '[submit] INSERT FAILED: ' + JSON.stringify(insertRes.error);
-        console.error(iErr);
-        alert(iErr);
-        throw insertRes.error;
+        dbgError(iErr);
+        dbgAlert(iErr);
+        throw new Error('Could not save your listing. Please try again.');
       }
 
       var listing = insertRes.data;
-      console.log('[submit] Listing created. Full data:', JSON.stringify(listing, null, 2));
-      console.log('[submit] listing.id =', listing.id, '| type:', typeof listing.id);
+      dbg('[submit] Listing created. Full data:', JSON.stringify(listing, null, 2));
+      dbg('[submit] listing.id =', listing.id, '| type:', typeof listing.id);
 
       if (!listing.id && listing.id !== 0) {
         var noId = '[submit] listing.id is missing from insert response. Cannot upload photos.';
-        console.error(noId);
-        alert(noId);
-        throw new Error(noId);
+        dbgError(noId);
+        dbgAlert(noId);
+        throw new Error('Something went wrong while saving your listing. Please try again.');
       }
 
       // ── 2. UPLOAD PHOTOS ────────────────────────────────────────
       var photoInput = document.getElementById('photo-input');
       var photoFiles = Array.from(photoInput.files).slice(0, 10);
 
-      console.log('[submit] Photo files selected:', photoFiles.length);
+      dbg('[submit] Photo files selected:', photoFiles.length);
 
       var photoUrls = [];
       if (photoFiles.length > 0) {
         btn.textContent = 'Uploading photos... (0/' + photoFiles.length + ')';
         photoUrls = await uploadPhotos(photoFiles, listing.id);
-        console.log('[submit] Photo upload complete. URLs:', JSON.stringify(photoUrls));
+        dbg('[submit] Photo upload complete. URLs:', JSON.stringify(photoUrls));
       } else {
-        console.log('[submit] No photos selected — skipping upload.');
+        dbg('[submit] No photos selected — skipping upload.');
       }
 
       // ── 3. UPDATE LISTING WITH PHOTO URLS ───────────────────────
       if (photoUrls.length > 0) {
         var updatePayload = { photo_urls: photoUrls };
-        console.log('[submit] Sending update to listings table:');
-        console.log('  listing.id    :', listing.id);
-        console.log('  update payload:', JSON.stringify(updatePayload, null, 2));
+        dbg('[submit] Sending update to listings table:');
+        dbg('  listing.id    :', listing.id);
+        dbg('  update payload:', JSON.stringify(updatePayload, null, 2));
 
         var updateRes = await sb
           .from('listings')
@@ -1653,35 +1697,37 @@
           .select();
 
         // ── DIAGNOSTIC: always show update result on screen ──
-        alert(JSON.stringify({
-          step:        'UPDATE photo_urls',
-          listing_id:  listing.id,
-          urls_sent:   photoUrls,
-          error:       updateRes.error,
+        dbgAlert({
+          step:         'UPDATE photo_urls',
+          listing_id:   listing.id,
+          urls_sent:    photoUrls,
+          error:        updateRes.error,
           rows_updated: updateRes.data ? updateRes.data.length : 0,
           returned_row: updateRes.data ? updateRes.data[0] : null
-        }));
+        });
 
-        console.log('[submit] Update response:', JSON.stringify(updateRes, null, 2));
+        dbg('[submit] Update response:', JSON.stringify(updateRes, null, 2));
 
         if (updateRes.error) {
           var uErr = '[submit] UPDATE FAILED: ' + JSON.stringify(updateRes.error);
-          console.error(uErr);
-          alert(uErr);
-          throw updateRes.error;
+          dbgError(uErr);
+          dbgAlert(uErr);
+          throw new Error('Something went wrong while uploading your listing. Please try again.');
         }
 
         if (!updateRes.data || updateRes.data.length === 0) {
           var noUpdate = '[submit] UPDATE returned no rows. The listing may not have been found by id=' + listing.id + '. Check RLS update policy.';
-          console.warn(noUpdate);
-          alert(noUpdate);
+          dbgError(noUpdate);
+          dbgAlert(noUpdate);
+          // Don't throw here in production — listing was saved, photos just didn't attach.
+          // In debug mode the alert above will surface it for investigation.
         } else {
-          console.log('[submit] Update confirmed. Updated row:', JSON.stringify(updateRes.data[0], null, 2));
+          dbg('[submit] Update confirmed. Updated row:', JSON.stringify(updateRes.data[0], null, 2));
         }
       }
 
       // ── 4. SUCCESS ───────────────────────────────────────────────
-      console.log('[submit] Listing fully saved. Closing modal.');
+      dbg('[submit] Listing fully saved. Closing modal.');
       closeModal();
       resetForm();
       loadListings();
@@ -1693,9 +1739,13 @@
       setTimeout(function(){ banner.remove(); }, 4000);
 
     } catch(err) {
-      console.error('[submit] Caught exception:', err);
-      console.error('[submit] Error message:', err && err.message ? err.message : String(err));
-      showError('Error: ' + (err && err.message ? err.message : JSON.stringify(err)));
+      dbgError('[submit] Caught exception:', err);
+      dbgError('[submit] Error message:', err && err.message ? err.message : String(err));
+      // In production show a clean message; in debug show the real error
+      var userMsg = (DEBUG && err && err.message)
+        ? 'Error: ' + err.message
+        : 'Something went wrong while uploading your listing. Please try again.';
+      showError(userMsg);
     }
   });
 
@@ -1755,17 +1805,18 @@
   }
 
   function buildCard(l){
-    var card = document.createElement('div');
+    var card = document.createElement('a');
     card.className = 'listing-card';
+    card.href = 'listing.html?id=' + l.id;
 
     var thumb = '';
     if(l.photo_urls && l.photo_urls.length > 0){
-      thumb = '<img class="listing-thumb" src="' + l.photo_urls[0] + '" alt="' + escHtml(l.title) + '" loading="lazy">';
+      thumb = '<div class="listing-thumb-wrap"><img class="listing-thumb" src="' + l.photo_urls[0] + '" alt="' + escHtml(l.title) + '" loading="lazy"></div>';
     } else {
       thumb = '<div class="listing-thumb-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
     }
 
-    var catLabel = { vehicles:'Vehicle', wheels:'Wheels & Tires', parts:'Part', tools:'Tool' }[l.category] || l.category;
+    var catLabel = { vehicles:'Vehicle', wheels:'Wheels & Tires', parts:'Part', tools:'Tool', fluids:'Fluids & Products' }[l.category] || l.category;
     var meta = [];
     if(l.location) meta.push(l.location);
     if(l.condition) meta.push(l.condition);
@@ -1773,7 +1824,7 @@
 
     var price = l.price ? '$' + Number(l.price).toLocaleString() : 'Make offer';
     var igLink = l.instagram
-      ? '<a class="listing-ig" href="https://instagram.com/' + escHtml(l.instagram) + '" target="_blank" rel="noopener">@' + escHtml(l.instagram) + '</a>'
+      ? '<span class="listing-ig">@' + escHtml(l.instagram) + '</span>'
       : '';
 
     card.innerHTML =
