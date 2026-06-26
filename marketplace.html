@@ -472,6 +472,78 @@
   }
   .listing-card:hover::after{ opacity:1; }
 
+  /* ── PERFORMANCE KEY SUCCESS SCREEN ── */
+  .pk-overlay{
+    position:fixed;inset:0;z-index:200;
+    background:rgba(4,5,5,0.92);backdrop-filter:blur(10px);
+    display:flex;align-items:center;justify-content:center;
+    padding:24px 16px;overflow-y:auto;
+  }
+  .pk-card{
+    background:#0E1112;border:1px solid var(--line);border-radius:20px;
+    max-width:480px;width:100%;padding:36px 32px 28px;
+    text-align:center;position:relative;
+    box-shadow:0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(31,169,207,0.12);
+  }
+  .pk-flag{font-size:40px;margin-bottom:16px;display:block;line-height:1;}
+  .pk-heading{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;
+    font-size:26px;text-transform:uppercase;color:var(--white);margin-bottom:8px;
+  }
+  .pk-sub{font-size:13.5px;color:var(--steel);margin-bottom:28px;}
+
+  .pk-key-block{
+    background:rgba(31,169,207,0.06);border:1px solid rgba(31,169,207,0.25);
+    border-radius:14px;padding:22px 24px 18px;margin-bottom:24px;
+  }
+  .pk-key-label{
+    font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;
+    color:var(--cyan);margin-bottom:10px;
+  }
+  .pk-key-display{
+    font-family:'Rajdhani',sans-serif;font-weight:700;
+    font-size:clamp(26px,6vw,34px);letter-spacing:0.12em;
+    color:var(--white);margin-bottom:8px;
+  }
+  .pk-key-note{font-size:11.5px;color:var(--steel-dim);}
+
+  .pk-save-list{text-align:left;margin-bottom:24px;}
+  .pk-save-title{font-size:12px;font-weight:600;color:var(--steel);margin-bottom:8px;text-align:center;}
+  .pk-save-list ul{list-style:none;display:flex;flex-direction:column;gap:5px;}
+  .pk-save-list li{
+    font-size:12.5px;color:var(--steel);padding-left:16px;position:relative;
+  }
+  .pk-save-list li::before{content:'•';position:absolute;left:0;color:var(--cyan);}
+
+  .pk-actions{display:flex;gap:10px;margin-bottom:16px;}
+  .pk-btn-copy,.pk-btn-qr{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600;
+    transition:all 0.15s;cursor:pointer;
+  }
+  .pk-btn-copy{
+    background:var(--cyan-bright);color:#03171D;border:none;
+  }
+  .pk-btn-copy:hover{background:#62D6F5;}
+  .pk-btn-copy svg,.pk-btn-qr svg{width:15px;height:15px;flex-shrink:0;}
+  .pk-btn-qr{
+    background:transparent;color:var(--steel);
+    border:0.5px solid var(--line);
+  }
+  .pk-btn-qr:hover{color:var(--white);border-color:var(--steel);}
+
+  .pk-manage-link{margin-bottom:20px;}
+  .pk-manage-link a{font-size:13px;color:var(--cyan);transition:color 0.15s;}
+  .pk-manage-link a:hover{color:var(--cyan-bright);}
+
+  .pk-close{
+    width:100%;padding:13px;border-radius:10px;
+    background:transparent;border:0.5px solid var(--line);
+    color:var(--steel-dim);font-size:13px;font-weight:500;
+    transition:all 0.15s;cursor:pointer;
+  }
+  .pk-close:hover{color:var(--white);border-color:var(--steel);}
+
   footer{
     padding:28px clamp(20px, 6vw, 64px) 36px;
     display:flex;
@@ -841,6 +913,7 @@
         <a href="marketplace.html" class="nav-link is-current">Marketplace</a>
         <a href="affiliates.html" class="nav-link">Affiliates</a>
         <a href="blog.html" class="nav-link">Blog</a>
+        <a href="manage.html" class="nav-link">Manage</a>
       </nav>
       <div class="locale-tag">PERFORMANCECONNECT.CA</div>
     </header>
@@ -1255,6 +1328,19 @@
         <p class="step-eyebrow">Step 3 of 3</p>
         <p class="step-heading">Photos &amp; contact</p>
 
+        <!-- Performance Key field -->
+        <div class="fgroup" style="margin-bottom:18px;">
+          <label style="display:flex;align-items:center;justify-content:space-between;">
+            <span>Performance Key <span style="color:var(--steel-dim);font-weight:400;">(returning seller)</span></span>
+            <span style="font-size:11px;color:var(--steel-dim);font-weight:400;">Leave blank if new</span>
+          </label>
+          <div style="display:flex;align-items:center;gap:0;">
+            <span style="background:var(--panel);border:1px solid var(--line);border-right:none;border-radius:6px 0 0 6px;padding:10px 11px;color:var(--cyan);font-size:12px;font-weight:700;letter-spacing:0.06em;white-space:nowrap;">PC</span>
+            <input type="text" id="perf-key-input" placeholder="XXXX-XXXX" maxlength="9" style="border-radius:0 6px 6px 0;border-left:none;letter-spacing:0.12em;text-transform:uppercase;font-family:'Inter',sans-serif;" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+          <div id="perf-key-status" style="display:none;font-size:12px;margin-top:6px;padding:7px 10px;border-radius:6px;"></div>
+        </div>
+
         <div class="fgroup" style="margin-bottom:18px;">
           <label>Listing title <span style="color:var(--steel-dim);font-weight:400;">(required)</span></label>
           <input type="text" id="listing-title" placeholder="e.g. 2009 Honda Civic Si — clean build">
@@ -1287,6 +1373,52 @@
     </div><!-- /lmodal-body -->
   </div><!-- /lmodal -->
 </div><!-- /lmodal-overlay -->
+
+<!-- ============================================================
+     PERFORMANCE KEY SUCCESS SCREEN
+     Shown after first-time listing with a newly generated key.
+     ============================================================ -->
+<div class="pk-overlay" id="pk-overlay" style="display:none;">
+  <div class="pk-card">
+    <div class="pk-flag">🏁</div>
+    <h2 class="pk-heading">Listing Posted Successfully</h2>
+    <p class="pk-sub">Your listing is now live on the marketplace.</p>
+
+    <div class="pk-key-block">
+      <div class="pk-key-label">Your Performance Key</div>
+      <div class="pk-key-display" id="pk-key-display">PC-XXXX-XXXX</div>
+      <div class="pk-key-note">This is your unique seller identity on Performance Connect</div>
+    </div>
+
+    <div class="pk-save-list">
+      <p class="pk-save-title">Save this key. You'll use it to:</p>
+      <ul>
+        <li>Create future listings without re-entering your details</li>
+        <li>Edit or update existing listings</li>
+        <li>Mark listings as Sold</li>
+        <li>Delete your listings</li>
+        <li>Claim your future Garage Profile</li>
+      </ul>
+    </div>
+
+    <div class="pk-actions">
+      <button class="pk-btn-copy" id="pk-btn-copy">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy Key
+      </button>
+      <button class="pk-btn-qr" id="pk-btn-qr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3M17 17h3v3M14 20h3"/></svg>
+        Download QR
+      </button>
+    </div>
+
+    <div class="pk-manage-link">
+      <a href="manage.html" id="pk-manage-link">Manage my listings →</a>
+    </div>
+
+    <button class="pk-close" id="pk-close">Done — view marketplace</button>
+  </div>
+</div>
 
 <script>
   // ── Touch hover state for pillar cards ──
@@ -1607,33 +1739,171 @@
     return photoUrls;
   }
 
+  // ============================================================
+  // PERFORMANCE KEY SYSTEM
+  // ============================================================
+
+  // Generate a cryptographically secure Performance Key
+  // Format: PC-XXXX-XXXX (alpha-numeric, uppercase, no ambiguous chars)
+  function generatePerformanceKey(){
+    var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no I,O,0,1 to avoid confusion
+    var crypto = window.crypto || window.msCrypto;
+    var arr = new Uint8Array(8);
+    crypto.getRandomValues(arr);
+    var part1 = '', part2 = '';
+    for(var i = 0; i < 4; i++) part1 += chars[arr[i] % chars.length];
+    for(var i = 4; i < 8; i++) part2 += chars[arr[i] % chars.length];
+    return 'PC-' + part1 + '-' + part2;
+  }
+
+  // Format user-entered key to PC-XXXX-XXXX
+  function normaliseKey(raw){
+    var clean = raw.replace(/[^A-Z0-9]/gi,'').toUpperCase();
+    if(clean.length === 8) return 'PC-' + clean.slice(0,4) + '-' + clean.slice(4,8);
+    return null;
+  }
+
+  // Lookup an existing seller by Performance Key
+  async function lookupSeller(perfKey){
+    var res = await sb.from('sellers').select('*').eq('performance_key', perfKey).single();
+    if(res.error || !res.data) return null;
+    return res.data;
+  }
+
+  // Create a new seller row
+  async function createSeller(perfKey, instagram){
+    var res = await sb.from('sellers')
+      .insert([{ performance_key: perfKey, instagram: instagram || null }])
+      .select().single();
+    if(res.error) throw new Error('Could not create seller record: ' + res.error.message);
+    return res.data;
+  }
+
+  // Update seller's instagram if key matches and handle changed
+  async function updateSellerInstagram(sellerId, instagram){
+    await sb.from('sellers').update({ instagram: instagram, updated_at: new Date().toISOString() }).eq('seller_id', sellerId);
+  }
+
+  // Show the Performance Key success screen
+  function showPerfKeySuccess(perfKey){
+    document.getElementById('pk-key-display').textContent = perfKey;
+    document.getElementById('pk-overlay').style.display = 'flex';
+    document.getElementById('pk-manage-link').href = 'manage.html?key=' + encodeURIComponent(perfKey);
+  }
+
+  // Copy key to clipboard
+  document.getElementById('pk-btn-copy').addEventListener('click', function(){
+    var key = document.getElementById('pk-key-display').textContent;
+    navigator.clipboard.writeText(key).then(function(){
+      var btn = document.getElementById('pk-btn-copy');
+      var orig = btn.innerHTML;
+      btn.textContent = '✓ Copied!';
+      setTimeout(function(){ btn.innerHTML = orig; }, 2000);
+    });
+  });
+
+  // QR code download — generates a QR linking to the manage page
+  document.getElementById('pk-btn-qr').addEventListener('click', function(){
+    var key = document.getElementById('pk-key-display').textContent;
+    var manageUrl = window.location.origin + '/manage.html?key=' + encodeURIComponent(key);
+    // Use QR Server API (free, no key needed)
+    var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&bgcolor=070808&color=3DC9F0&data=' + encodeURIComponent(manageUrl);
+    var a = document.createElement('a');
+    a.href = qrUrl;
+    a.download = key + '-QR.png';
+    a.target = '_blank';
+    a.click();
+  });
+
+  // Close success screen
+  document.getElementById('pk-close').addEventListener('click', function(){
+    document.getElementById('pk-overlay').style.display = 'none';
+    loadListings();
+  });
+
+  // Live format the key input as user types
+  document.getElementById('perf-key-input').addEventListener('input', function(){
+    var raw = this.value.replace(/[^A-Z0-9]/gi,'').toUpperCase();
+    if(raw.length > 4) raw = raw.slice(0,4) + '-' + raw.slice(4,8);
+    this.value = raw;
+    document.getElementById('perf-key-status').style.display = 'none';
+  });
+
   // ── Submit handler ──
   document.getElementById('step3-submit').addEventListener('click', async function(){
     var btn    = document.getElementById('step3-submit');
     var errEl  = document.getElementById('submit-error');
     errEl.style.display = 'none';
 
-    // Validate required fields
     var titleVal = document.getElementById('listing-title').value.trim();
-    var igVal    = document.getElementById('listing-instagram').value.trim();
+    var igVal    = document.getElementById('listing-instagram').value.trim().replace(/^@/,'');
+    var keyRaw   = document.getElementById('perf-key-input').value.trim();
+
     if (!titleVal) { showError('Please add a listing title.'); return; }
     if (!igVal)    { showError('Please add your Instagram handle so buyers can reach you.'); return; }
 
     btn.textContent = 'Saving...';
     btn.disabled    = true;
 
-    function showError(msg) {
-      errEl.textContent    = msg;
-      errEl.style.display  = 'block';
-      btn.textContent      = 'Post listing';
-      btn.disabled         = false;
+    function showError(msg){
+      errEl.textContent   = msg;
+      errEl.style.display = 'block';
+      btn.textContent     = 'Post listing';
+      btn.disabled        = false;
     }
 
     try {
       var formData = collectFormData(selectedCat);
+      var isNewSeller = false;
+      var perfKey, seller;
 
-      // ── 1. INSERT LISTING ROW ──────────────────────────────────
-      dbg('[submit] Inserting listing row into Supabase...');
+      // ── 1. RESOLVE PERFORMANCE KEY ────────────────────────────
+      if(keyRaw){
+        // User entered an existing key
+        var normKey = normaliseKey(keyRaw);
+        if(!normKey){
+          showError('Invalid Performance Key format. Expected format: XXXX-XXXX');
+          return;
+        }
+        perfKey = normKey;
+        btn.textContent = 'Verifying key...';
+        seller = await lookupSeller(perfKey);
+
+        if(!seller){
+          showError('Performance Key not found. Please check the key and try again, or leave it blank to generate a new one.');
+          return;
+        }
+
+        // Key found — check Instagram handle
+        if(seller.instagram && seller.instagram.toLowerCase() !== igVal.toLowerCase()){
+          // Handle has changed — update it (per design decision)
+          await updateSellerInstagram(seller.seller_id, igVal);
+          seller.instagram = igVal;
+          dbg('[perf-key] Instagram handle updated for seller', seller.seller_id);
+        }
+
+        dbg('[perf-key] Existing seller found:', seller.seller_id, perfKey);
+
+      } else {
+        // No key entered — generate a new one
+        btn.textContent = 'Generating key...';
+        perfKey = generatePerformanceKey();
+
+        // Collision check (astronomically unlikely but correct to verify)
+        var collision = await lookupSeller(perfKey);
+        if(collision){
+          // Regenerate once — collision probability is negligible
+          perfKey = generatePerformanceKey();
+        }
+
+        seller = await createSeller(perfKey, igVal);
+        isNewSeller = true;
+        dbg('[perf-key] New seller created:', seller.seller_id, perfKey);
+      }
+
+      // ── 2. INSERT LISTING ROW ─────────────────────────────────
+      btn.textContent = 'Saving listing...';
+      dbg('[submit] Inserting listing...');
 
       var insertRes = await sb.from('listings').insert([{
         category:    formData.category,
@@ -1642,106 +1912,69 @@
         condition:   formData.condition,
         location:    formData.location,
         description: formData.description,
-        instagram:   formData.instagram,
+        instagram:   igVal,
         details:     formData.details,
         photo_urls:  [],
-        status:      'active'
+        status:      'active',
+        seller_id:   seller.seller_id
       }]).select().single();
 
       dbg('[submit] Insert response:', JSON.stringify(insertRes, null, 2));
 
-      if (insertRes.error) {
-        var iErr = '[submit] INSERT FAILED: ' + JSON.stringify(insertRes.error);
-        dbgError(iErr);
-        dbgAlert(iErr);
+      if(insertRes.error){
+        dbgError('[submit] INSERT FAILED:', insertRes.error);
         throw new Error('Could not save your listing. Please try again.');
       }
 
       var listing = insertRes.data;
-      dbg('[submit] Listing created. Full data:', JSON.stringify(listing, null, 2));
-      dbg('[submit] listing.id =', listing.id, '| type:', typeof listing.id);
+      dbg('[submit] Listing created. ID:', listing.id);
 
-      if (!listing.id && listing.id !== 0) {
-        var noId = '[submit] listing.id is missing from insert response. Cannot upload photos.';
-        dbgError(noId);
-        dbgAlert(noId);
+      if(!listing.id && listing.id !== 0){
         throw new Error('Something went wrong while saving your listing. Please try again.');
       }
 
-      // ── 2. UPLOAD PHOTOS ────────────────────────────────────────
+      // ── 3. UPLOAD PHOTOS ──────────────────────────────────────
       var photoInput = document.getElementById('photo-input');
-      var photoFiles = Array.from(photoInput.files).slice(0, 10);
+      var photoFiles = Array.from(photoInput.files).slice(0,10);
+      var photoUrls  = [];
 
-      dbg('[submit] Photo files selected:', photoFiles.length);
-
-      var photoUrls = [];
-      if (photoFiles.length > 0) {
-        btn.textContent = 'Uploading photos... (0/' + photoFiles.length + ')';
+      if(photoFiles.length > 0){
+        btn.textContent = 'Uploading photos...';
         photoUrls = await uploadPhotos(photoFiles, listing.id);
-        dbg('[submit] Photo upload complete. URLs:', JSON.stringify(photoUrls));
-      } else {
-        dbg('[submit] No photos selected — skipping upload.');
+        dbg('[submit] Photos uploaded:', photoUrls.length);
       }
 
-      // ── 3. UPDATE LISTING WITH PHOTO URLS ───────────────────────
-      if (photoUrls.length > 0) {
+      // ── 4. UPDATE LISTING WITH PHOTO URLS ────────────────────
+      if(photoUrls.length > 0){
         var updatePayload = { photo_urls: photoUrls };
-        dbg('[submit] Sending update to listings table:');
-        dbg('  listing.id    :', listing.id);
-        dbg('  update payload:', JSON.stringify(updatePayload, null, 2));
-
-        var updateRes = await sb
-          .from('listings')
-          .update(updatePayload)
-          .eq('id', listing.id)
-          .select();
-
-        // ── DIAGNOSTIC: always show update result on screen ──
-        dbgAlert({
-          step:         'UPDATE photo_urls',
-          listing_id:   listing.id,
-          urls_sent:    photoUrls,
-          error:        updateRes.error,
-          rows_updated: updateRes.data ? updateRes.data.length : 0,
-          returned_row: updateRes.data ? updateRes.data[0] : null
-        });
-
+        dbg('[submit] Updating photo_urls...');
+        var updateRes = await sb.from('listings').update(updatePayload).eq('id', listing.id).select();
+        dbgAlert({ step:'UPDATE photo_urls', listing_id:listing.id, error:updateRes.error, rows_updated:updateRes.data?updateRes.data.length:0 });
         dbg('[submit] Update response:', JSON.stringify(updateRes, null, 2));
-
-        if (updateRes.error) {
-          var uErr = '[submit] UPDATE FAILED: ' + JSON.stringify(updateRes.error);
-          dbgError(uErr);
-          dbgAlert(uErr);
-          throw new Error('Something went wrong while uploading your listing. Please try again.');
-        }
-
-        if (!updateRes.data || updateRes.data.length === 0) {
-          var noUpdate = '[submit] UPDATE returned no rows. The listing may not have been found by id=' + listing.id + '. Check RLS update policy.';
-          dbgError(noUpdate);
-          dbgAlert(noUpdate);
-          // Don't throw here in production — listing was saved, photos just didn't attach.
-          // In debug mode the alert above will surface it for investigation.
-        } else {
-          dbg('[submit] Update confirmed. Updated row:', JSON.stringify(updateRes.data[0], null, 2));
-        }
+        if(updateRes.error){ dbgError('[submit] UPDATE FAILED:', updateRes.error); }
+        if(!updateRes.data||updateRes.data.length===0){ dbgError('[submit] UPDATE returned no rows — check RLS update policy'); }
       }
 
-      // ── 4. SUCCESS ───────────────────────────────────────────────
-      dbg('[submit] Listing fully saved. Closing modal.');
+      // ── 5. SUCCESS ────────────────────────────────────────────
+      dbg('[submit] Listing fully saved. Seller:', perfKey);
       closeModal();
       resetForm();
-      loadListings();
 
-      var banner = document.createElement('div');
-      banner.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#0E6E8C;color:#fff;font-family:Inter,sans-serif;font-size:14px;padding:12px 24px;border-radius:8px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
-      banner.textContent = '✓ Listing posted successfully!';
-      document.body.appendChild(banner);
-      setTimeout(function(){ banner.remove(); }, 4000);
+      if(isNewSeller){
+        // Show the Performance Key success screen for new sellers
+        showPerfKeySuccess(perfKey);
+      } else {
+        // Returning seller — just show a brief banner
+        var banner = document.createElement('div');
+        banner.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#0E6E8C;color:#fff;font-family:Inter,sans-serif;font-size:14px;padding:12px 24px;border-radius:8px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.4);text-align:center;';
+        banner.innerHTML = '✓ Listing posted — attached to <strong>' + perfKey + '</strong>';
+        document.body.appendChild(banner);
+        setTimeout(function(){ banner.remove(); }, 5000);
+        loadListings();
+      }
 
-    } catch(err) {
+    } catch(err){
       dbgError('[submit] Caught exception:', err);
-      dbgError('[submit] Error message:', err && err.message ? err.message : String(err));
-      // In production show a clean message; in debug show the real error
       var userMsg = (DEBUG && err && err.message)
         ? 'Error: ' + err.message
         : 'Something went wrong while uploading your listing. Please try again.';
@@ -1758,6 +1991,8 @@
     document.getElementById('listing-instagram').value = '';
     document.getElementById('photo-input').value = '';
     document.getElementById('photo-previews').innerHTML = '';
+    document.getElementById('perf-key-input').value = '';
+    document.getElementById('perf-key-status').style.display = 'none';
     ['v-make','v-model','v-year','v-mileage','v-location','v-desc',
      'w-diam','w-width','w-offset','w-bolt','w-tiresize','w-brand','w-location','w-desc',
      'p-title','p-make','p-model','p-year-from','p-year-to','p-location','p-desc',

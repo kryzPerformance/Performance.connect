@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Listings — Performance Connect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#070808;--panel:#111415;--panel-2:#161B1C;--line:#23292b;
+    --cyan:#1FA9CF;--cyan-bright:#3DC9F0;
+    --steel:#8FA0A6;--steel-dim:#5C6A6E;--white:#F2F6F7;
+    --red:#E84545;--amber:#F0B83D;--green:#3DF08A;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--black);color:var(--white);font-family:'Inter',sans-serif;min-height:100vh;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:'Inter',sans-serif;cursor:pointer;border:none;background:none;}
+
+  .bg-grid{
+    position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      linear-gradient(to right,rgba(255,255,255,0.015) 1px,transparent 1px),
+      linear-gradient(to bottom,rgba(255,255,255,0.015) 1px,transparent 1px);
+    background-size:64px 64px;
+  }
+  .page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;}
+
+  /* HEADER */
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px clamp(16px,5vw,56px);border-bottom:0.5px solid var(--line);
+    background:rgba(7,8,8,0.92);backdrop-filter:blur(12px);
+    position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:12px;
+  }
+  .wordmark{display:flex;align-items:center;gap:12px;text-decoration:none;}
+  .wordmark img{height:28px;width:auto;}
+  .wordmark span{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.18em;color:var(--white);}
+  .wordmark span .accent{color:var(--cyan-bright);}
+  .site-nav{display:flex;align-items:center;gap:22px;}
+  .nav-link{font-size:13px;font-weight:500;color:var(--steel);text-decoration:none;transition:color 0.15s;}
+  .nav-link:hover,.nav-link.active{color:var(--cyan-bright);}
+
+  /* MAIN */
+  main{flex:1;max-width:860px;margin:0 auto;width:100%;padding:40px clamp(16px,5vw,40px) 80px;}
+
+  /* KEY ENTRY STATE */
+  .key-entry{text-align:center;max-width:480px;margin:0 auto;padding-top:20px;}
+  .key-entry .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:14px;}
+  .key-entry h1{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;
+    font-size:clamp(28px,5vw,38px);text-transform:uppercase;
+    line-height:1.05;margin-bottom:10px;
+  }
+  .key-entry p{font-size:14px;color:var(--steel);line-height:1.6;margin-bottom:32px;}
+
+  .key-input-wrap{
+    display:flex;border:1px solid var(--line);border-radius:10px;
+    overflow:hidden;background:var(--panel);margin-bottom:14px;
+  }
+  .key-prefix{
+    padding:14px 16px;background:rgba(31,169,207,0.08);
+    border-right:1px solid var(--line);
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;
+    letter-spacing:0.1em;color:var(--cyan-bright);white-space:nowrap;
+  }
+  .key-input-wrap input{
+    flex:1;padding:14px 16px;background:transparent;border:none;outline:none;
+    color:var(--white);font-size:15px;font-family:'Inter',sans-serif;
+    letter-spacing:0.12em;text-transform:uppercase;
+  }
+  .key-input-wrap input::placeholder{color:var(--steel-dim);letter-spacing:0.06em;text-transform:none;}
+  .btn-lookup{
+    width:100%;padding:14px;border-radius:10px;
+    background:var(--cyan-bright);color:#03171D;
+    font-family:'Rajdhani',sans-serif;font-weight:700;
+    font-size:15px;letter-spacing:0.08em;text-transform:uppercase;
+    transition:background 0.15s;cursor:pointer;border:none;
+  }
+  .btn-lookup:hover{background:#62D6F5;}
+  .lookup-error{
+    font-size:13px;color:#E46B6B;margin-top:10px;
+    padding:10px 14px;background:rgba(228,107,107,0.08);
+    border:1px solid rgba(228,107,107,0.2);border-radius:8px;display:none;
+  }
+  .key-hint{font-size:12px;color:var(--steel-dim);margin-top:14px;line-height:1.5;}
+  .key-hint a{color:var(--cyan);}
+
+  /* DASHBOARD STATE */
+  .dashboard{display:none;}
+  .dash-header{
+    display:flex;align-items:flex-start;justify-content:space-between;
+    gap:16px;margin-bottom:28px;flex-wrap:wrap;
+  }
+  .dash-seller{flex:1;min-width:0;}
+  .dash-eyebrow{font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:8px;}
+  .dash-key{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-size:26px;
+    letter-spacing:0.1em;color:var(--white);margin-bottom:4px;
+  }
+  .dash-ig{font-size:14px;color:var(--steel);}
+  .dash-stats{
+    display:flex;gap:20px;flex-wrap:wrap;
+  }
+  .stat-pill{
+    text-align:center;padding:10px 18px;border-radius:10px;
+    background:var(--panel);border:0.5px solid var(--line);
+  }
+  .stat-num{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px;color:var(--cyan-bright);}
+  .stat-label{font-size:11px;color:var(--steel-dim);text-transform:uppercase;letter-spacing:0.06em;}
+
+  .section-label{
+    font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--steel-dim);margin-bottom:16px;
+    padding-bottom:10px;border-bottom:0.5px solid var(--line);
+  }
+
+  /* LISTING MANAGE CARDS */
+  .manage-grid{display:flex;flex-direction:column;gap:12px;}
+  .manage-card{
+    display:grid;grid-template-columns:96px 1fr auto;
+    gap:16px;align-items:center;
+    background:var(--panel);border:0.5px solid var(--line);
+    border-radius:12px;padding:14px 16px;
+    transition:border-color 0.2s;
+  }
+  .manage-card:hover{border-color:rgba(31,169,207,0.25);}
+  .manage-card.is-sold{opacity:0.55;}
+  .manage-card.is-archived{opacity:0.4;}
+  .manage-thumb{
+    width:96px;height:72px;border-radius:8px;overflow:hidden;
+    background:var(--panel-2);flex-shrink:0;
+  }
+  .manage-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .manage-thumb .no-img{
+    width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+    color:var(--steel-dim);
+  }
+  .manage-thumb .no-img svg{width:22px;height:22px;opacity:0.4;}
+  .manage-info{min-width:0;}
+  .manage-status{
+    display:inline-block;font-size:9px;font-weight:700;letter-spacing:0.1em;
+    text-transform:uppercase;padding:3px 8px;border-radius:4px;margin-bottom:5px;
+  }
+  .status-active{background:rgba(61,240,138,0.1);color:var(--green);}
+  .status-sold{background:rgba(248,168,61,0.1);color:var(--amber);}
+  .status-archived{background:rgba(255,255,255,0.06);color:var(--steel-dim);}
+  .manage-title{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;
+    text-transform:uppercase;color:var(--white);margin-bottom:3px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .manage-meta{font-size:12px;color:var(--steel-dim);}
+  .manage-price{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;color:var(--cyan-bright);}
+
+  .manage-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+  .act-btn{
+    font-size:11.5px;font-weight:600;padding:6px 12px;border-radius:6px;
+    border:0.5px solid var(--line);color:var(--steel);
+    transition:all 0.15s;cursor:pointer;white-space:nowrap;background:transparent;
+    text-align:center;
+  }
+  .act-btn:hover{color:var(--white);border-color:var(--steel);}
+  .act-btn.sold-btn:hover{color:var(--amber);border-color:var(--amber);}
+  .act-btn.del-btn:hover{color:var(--red);border-color:var(--red);}
+  .act-btn.view-btn{color:var(--cyan);border-color:rgba(31,169,207,0.3);}
+  .act-btn.view-btn:hover{color:var(--cyan-bright);border-color:var(--cyan);}
+
+  /* future analytics placeholder */
+  .future-banner{
+    margin-top:32px;padding:18px 20px;border-radius:12px;
+    border:0.5px dashed var(--line);
+    display:flex;align-items:center;gap:14px;opacity:0.6;
+  }
+  .future-banner svg{width:22px;height:22px;color:var(--steel-dim);flex-shrink:0;}
+  .future-banner-text p{font-size:13px;font-weight:600;color:var(--steel);margin-bottom:2px;}
+  .future-banner-text span{font-size:11.5px;color:var(--steel-dim);}
+  .coming-soon-tag{
+    font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+    background:rgba(31,169,207,0.1);color:var(--cyan);padding:2px 7px;border-radius:4px;margin-left:6px;
+  }
+
+  /* empty / loading states */
+  .state-msg{text-align:center;padding:48px 0;color:var(--steel-dim);font-size:14px;}
+
+  /* confirm modal */
+  .confirm-overlay{
+    position:fixed;inset:0;background:rgba(4,5,5,0.8);backdrop-filter:blur(6px);
+    z-index:100;display:none;align-items:center;justify-content:center;padding:20px;
+  }
+  .confirm-overlay.open{display:flex;}
+  .confirm-box{
+    background:#0E1112;border:0.5px solid var(--line);border-radius:14px;
+    padding:28px 28px 22px;max-width:360px;width:100%;text-align:center;
+  }
+  .confirm-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;font-size:22px;text-transform:uppercase;margin-bottom:10px;}
+  .confirm-body{font-size:13.5px;color:var(--steel);line-height:1.6;margin-bottom:22px;}
+  .confirm-actions{display:flex;gap:10px;}
+  .confirm-cancel{flex:1;padding:11px;border-radius:8px;border:0.5px solid var(--line);background:transparent;color:var(--steel);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s;}
+  .confirm-cancel:hover{color:var(--white);border-color:var(--steel);}
+  .confirm-ok{flex:1;padding:11px;border-radius:8px;background:var(--red);border:none;color:var(--white);font-size:13px;font-weight:700;cursor:pointer;transition:background 0.15s;}
+  .confirm-ok:hover{background:#c73838;}
+
+  @media(max-width:600px){
+    .manage-card{grid-template-columns:72px 1fr;grid-template-rows:auto auto;}
+    .manage-thumb{width:72px;height:54px;}
+    .manage-actions{flex-direction:row;flex-wrap:wrap;grid-column:1/-1;}
+  }
+</style>
+</head>
+<body>
+<div class="bg-grid" aria-hidden="true"></div>
+
+<div class="page">
+  <header>
+    <a href="index.html" class="wordmark">
+      <img src="logo_transparent.png" alt="Performance Connect">
+      <span>PERFORMANCE<span class="accent">CONNECT</span></span>
+    </a>
+    <nav class="site-nav">
+      <a href="marketplace.html" class="nav-link">Marketplace</a>
+      <a href="affiliates.html" class="nav-link">Affiliates</a>
+      <a href="blog.html" class="nav-link">Blog</a>
+      <a href="manage.html" class="nav-link active">Manage</a>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- KEY ENTRY STATE -->
+    <div class="key-entry" id="key-entry">
+      <p class="eyebrow">Seller Portal</p>
+      <h1>Manage your<br><span style="color:var(--cyan-bright)">listings</span></h1>
+      <p>Enter your Performance Key to view, edit, and manage all listings attached to your seller identity.</p>
+
+      <div class="key-input-wrap">
+        <div class="key-prefix">PC</div>
+        <input type="text" id="key-field" placeholder="XXXX-XXXX" maxlength="9"
+          autocomplete="off" autocorrect="off" spellcheck="false">
+      </div>
+      <button class="btn-lookup" id="btn-lookup">Load my listings</button>
+      <div class="lookup-error" id="lookup-error"></div>
+
+      <p class="key-hint">
+        Don't have a Performance Key yet?
+        <a href="marketplace.html">List something</a> — you'll receive one automatically.<br><br>
+        Lost your key? <a href="mailto:info@performanceconnect.ca?subject=Performance Key Recovery">Contact us</a>.
+      </p>
+    </div>
+
+    <!-- DASHBOARD STATE -->
+    <div class="dashboard" id="dashboard">
+      <div class="dash-header">
+        <div class="dash-seller">
+          <div class="dash-eyebrow">Performance Key</div>
+          <div class="dash-key" id="dash-key">PC-XXXX-XXXX</div>
+          <div class="dash-ig" id="dash-ig"></div>
+        </div>
+        <div class="dash-stats">
+          <div class="stat-pill">
+            <div class="stat-num" id="stat-active">0</div>
+            <div class="stat-label">Active</div>
+          </div>
+          <div class="stat-pill">
+            <div class="stat-num" id="stat-sold">0</div>
+            <div class="stat-label">Sold</div>
+          </div>
+          <div class="stat-pill">
+            <div class="stat-num" id="stat-total">0</div>
+            <div class="stat-label">Total</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Your Listings</div>
+      <div class="manage-grid" id="manage-grid">
+        <div class="state-msg">Loading...</div>
+      </div>
+
+      <!-- Future features -->
+      <div class="future-banner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+        <div class="future-banner-text">
+          <p>Analytics & Insights <span class="coming-soon-tag">Soon</span></p>
+          <span>Views, enquiries, and performance data for every listing.</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirm-title">Are you sure?</div>
+    <p class="confirm-body" id="confirm-body"></p>
+    <div class="confirm-actions">
+      <button class="confirm-cancel" id="confirm-cancel">Cancel</button>
+      <button class="confirm-ok" id="confirm-ok">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  var SUPABASE_URL = 'https://myapluhgfpnyjsfrflhd.supabase.co';
+  var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15YXBsdWhnZnBueWpzZnJmbGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwODcxNDYsImV4cCI6MjA5NzY2MzE0Nn0.j_Xe_J1uvBA-w4Sag1tl3Yp7zqlaEmkQzt2eO6xz1vg';
+  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  function esc(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function catLabel(c){ return {vehicles:'Vehicle',wheels:'Wheels & Tires',parts:'Parts',tools:'Tools',fluids:'Fluids & Products'}[c]||c; }
+  function fmtDate(iso){ return new Date(iso).toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'}); }
+  function normaliseKey(raw){ var c=raw.replace(/[^A-Z0-9]/gi,'').toUpperCase(); if(c.length===8) return 'PC-'+c.slice(0,4)+'-'+c.slice(4,8); return null; }
+
+  // ── key input formatting ──
+  var keyField = document.getElementById('key-field');
+  keyField.addEventListener('input', function(){
+    var raw = this.value.replace(/[^A-Z0-9]/gi,'').toUpperCase();
+    if(raw.length > 4) raw = raw.slice(0,4)+'-'+raw.slice(4,8);
+    this.value = raw;
+  });
+  keyField.addEventListener('keydown', function(e){
+    if(e.key === 'Enter') document.getElementById('btn-lookup').click();
+  });
+
+  // ── pre-fill from URL ?key= ──
+  var params = new URLSearchParams(window.location.search);
+  var urlKey = params.get('key');
+  if(urlKey){
+    var stripped = urlKey.replace('PC-','').replace(/[^A-Z0-9]/gi,'').toUpperCase();
+    if(stripped.length >= 4) keyField.value = stripped.slice(0,4) + (stripped.length > 4 ? '-'+stripped.slice(4,8) : '');
+  }
+
+  // ── state ──
+  var currentSeller = null;
+  var allListings   = [];
+
+  // ── confirm modal ──
+  var pendingAction = null;
+  function openConfirm(title, body, okLabel, okClass, onOk){
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-body').textContent  = body;
+    var okBtn = document.getElementById('confirm-ok');
+    okBtn.textContent = okLabel || 'Confirm';
+    okBtn.className   = 'confirm-ok' + (okClass ? ' '+okClass : '');
+    document.getElementById('confirm-overlay').classList.add('open');
+    pendingAction = onOk;
+  }
+  document.getElementById('confirm-cancel').addEventListener('click', function(){
+    document.getElementById('confirm-overlay').classList.remove('open');
+    pendingAction = null;
+  });
+  document.getElementById('confirm-ok').addEventListener('click', async function(){
+    document.getElementById('confirm-overlay').classList.remove('open');
+    if(pendingAction){ await pendingAction(); pendingAction = null; }
+  });
+
+  // ── lookup & load ──
+  document.getElementById('btn-lookup').addEventListener('click', async function(){
+    var raw = keyField.value.trim();
+    var perfKey = normaliseKey(raw);
+    var errEl = document.getElementById('lookup-error');
+    errEl.style.display = 'none';
+
+    if(!perfKey){
+      errEl.textContent = 'Invalid format. Enter your key as XXXX-XXXX.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    this.textContent = 'Loading...';
+    this.disabled = true;
+
+    var sellerRes = await sb.from('sellers').select('*').eq('performance_key', perfKey).single();
+
+    this.textContent = 'Load my listings';
+    this.disabled = false;
+
+    if(sellerRes.error || !sellerRes.data){
+      errEl.textContent = 'Performance Key not found. Check the key and try again.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    currentSeller = sellerRes.data;
+    await loadDashboard(perfKey, currentSeller);
+  });
+
+  async function loadDashboard(perfKey, seller){
+    document.getElementById('key-entry').style.display  = 'none';
+    document.getElementById('dashboard').style.display  = 'block';
+    document.getElementById('dash-key').textContent     = perfKey;
+    document.getElementById('dash-ig').textContent      = seller.instagram ? '@' + seller.instagram : '';
+
+    // Update URL without reload
+    history.replaceState(null,'','manage.html?key='+encodeURIComponent(perfKey));
+
+    var res = await sb.from('listings')
+      .select('*')
+      .eq('seller_id', seller.seller_id)
+      .order('created_at',{ascending:false});
+
+    if(res.error || !res.data){
+      document.getElementById('manage-grid').innerHTML = '<div class="state-msg">Could not load listings.</div>';
+      return;
+    }
+
+    allListings = res.data;
+
+    // Stats
+    var active   = allListings.filter(function(l){ return l.status === 'active'; }).length;
+    var sold     = allListings.filter(function(l){ return l.status === 'sold'; }).length;
+    document.getElementById('stat-active').textContent = active;
+    document.getElementById('stat-sold').textContent   = sold;
+    document.getElementById('stat-total').textContent  = allListings.length;
+
+    renderListings();
+  }
+
+  function renderListings(){
+    var grid = document.getElementById('manage-grid');
+    if(!allListings.length){
+      grid.innerHTML = '<div class="state-msg">No listings found for this Performance Key.</div>';
+      return;
+    }
+    grid.innerHTML = '';
+    allListings.forEach(function(l){ grid.appendChild(buildManageCard(l)); });
+  }
+
+  function buildManageCard(l){
+    var thumb = l.photo_urls && l.photo_urls.length
+      ? '<img src="'+esc(l.photo_urls[0])+'" alt="'+esc(l.title)+'" loading="lazy">'
+      : '<div class="no-img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
+
+    var statusClass  = {active:'status-active',sold:'status-sold',archived:'status-archived'}[l.status] || 'status-archived';
+    var statusLabel  = {active:'Active',sold:'Sold',archived:'Archived',removed:'Removed'}[l.status] || l.status;
+    var priceStr     = l.price ? '$'+Number(l.price).toLocaleString() : 'Make offer';
+
+    var card = document.createElement('div');
+    card.className = 'manage-card' + (l.status !== 'active' ? ' is-'+l.status : '');
+    card.dataset.id = l.id;
+
+    card.innerHTML =
+      '<div class="manage-thumb">'+thumb+'</div>' +
+      '<div class="manage-info">' +
+        '<span class="manage-status '+statusClass+'">'+statusLabel+'</span>' +
+        '<div class="manage-title">'+esc(l.title)+'</div>' +
+        '<div class="manage-meta">'+esc(catLabel(l.category))+' · '+esc(fmtDate(l.created_at))+'</div>' +
+        '<div class="manage-price">'+esc(priceStr)+'</div>' +
+      '</div>' +
+      '<div class="manage-actions">' +
+        '<a class="act-btn view-btn" href="listing.html?id='+l.id+'" target="_blank">View</a>' +
+        (l.status === 'active'
+          ? '<button class="act-btn sold-btn" data-action="sold" data-id="'+l.id+'">Mark Sold</button>'
+          : l.status === 'sold'
+            ? '<button class="act-btn" data-action="reactivate" data-id="'+l.id+'">Reactivate</button>'
+            : '') +
+        (l.status !== 'archived'
+          ? '<button class="act-btn" data-action="archive" data-id="'+l.id+'">Archive</button>'
+          : '<button class="act-btn" data-action="reactivate" data-id="'+l.id+'">Reactivate</button>') +
+        '<button class="act-btn del-btn" data-action="delete" data-id="'+l.id+'">Delete</button>' +
+      '</div>';
+
+    // action button handlers
+    card.querySelectorAll('[data-action]').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.preventDefault();
+        var action = this.dataset.action;
+        var lid    = this.dataset.id;
+        handleAction(action, lid, l.title);
+      });
+    });
+
+    return card;
+  }
+
+  async function handleAction(action, listingId, title){
+    if(action === 'sold'){
+      openConfirm(
+        'Mark as Sold',
+        '"' + title + '" will be marked as sold and hidden from the marketplace.',
+        'Mark Sold', '',
+        async function(){ await updateStatus(listingId, 'sold'); }
+      );
+    } else if(action === 'archive'){
+      openConfirm(
+        'Archive Listing',
+        '"' + title + '" will be archived and hidden from the marketplace. You can reactivate it anytime.',
+        'Archive', '',
+        async function(){ await updateStatus(listingId, 'archived'); }
+      );
+    } else if(action === 'reactivate'){
+      await updateStatus(listingId, 'active');
+    } else if(action === 'delete'){
+      openConfirm(
+        'Delete Listing',
+        'Permanently delete "' + title + '"? This cannot be undone.',
+        'Delete', 'del-confirm',
+        async function(){ await deleteListingById(listingId); }
+      );
+    }
+  }
+
+  async function updateStatus(listingId, newStatus){
+    var res = await sb.from('listings').update({ status: newStatus }).eq('id', listingId).select();
+    if(res.error){ alert('Could not update listing. Please try again.'); return; }
+    // Update local state and re-render
+    allListings = allListings.map(function(l){
+      if(String(l.id) === String(listingId)){ l.status = newStatus; }
+      return l;
+    });
+    // Update stats
+    var active = allListings.filter(function(l){ return l.status === 'active'; }).length;
+    var sold   = allListings.filter(function(l){ return l.status === 'sold'; }).length;
+    document.getElementById('stat-active').textContent = active;
+    document.getElementById('stat-sold').textContent   = sold;
+    renderListings();
+  }
+
+  async function deleteListingById(listingId){
+    var res = await sb.from('listings').delete().eq('id', listingId);
+    if(res.error){ alert('Could not delete listing. Please try again.'); return; }
+    allListings = allListings.filter(function(l){ return String(l.id) !== String(listingId); });
+    document.getElementById('stat-total').textContent = allListings.length;
+    var active = allListings.filter(function(l){ return l.status === 'active'; }).length;
+    document.getElementById('stat-active').textContent = active;
+    renderListings();
+  }
+
+  // ── auto-load from URL key ──
+  if(urlKey && urlKey.length >= 8){
+    document.getElementById('btn-lookup').click();
+  }
+</script>
+</body>
+</html>
