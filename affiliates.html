@@ -40,9 +40,16 @@
   .wordmark img{height:30px;width:auto;}
   .wordmark span{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.18em;color:var(--white);}
   .wordmark span .accent{color:var(--cyan-bright);}
-  .site-nav{display:flex;align-items:center;gap:24px;}
-  .nav-link{font-size:13px;font-weight:500;color:var(--steel);text-decoration:none;transition:color 0.15s;}
-  .nav-link:hover,.nav-link.is-current{color:var(--cyan-bright);}
+  .site-nav{display:flex;align-items:center;gap:8px;}
+  .nav-link{
+    font-family:'Inter',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.03em;
+    color:var(--steel);text-decoration:none;
+    padding:8px 16px;border-radius:999px;
+    border:0.5px solid var(--line);background:rgba(255,255,255,0.03);
+    transition:color 0.15s ease,border-color 0.15s ease,background 0.15s ease;
+  }
+  .nav-link:hover{color:var(--cyan-bright);border-color:rgba(31,169,207,0.45);background:rgba(31,169,207,0.07);}
+  .nav-link.is-current,.nav-link.active{color:var(--cyan-bright);border-color:rgba(31,169,207,0.35);background:rgba(31,169,207,0.06);}
   .locale-tag{font-size:11px;letter-spacing:0.08em;color:var(--steel-dim);border:0.5px solid var(--line);padding:5px 11px;border-radius:999px;}
 
   .page-hero{padding:32px clamp(16px,5vw,56px) 20px;display:flex;flex-direction:column;gap:12px;}

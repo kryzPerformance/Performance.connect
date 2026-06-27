@@ -113,17 +113,31 @@
   .site-nav{
     display:flex;
     align-items:center;
-    gap:28px;
+    gap:8px;
   }
   .nav-link{
     font-family:'Inter', sans-serif;
-    font-size:13.5px;
-    font-weight:500;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:0.03em;
     color:var(--steel);
     text-decoration:none;
-    transition:color 0.15s ease;
+    padding:8px 16px;
+    border-radius:999px;
+    border:0.5px solid var(--line);
+    background:rgba(255,255,255,0.03);
+    transition:color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
   }
-  .nav-link:hover{ color:var(--cyan-bright); }
+  .nav-link:hover{
+    color:var(--cyan-bright);
+    border-color:rgba(31,169,207,0.45);
+    background:rgba(31,169,207,0.07);
+  }
+  .nav-link.is-current{
+    color:var(--cyan-bright);
+    border-color:rgba(31,169,207,0.35);
+    background:rgba(31,169,207,0.06);
+  }
 
   main{
     flex:1;
@@ -571,7 +585,7 @@
       <div class="hero">
         <img class="logo-mark" src="logo_transparent.png" alt="Performance Connect logo">
 
-        <p class="eyebrow">Launching soon</p>
+        <p class="eyebrow">Beta is Live</p>
 
         <h1>Buy. Sell. Build.<br><span class="accent">Connect.</span></h1>
         <p class="subline">Every scene. One platform.<br>The marketplace for performance cars, parts, and the people who build them.</p>
