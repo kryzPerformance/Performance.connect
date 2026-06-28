@@ -194,150 +194,194 @@
     }
   }
 
+  /* ── FLIP CARD SYSTEM ── */
   .pillar-card{
     position:relative;
-    background:var(--panel);
+    cursor:pointer;
+    /* flip perspective */
+    perspective:1000px;
+    height:320px;
+    border-radius:16px;
+  }
+
+  /* the flipping inner wrapper */
+  .card-flipper{
+    position:relative;
+    width:100%;height:100%;
+    transform-style:preserve-3d;
+    transition:transform 0.55s cubic-bezier(0.4,0.2,0.2,1);
+    border-radius:16px;
+  }
+  .pillar-card.flipped .card-flipper{
+    transform:rotateY(180deg);
+  }
+
+  /* shared face styles */
+  .card-front,
+  .card-back{
+    position:absolute;inset:0;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
+    border-radius:16px;
     border:1px solid var(--line);
-    border-radius:16px;
-    padding:44px 28px 34px;
     overflow:hidden;
-    cursor:default;
-    transition:border-color 0.25s ease, background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    text-align:center;
   }
 
-  /* ambient corner glow, hidden until hover/focus */
-  .pillar-card::before{
-    content:"";
-    position:absolute;
-    inset:0;
-    background:radial-gradient(ellipse 280px 220px at 50% -10%, rgba(31,169,207,0.22) 0%, transparent 70%);
-    opacity:0;
-    z-index:2;
-    transition:opacity 0.3s ease;
-    pointer-events:none;
+  /* ── FRONT FACE ── */
+  .card-front{
+    background:var(--panel);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:32px 24px 24px;
+    transition:border-color 0.25s ease, box-shadow 0.25s ease;
   }
-
-  /* ---------- in-card video background ---------- */
-  .card-video{
-    position:absolute;
-    inset:0;
-    z-index:0;
-    overflow:hidden;
-    border-radius:16px;
-  }
-  .card-video video{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    object-position:center;
-    opacity:0;
-    transition:opacity 1.2s ease;
-    filter:grayscale(0.2) contrast(1.05);
-  }
-  .card-video video.loaded{
-    opacity:0.45;
-  }
-  /* darken the video so card text/icon always stay readable */
-  .card-video::after{
-    content:"";
-    position:absolute;
-    inset:0;
-    background:
-      linear-gradient(180deg, rgba(7,8,8,0.55) 0%, rgba(7,8,8,0.3) 40%, rgba(7,8,8,0.65) 100%);
-    pointer-events:none;
-  }
-
-  /* on hover, let the video breathe a little more */
-  .pillar-card:hover .card-video video,
-  .pillar-card:focus-visible .card-video video,
-  .pillar-card.touch-active .card-video video{
-    opacity:0.6;
-  }
-
-  /* make sure all card content sits above the video */
-  .pillar-icon{ z-index:3; }
-  .pillar-name{ z-index:3; }
-  .pillar-desc{ z-index:3; }
-  .pillar-badge{ z-index:3; }
-
-  .pillar-card:hover,
-  .pillar-card:focus-visible,
-  .pillar-card.touch-active{
+  .pillar-card:hover .card-front,
+  .pillar-card.touch-active .card-front{
     border-color:rgba(31,169,207,0.55);
-    background:var(--panel-hover);
-    transform:translateY(-4px);
     box-shadow:0 18px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(31,169,207,0.12);
   }
-  .pillar-card:hover::before,
-  .pillar-card:focus-visible::before,
-  .pillar-card.touch-active::before{
-    opacity:1;
+
+  /* ambient top glow on front */
+  .card-front::before{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(ellipse 280px 220px at 50% -10%, rgba(31,169,207,0.22) 0%, transparent 70%);
+    opacity:0;z-index:2;transition:opacity 0.3s ease;pointer-events:none;
   }
+  .pillar-card:hover .card-front::before,
+  .pillar-card.touch-active .card-front::before{ opacity:1; }
+
+  /* in-card video — front only */
+  .card-video{
+    position:absolute;inset:0;z-index:0;overflow:hidden;border-radius:16px;
+  }
+  .card-video video{
+    width:100%;height:100%;object-fit:cover;object-position:center;
+    opacity:0;transition:opacity 1.2s ease;
+    filter:grayscale(0.2) contrast(1.05);
+  }
+  .card-video video.loaded{ opacity:0.45; }
+  .card-video::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(7,8,8,0.55) 0%,rgba(7,8,8,0.3) 40%,rgba(7,8,8,0.65) 100%);
+    pointer-events:none;
+  }
+  .pillar-card:hover .card-video video,
+  .pillar-card.touch-active .card-video video{ opacity:0.6; }
 
   .pillar-icon{
-    width:96px;
-    height:auto;
-    margin-bottom:22px;
-    position:relative;
-    z-index:1;
+    width:88px;height:auto;margin-bottom:16px;
+    position:relative;z-index:3;
   }
-  .pillar-icon img{
-    width:100%;
-    height:auto;
-    display:block;
-    transition:filter 0.3s ease;
-  }
+  .pillar-icon img{ width:100%;height:auto;display:block;transition:filter 0.3s ease; }
   .pillar-card:hover .pillar-icon img,
-  .pillar-card:focus-visible .pillar-icon img,
   .pillar-card.touch-active .pillar-icon img{
     filter:drop-shadow(0 0 14px rgba(61,201,240,0.75)) drop-shadow(0 0 28px rgba(61,201,240,0.35));
   }
-
   .pillar-name{
-    font-family:'Rajdhani', sans-serif;
-    font-weight:700;
-    font-style:italic;
-    font-size:26px;
-    text-transform:uppercase;
-    letter-spacing:0.01em;
-    color:var(--white);
-    margin-bottom:10px;
-    position:relative;
-    z-index:1;
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;
+    font-size:22px;text-transform:uppercase;letter-spacing:0.01em;
+    color:var(--white);margin-bottom:8px;position:relative;z-index:3;
   }
   .pillar-desc{
-    font-size:13.5px;
-    color:var(--steel);
-    line-height:1.55;
-    margin-bottom:22px;
-    position:relative;
-    z-index:1;
+    font-size:12.5px;color:var(--steel);line-height:1.5;
+    position:relative;z-index:3;margin-bottom:0;
   }
 
-  .pillar-badge{
-    font-family:'Inter', sans-serif;
-    font-size:10.5px;
-    font-weight:700;
-    letter-spacing:0.14em;
-    text-transform:uppercase;
+  /* "tap to explore" hint */
+  .card-hint{
+    position:relative;z-index:3;
+    margin-top:auto;padding-top:14px;
+    display:flex;align-items:center;justify-content:center;gap:5px;
+    font-size:10.5px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;
+    color:rgba(61,201,240,0.5);transition:color 0.2s;
+  }
+  .pillar-card:hover .card-hint,
+  .pillar-card.touch-active .card-hint{ color:var(--cyan-bright); }
+  .card-hint svg{ width:12px;height:12px; }
+
+  /* ── BACK FACE ── */
+  .card-back{
+    background:#0C0F10;
+    transform:rotateY(180deg);
+    display:flex;flex-direction:column;padding:16px;
+    border-color:rgba(31,169,207,0.3);
+  }
+  .card-back-head{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:12px;padding-bottom:10px;
+    border-bottom:0.5px solid var(--line);
+  }
+  .card-back-title{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;
+    font-size:15px;text-transform:uppercase;letter-spacing:0.04em;
     color:var(--cyan-bright);
-    border:0.5px solid rgba(31,169,207,0.4);
-    background:rgba(31,169,207,0.07);
-    border-radius:999px;
-    padding:7px 16px;
-    position:relative;
-    z-index:1;
+  }
+  .card-back-close{
+    font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--steel-dim);display:flex;align-items:center;gap:4px;
+  }
+  .card-back-close svg{ width:10px;height:10px; }
+
+  /* mini listing rows on back */
+  .back-listings{ display:flex;flex-direction:column;gap:8px;flex:1; }
+  .back-listing{
+    display:flex;align-items:center;gap:10px;
+    background:rgba(255,255,255,0.03);border:0.5px solid var(--line);
+    border-radius:8px;padding:7px 10px;
+    text-decoration:none;transition:border-color 0.15s,background 0.15s;
+    flex:1;min-height:0;
+  }
+  .back-listing:hover{
+    border-color:rgba(31,169,207,0.35);background:rgba(31,169,207,0.05);
+  }
+  .back-thumb{
+    width:46px;height:38px;border-radius:5px;overflow:hidden;
+    background:var(--panel);flex-shrink:0;
+  }
+  .back-thumb img{ width:100%;height:100%;object-fit:cover;display:block; }
+  .back-thumb .no-img{
+    width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  }
+  .back-thumb .no-img svg{ width:16px;height:16px;color:var(--line); }
+  .back-info{ flex:1;min-width:0; }
+  .back-listing-title{
+    font-size:11.5px;font-weight:600;color:var(--white);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    margin-bottom:2px;
+  }
+  .back-listing-price{
+    font-family:'Rajdhani',sans-serif;font-weight:700;
+    font-size:13px;color:var(--cyan-bright);
+  }
+  .back-listing-price.offer{ color:var(--steel-dim);font-size:11px; }
+  .back-empty{
+    flex:1;display:flex;align-items:center;justify-content:center;
+    font-size:12px;color:var(--steel-dim);text-align:center;line-height:1.5;
+  }
+  .back-loading{
+    flex:1;display:flex;align-items:center;justify-content:center;
+  }
+  .back-loading .spin{
+    width:20px;height:20px;border:1.5px solid var(--line);
+    border-top-color:var(--cyan-bright);border-radius:50%;
+    animation:spin 0.7s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .card-back-footer{
+    margin-top:10px;padding-top:10px;border-top:0.5px solid var(--line);text-align:center;
+  }
+  .card-back-footer a{
+    font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;
+    color:var(--cyan);text-decoration:none;transition:color 0.15s;
+  }
+  .card-back-footer a:hover{ color:var(--cyan-bright); }
+
+  @media(max-width:540px){
+    .pillar-card{ height:280px; }
   }
 
   @media (max-width: 540px){
-    .pillar-grid{
-      grid-template-columns:1fr;
-    }
-    .pillar-card{ padding:38px 24px 30px; }
+    .pillar-grid{ grid-template-columns:1fr; }
   }
 
   @media (max-width: 520px){
@@ -954,74 +998,129 @@
 
       <div class="pillar-grid">
 
-        <div class="pillar-card" tabindex="0">
-          <div class="card-video">
-            <video autoplay muted loop playsinline>
-              <source src="bg-vehicles.mp4" type="video/mp4">
-            </video>
+        <div class="pillar-card" tabindex="0" data-cat="vehicles">
+          <div class="card-flipper">
+            <div class="card-front">
+              <div class="card-video">
+                <video autoplay muted loop playsinline><source src="bg-vehicles.mp4" type="video/mp4"></video>
+              </div>
+              <div class="pillar-icon"><img src="vehicles_icon.png" alt=""></div>
+              <div class="pillar-name">Vehicles</div>
+              <p class="pillar-desc">Complete builds and clean platforms — JDM, Euro, USDM, and everything between.</p>
+              <div class="card-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                Tap to explore
+              </div>
+            </div>
+            <div class="card-back">
+              <div class="card-back-head">
+                <div class="card-back-title">Vehicles</div>
+                <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
+              </div>
+              <div class="back-listings" id="back-vehicles"><div class="back-loading"><div class="spin"></div></div></div>
+              <div class="card-back-footer"><a href="marketplace.html?filter=vehicles">View all vehicles →</a></div>
+            </div>
           </div>
-          <div class="pillar-icon">
-            <img src="vehicles_icon.png" alt="">
-          </div>
-          <div class="pillar-name">Vehicles</div>
-          <p class="pillar-desc">Complete builds and clean platforms — JDM, Euro, USDM, and everything between.</p>
-          <span class="pillar-badge">Coming Soon</span>
         </div>
 
-        <div class="pillar-card" tabindex="0">
-          <div class="card-video">
-            <video autoplay muted loop playsinline>
-              <source src="bg-wheels.mp4" type="video/mp4">
-            </video>
+        <div class="pillar-card" tabindex="0" data-cat="wheels">
+          <div class="card-flipper">
+            <div class="card-front">
+              <div class="card-video">
+                <video autoplay muted loop playsinline><source src="bg-wheels.mp4" type="video/mp4"></video>
+              </div>
+              <div class="pillar-icon"><img src="wheels_icon.png" alt=""></div>
+              <div class="pillar-name">Wheels &amp; Tires</div>
+              <p class="pillar-desc">Fitment-correct wheels and tires by size, offset, and bolt pattern.</p>
+              <div class="card-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                Tap to explore
+              </div>
+            </div>
+            <div class="card-back">
+              <div class="card-back-head">
+                <div class="card-back-title">Wheels &amp; Tires</div>
+                <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
+              </div>
+              <div class="back-listings" id="back-wheels"><div class="back-loading"><div class="spin"></div></div></div>
+              <div class="card-back-footer"><a href="marketplace.html?filter=wheels">View all wheels →</a></div>
+            </div>
           </div>
-          <div class="pillar-icon">
-            <img src="wheels_icon.png" alt="">
-          </div>
-          <div class="pillar-name">Wheels &amp; Tires</div>
-          <p class="pillar-desc">Fitment-correct wheels and tires by size, offset, and bolt pattern.</p>
-          <span class="pillar-badge">Coming Soon</span>
         </div>
 
-        <div class="pillar-card" tabindex="0">
-          <div class="card-video">
-            <video autoplay muted loop playsinline>
-              <source src="bg-parts.mp4" type="video/mp4">
-            </video>
+        <div class="pillar-card" tabindex="0" data-cat="parts">
+          <div class="card-flipper">
+            <div class="card-front">
+              <div class="card-video">
+                <video autoplay muted loop playsinline><source src="bg-parts.mp4" type="video/mp4"></video>
+              </div>
+              <div class="pillar-icon"><img src="parts_icon.png" alt=""></div>
+              <div class="pillar-name">Parts</div>
+              <p class="pillar-desc">Engine, suspension, exhaust, and more — with real fitment, not guesswork.</p>
+              <div class="card-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                Tap to explore
+              </div>
+            </div>
+            <div class="card-back">
+              <div class="card-back-head">
+                <div class="card-back-title">Parts</div>
+                <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
+              </div>
+              <div class="back-listings" id="back-parts"><div class="back-loading"><div class="spin"></div></div></div>
+              <div class="card-back-footer"><a href="marketplace.html?filter=parts">View all parts →</a></div>
+            </div>
           </div>
-          <div class="pillar-icon">
-            <img src="parts_icon.png" alt="">
-          </div>
-          <div class="pillar-name">Parts</div>
-          <p class="pillar-desc">Engine, suspension, exhaust, and more — with real fitment, not guesswork.</p>
-          <span class="pillar-badge">Coming Soon</span>
         </div>
 
-        <div class="pillar-card" tabindex="0">
-          <div class="card-video">
-            <video autoplay muted loop playsinline>
-              <source src="bg-tools.mp4" type="video/mp4">
-            </video>
+        <div class="pillar-card" tabindex="0" data-cat="tools">
+          <div class="card-flipper">
+            <div class="card-front">
+              <div class="card-video">
+                <video autoplay muted loop playsinline><source src="bg-tools.mp4" type="video/mp4"></video>
+              </div>
+              <div class="pillar-icon"><img src="tools_icon.png" alt=""></div>
+              <div class="pillar-name">Tools</div>
+              <p class="pillar-desc">Hand tools, diagnostics, and shop equipment for the work itself.</p>
+              <div class="card-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                Tap to explore
+              </div>
+            </div>
+            <div class="card-back">
+              <div class="card-back-head">
+                <div class="card-back-title">Tools</div>
+                <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
+              </div>
+              <div class="back-listings" id="back-tools"><div class="back-loading"><div class="spin"></div></div></div>
+              <div class="card-back-footer"><a href="marketplace.html?filter=tools">View all tools →</a></div>
+            </div>
           </div>
-          <div class="pillar-icon">
-            <img src="tools_icon.png" alt="">
-          </div>
-          <div class="pillar-name">Tools</div>
-          <p class="pillar-desc">Hand tools, diagnostics, and shop equipment for the work itself.</p>
-          <span class="pillar-badge">Coming Soon</span>
         </div>
 
-        <div class="pillar-card" tabindex="0">
-          <div class="card-video">
-            <video autoplay muted loop playsinline>
-              <source src="bg-fluids.mp4" type="video/mp4">
-            </video>
+        <div class="pillar-card" tabindex="0" data-cat="fluids">
+          <div class="card-flipper">
+            <div class="card-front">
+              <div class="card-video">
+                <video autoplay muted loop playsinline><source src="bg-fluids.mp4" type="video/mp4"></video>
+              </div>
+              <div class="pillar-icon"><img src="fluids_icon.png" alt=""></div>
+              <div class="pillar-name">Fluids &amp; Products</div>
+              <p class="pillar-desc">Oils, fluids, detailing products, and consumables for every build.</p>
+              <div class="card-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                Tap to explore
+              </div>
+            </div>
+            <div class="card-back">
+              <div class="card-back-head">
+                <div class="card-back-title">Fluids &amp; Products</div>
+                <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
+              </div>
+              <div class="back-listings" id="back-fluids"><div class="back-loading"><div class="spin"></div></div></div>
+              <div class="card-back-footer"><a href="marketplace.html?filter=fluids">View all fluids →</a></div>
+            </div>
           </div>
-          <div class="pillar-icon">
-            <img src="fluids_icon.png" alt="">
-          </div>
-          <div class="pillar-name">Fluids &amp; Products</div>
-          <p class="pillar-desc">Oils, fluids, detailing products, and consumables for every build.</p>
-          <span class="pillar-badge">Coming Soon</span>
         </div>
 
       </div>
@@ -1369,13 +1468,20 @@
           <input type="text" id="listing-title" placeholder="e.g. 2009 Honda Civic Si — clean build">
         </div>
 
-        <div class="fgroup" style="margin-bottom:18px;">
-          <label>Instagram handle <span style="color:var(--steel-dim);font-weight:400;">(how buyers reach you)</span></label>
-          <div style="display:flex;align-items:center;gap:0;">
-            <span style="background:var(--panel);border:1px solid var(--line);border-right:none;border-radius:6px 0 0 6px;padding:11px 12px;color:var(--steel-dim);font-size:15px;white-space:nowrap;">@</span>
-            <input type="text" id="listing-instagram" placeholder="yourhandle" style="border-radius:0 6px 6px 0;border-left:none;">
+        <div class="frow frow-2" style="margin-bottom:6px;">
+          <div class="fgroup" style="margin-bottom:0;">
+            <label>Instagram <span style="color:var(--steel-dim);font-weight:400;font-size:11px;">(optional)</span></label>
+            <div style="display:flex;align-items:center;gap:0;">
+              <span style="background:var(--panel);border:1px solid var(--line);border-right:none;border-radius:6px 0 0 6px;padding:11px 12px;color:var(--steel-dim);font-size:15px;white-space:nowrap;">@</span>
+              <input type="text" id="listing-instagram" placeholder="yourhandle" style="border-radius:0 6px 6px 0;border-left:none;">
+            </div>
+          </div>
+          <div class="fgroup" style="margin-bottom:0;">
+            <label>Email <span style="color:var(--steel-dim);font-weight:400;font-size:11px;">(optional)</span></label>
+            <input type="email" id="listing-email" placeholder="you@email.com">
           </div>
         </div>
+        <p class="field-hint" style="margin-bottom:18px;">At least one contact method required — buyers will use this to reach you.</p>
 
         <label class="photo-zone" id="photo-zone" for="photo-input">
           <input type="file" id="photo-input" accept="image/*" multiple>
@@ -1446,19 +1552,100 @@
 </div>
 
 <script>
-  // ── Touch hover state for pillar cards ──
-  var cards = document.querySelectorAll('.pillar-card');
-  cards.forEach(function(card){
-    card.addEventListener('touchstart', function(){
-      cards.forEach(function(c){ c.classList.remove('touch-active'); });
-      card.classList.add('touch-active');
-    }, { passive: true });
-  });
-  document.addEventListener('touchstart', function(e){
-    if(!e.target.closest('.pillar-card')){
-      cards.forEach(function(c){ c.classList.remove('touch-active'); });
+  // ============================================================
+  // PILLAR CARD FLIP SYSTEM
+  // ============================================================
+  var pillarCards = document.querySelectorAll('.pillar-card');
+  var loadedCats  = {}; // track which categories have been fetched
+
+  function escHtml(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  // Build the mini listing rows for the back of a card
+  async function loadBackListings(cat){
+    if(loadedCats[cat]) return; // already loaded
+    loadedCats[cat] = true;
+
+    var container = document.getElementById('back-' + cat);
+    if(!container) return;
+
+    var res = await sb.from('listings')
+      .select('id,title,price,photo_urls')
+      .eq('status','active')
+      .eq('category', cat)
+      .order('created_at',{ascending:false})
+      .limit(3);
+
+    if(res.error || !res.data || !res.data.length){
+      container.innerHTML = '<div class="back-empty">No listings yet in this category.<br>Be the first to list!</div>';
+      return;
     }
-  }, { passive: true });
+
+    container.innerHTML = '';
+    res.data.forEach(function(l){
+      var thumb = l.photo_urls && l.photo_urls.length
+        ? '<img src="'+escHtml(l.photo_urls[0])+'" alt="'+escHtml(l.title)+'" loading="lazy">'
+        : '<div class="no-img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
+      var price = l.price
+        ? '<div class="back-listing-price">$'+Number(l.price).toLocaleString()+'</div>'
+        : '<div class="back-listing-price offer">Make offer</div>';
+      var item = document.createElement('a');
+      item.className = 'back-listing';
+      item.href = 'listing.html?id='+l.id;
+      item.innerHTML =
+        '<div class="back-thumb">'+thumb+'</div>'+
+        '<div class="back-info">'+
+          '<div class="back-listing-title">'+escHtml(l.title)+'</div>'+
+          price+
+        '</div>';
+      // stop flip from triggering when clicking a listing link
+      item.addEventListener('click', function(e){ e.stopPropagation(); });
+      container.appendChild(item);
+    });
+  }
+
+  // Flip logic — hover on desktop, tap on mobile
+  pillarCards.forEach(function(card){
+    var cat = card.dataset.cat;
+
+    // Desktop: hover to flip, un-hover to flip back
+    card.addEventListener('mouseenter', function(){
+      card.classList.add('flipped');
+      loadBackListings(cat);
+    });
+    card.addEventListener('mouseleave', function(){
+      card.classList.remove('flipped');
+    });
+
+    // Mobile: tap to flip, tap again (or elsewhere) to flip back
+    card.addEventListener('click', function(e){
+      // Don't flip if clicking the "Back" button or a listing link
+      if(e.target.closest('.card-back-close') || e.target.closest('.back-listing') || e.target.closest('.card-back-footer a')) return;
+      if(card.classList.contains('flipped')){
+        card.classList.remove('flipped');
+      } else {
+        // Close any other flipped card first
+        pillarCards.forEach(function(c){ if(c !== card) c.classList.remove('flipped'); });
+        card.classList.add('flipped');
+        loadBackListings(cat);
+      }
+    });
+
+    // "Back" button on card back
+    var closeBtn = card.querySelector('.card-back-close');
+    if(closeBtn){
+      closeBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        card.classList.remove('flipped');
+      });
+    }
+  });
+
+  // Close flipped card when clicking outside
+  document.addEventListener('click', function(e){
+    if(!e.target.closest('.pillar-card')){
+      pillarCards.forEach(function(c){ c.classList.remove('flipped'); });
+    }
+  });
 
   // ── Per-card video fade-in ──
   document.querySelectorAll('.card-video video').forEach(function(video){
@@ -1611,6 +1798,7 @@
     var customTitle = document.getElementById('listing-title').value.trim();
     if(customTitle) data.title = customTitle;
     data.instagram = document.getElementById('listing-instagram').value.replace(/^@/, '').trim();
+    data.email = document.getElementById('listing-email').value.trim();
     return data;
   }
 
@@ -1796,17 +1984,21 @@
   }
 
   // Create a new seller row
-  async function createSeller(perfKey, instagram){
+  async function createSeller(perfKey, instagram, email){
     var res = await sb.from('sellers')
-      .insert([{ performance_key: perfKey, instagram: instagram || null }])
+      .insert([{ performance_key: perfKey, instagram: instagram || null, email: email || null }])
       .select().single();
     if(res.error) throw new Error('Could not create seller record: ' + res.error.message);
     return res.data;
   }
 
-  // Update seller's instagram if key matches and handle changed
-  async function updateSellerInstagram(sellerId, instagram){
-    await sb.from('sellers').update({ instagram: instagram, updated_at: new Date().toISOString() }).eq('seller_id', sellerId);
+  // Update seller contact info if key matches and details changed
+  async function updateSellerContact(sellerId, instagram, email){
+    await sb.from('sellers').update({
+      instagram: instagram || null,
+      email: email || null,
+      updated_at: new Date().toISOString()
+    }).eq('seller_id', sellerId);
   }
 
   // Show the Performance Key success screen
@@ -1862,10 +2054,12 @@
 
     var titleVal = document.getElementById('listing-title').value.trim();
     var igVal    = document.getElementById('listing-instagram').value.trim().replace(/^@/,'');
+    var emailVal = document.getElementById('listing-email').value.trim();
     var keyRaw   = document.getElementById('perf-key-input').value.trim();
 
     if (!titleVal) { showError('Please add a listing title.'); return; }
-    if (!igVal)    { showError('Please add your Instagram handle so buyers can reach you.'); return; }
+    if (!igVal && !emailVal) { showError('Please add at least one contact method — Instagram or email — so buyers can reach you.'); return; }
+    if (emailVal && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) { showError('Please enter a valid email address.'); return; }
 
     btn.textContent = 'Saving...';
     btn.disabled    = true;
@@ -1900,11 +2094,11 @@
         }
 
         // Key found — check Instagram handle
-        if(seller.instagram && seller.instagram.toLowerCase() !== igVal.toLowerCase()){
-          // Handle has changed — update it (per design decision)
-          await updateSellerInstagram(seller.seller_id, igVal);
+        if(seller.instagram !== igVal || (seller.email || '') !== emailVal){
+          await updateSellerContact(seller.seller_id, igVal, emailVal);
           seller.instagram = igVal;
-          dbg('[perf-key] Instagram handle updated for seller', seller.seller_id);
+          seller.email = emailVal;
+          dbg('[perf-key] Contact info updated for seller', seller.seller_id);
         }
 
         dbg('[perf-key] Existing seller found:', seller.seller_id, perfKey);
@@ -1921,7 +2115,7 @@
           perfKey = generatePerformanceKey();
         }
 
-        seller = await createSeller(perfKey, igVal);
+        seller = await createSeller(perfKey, igVal, emailVal);
         isNewSeller = true;
         dbg('[perf-key] New seller created:', seller.seller_id, perfKey);
       }
@@ -1937,7 +2131,8 @@
         condition:   formData.condition,
         location:    formData.location,
         description: formData.description,
-        instagram:   igVal,
+        instagram:   igVal || null,
+        email:       emailVal || null,
         details:     formData.details,
         photo_urls:  [],
         status:      'active',
@@ -2014,6 +2209,7 @@
     document.getElementById('step1-next').disabled = true;
     document.getElementById('listing-title').value = '';
     document.getElementById('listing-instagram').value = '';
+    document.getElementById('listing-email').value = '';
     document.getElementById('photo-input').value = '';
     document.getElementById('photo-previews').innerHTML = '';
     document.getElementById('perf-key-input').value = '';
@@ -2085,7 +2281,9 @@
     var price = l.price ? '$' + Number(l.price).toLocaleString() : 'Make offer';
     var igLink = l.instagram
       ? '<span class="listing-ig">@' + escHtml(l.instagram) + '</span>'
-      : '';
+      : l.email
+        ? '<span class="listing-ig">' + escHtml(l.email) + '</span>'
+        : '';
 
     card.innerHTML =
       thumb +

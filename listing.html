@@ -321,9 +321,13 @@
     <div class="listing-price" id="det-price"></div>
 
     <div class="cta-row">
-      <a class="btn-ig" id="cta-ig" href="#" target="_blank" rel="noopener">
+      <a class="btn-ig" id="cta-ig" href="#" target="_blank" rel="noopener" style="display:none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
         Contact Seller on Instagram
+      </a>
+      <a class="btn-ig" id="cta-email" href="#" style="display:none;background:var(--panel);color:var(--cyan-bright);border:1px solid rgba(31,169,207,0.35);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Email Seller
       </a>
       <div class="btn-row-2">
         <button class="btn-secondary" id="share-btn">
@@ -562,9 +566,16 @@
     // Instagram CTA
     var ig=document.getElementById('cta-ig');
     if(l.instagram){
+      ig.style.display='flex';
       ig.href='https://instagram.com/'+encodeURIComponent(l.instagram);
       ig.innerHTML=ig.innerHTML.replace('Contact Seller on Instagram','Contact @'+esc(l.instagram)+' on Instagram');
-    } else { ig.style.display='none'; }
+    }
+
+    var emailEl=document.getElementById('cta-email');
+    if(l.email){
+      emailEl.style.display='flex';
+      emailEl.href='mailto:'+encodeURIComponent(l.email)+'?subject='+encodeURIComponent('Re: '+l.title+' on Performance Connect');
+    }
 
     // Specs
     buildSpecs(l);
@@ -576,9 +587,9 @@
     }
 
     // Seller
-    var handle=l.instagram||'seller';
+    var handle=l.instagram||l.email||'seller';
     document.getElementById('seller-avatar').textContent=handle.charAt(0).toUpperCase();
-    document.getElementById('seller-handle').textContent=l.instagram?'@'+l.instagram:'Anonymous seller';
+    document.getElementById('seller-handle').textContent=l.instagram?'@'+l.instagram:l.email||'Anonymous seller';
 
     // Posted date
     document.getElementById('det-posted').textContent='Posted '+fmtDate(l.created_at);
