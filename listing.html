@@ -270,7 +270,67 @@
   }
   @media(max-width:480px){
     .spec-grid{grid-template-columns:1fr;}
+  }  /* ── CONTACT SELLER MODAL ── */
+  .contact-modal-overlay{
+    position:fixed;inset:0;z-index:200;
+    background:rgba(4,5,5,0.85);backdrop-filter:blur(8px);
+    display:none;align-items:center;justify-content:center;
+    padding:20px;overflow-y:auto;
   }
+  .contact-modal-overlay.open{ display:flex; }
+  .contact-modal{
+    background:#0E1112;border:1px solid var(--line);border-radius:16px;
+    max-width:420px;width:100%;padding:28px 26px 24px;
+    box-shadow:0 24px 64px rgba(0,0,0,0.6);
+  }
+  .contact-modal-head{
+    display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;
+  }
+  .contact-modal-title{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;
+    font-size:21px;text-transform:uppercase;color:var(--white);
+  }
+  .contact-modal-close{
+    width:30px;height:30px;border-radius:8px;
+    border:0.5px solid var(--line);background:var(--panel);
+    color:var(--steel);display:flex;align-items:center;justify-content:center;
+    cursor:pointer;transition:all 0.15s;
+  }
+  .contact-modal-close:hover{ color:var(--cyan-bright);border-color:var(--cyan); }
+  .contact-modal-close svg{ width:14px;height:14px; }
+  .contact-modal-sub{ font-size:12.5px;color:var(--steel);margin-bottom:20px;line-height:1.5; }
+
+  .contact-modal .fgroup{ margin-bottom:14px; }
+  .contact-modal .fgroup label{
+    display:block;font-size:11.5px;font-weight:600;color:var(--steel);
+    text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;
+  }
+  .contact-modal input[type="text"],
+  .contact-modal input[type="email"],
+  .contact-modal textarea{
+    width:100%;padding:11px 13px;border-radius:8px;
+    background:var(--panel);border:1px solid var(--line);
+    color:var(--white);font-family:'Inter',sans-serif;font-size:14px;
+    outline:none;transition:border-color 0.15s;resize:vertical;
+  }
+  .contact-modal input:focus,
+  .contact-modal textarea:focus{ border-color:var(--cyan); }
+  .contact-modal input::placeholder,
+  .contact-modal textarea::placeholder{ color:var(--steel-dim); }
+
+  .contact-submit-btn{
+    width:100%;padding:13px;border-radius:10px;
+    background:var(--cyan-bright);color:#03171D;border:none;
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;
+    letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;
+    transition:background 0.15s;
+  }
+  .contact-submit-btn:hover{ background:#62D6F5; }
+  .contact-submit-btn:disabled{ opacity:0.6;cursor:default; }
+
+  .contact-success{ text-align:center;padding:10px 0; }
+  .contact-success p{ font-size:14px;color:var(--steel);margin-bottom:20px;line-height:1.5; }
+
 </style>
 </head>
 <body>
@@ -325,10 +385,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
         Contact Seller on Instagram
       </a>
-      <a class="btn-ig" id="cta-email" href="#" style="display:none;background:var(--panel);color:var(--cyan-bright);border:1px solid rgba(31,169,207,0.35);">
+      <button class="btn-ig" id="cta-email" type="button" style="display:none;background:var(--panel);color:var(--cyan-bright);border:1px solid rgba(31,169,207,0.35);">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         Email Seller
-      </a>
+      </button>
       <div class="btn-row-2">
         <button class="btn-secondary" id="share-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
@@ -389,6 +449,58 @@
     </div>
   </div>
 
+</div>
+
+<!-- ============================================================
+     CONTACT SELLER MODAL
+     Sends via Web3Forms — seller's email never appears in page
+     HTML, never rendered as visible/clickable text. Protects
+     against scraping while still relaying the message.
+     ============================================================ -->
+<div class="contact-modal-overlay" id="contact-modal-overlay">
+  <div class="contact-modal">
+    <div class="contact-modal-head">
+      <div class="contact-modal-title">Message the Seller</div>
+      <button class="contact-modal-close" id="contact-modal-close" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <p class="contact-modal-sub">Your message goes straight to the seller — their email stays private.</p>
+
+    <form id="contact-form">
+      <!-- Web3Forms access key — replace with your own free key from web3forms.com -->
+      <input type="hidden" name="access_key" value="YOUR_WEB3FORMS_ACCESS_KEY">
+      <!-- Seller's real email — hidden field, never rendered as visible text -->
+      <input type="hidden" name="to_email" id="contact-to-email" value="">
+      <input type="hidden" name="subject" id="contact-subject" value="">
+      <input type="hidden" name="from_name" value="Performance Connect Buyer">
+      <!-- honeypot spam trap -->
+      <input type="checkbox" name="botcheck" style="display:none">
+
+      <div class="fgroup">
+        <label>Your name</label>
+        <input type="text" name="name" id="contact-name" placeholder="Your name" required>
+      </div>
+      <div class="fgroup">
+        <label>Your email <span style="color:var(--steel-dim);font-weight:400;">(so they can reply)</span></label>
+        <input type="email" name="reply_to" id="contact-reply-email" placeholder="you@email.com" required>
+      </div>
+      <div class="fgroup">
+        <label>Message</label>
+        <textarea name="message" id="contact-message" rows="4" placeholder="Hi, is this still available?" required></textarea>
+      </div>
+
+      <div id="contact-form-error" style="display:none;color:#E46B6B;font-size:13px;margin-bottom:10px;padding:9px 12px;background:rgba(228,107,107,0.08);border:1px solid rgba(228,107,107,0.25);border-radius:6px;"></div>
+
+      <button type="submit" class="contact-submit-btn" id="contact-submit-btn">Send Message</button>
+    </form>
+
+    <div class="contact-success" id="contact-success" style="display:none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:36px;height:36px;color:var(--cyan-bright);margin-bottom:12px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <p>Message sent! The seller will reply to your email directly.</p>
+      <button type="button" class="contact-submit-btn" id="contact-close-success">Done</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -574,7 +686,9 @@
     var emailEl=document.getElementById('cta-email');
     if(l.email){
       emailEl.style.display='flex';
-      emailEl.href='mailto:'+encodeURIComponent(l.email)+'?subject='+encodeURIComponent('Re: '+l.title+' on Performance Connect');
+      emailEl.addEventListener('click', function(){
+        openContactModal(l.email, l.title, l.id);
+      });
     }
 
     // Specs
@@ -613,6 +727,64 @@
     document.getElementById('related-browse-link').href='marketplace.html';
     loadRelated(l.category,l.id);
   })();
+
+  /* ── CONTACT SELLER MODAL ──────────────────────────────────────
+     The seller's email is injected into a hidden form field only
+     at the moment the modal opens — it is never written into the
+     page's static HTML, so it can't be scraped from page source. */
+  function openContactModal(sellerEmail, listingTitle, listingId){
+    document.getElementById('contact-to-email').value = sellerEmail;
+    document.getElementById('contact-subject').value = 'Re: ' + listingTitle + ' (Listing #' + listingId + ') on Performance Connect';
+    document.getElementById('contact-form').style.display = 'block';
+    document.getElementById('contact-success').style.display = 'none';
+    document.getElementById('contact-form-error').style.display = 'none';
+    document.getElementById('contact-modal-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeContactModal(){
+    document.getElementById('contact-modal-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.getElementById('contact-modal-close').addEventListener('click', closeContactModal);
+  document.getElementById('contact-modal-overlay').addEventListener('click', function(e){
+    if(e.target === this) closeContactModal();
+  });
+  document.getElementById('contact-close-success').addEventListener('click', closeContactModal);
+
+  document.getElementById('contact-form').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var btn = document.getElementById('contact-submit-btn');
+    var errEl = document.getElementById('contact-form-error');
+    errEl.style.display = 'none';
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+
+    var formData = new FormData(this);
+
+    try{
+      var res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: formData
+      });
+      var json = await res.json();
+
+      if(json.success){
+        document.getElementById('contact-form').style.display = 'none';
+        document.getElementById('contact-success').style.display = 'block';
+        document.getElementById('contact-form').reset();
+      } else {
+        errEl.textContent = 'Could not send your message. Please try again.';
+        errEl.style.display = 'block';
+      }
+    } catch(err){
+      errEl.textContent = 'Network error — please check your connection and try again.';
+      errEl.style.display = 'block';
+    }
+
+    btn.textContent = 'Send Message';
+    btn.disabled = false;
+  });
 </script>
 </body>
 </html>
