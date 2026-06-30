@@ -1480,20 +1480,32 @@
           <input type="text" id="listing-title" placeholder="e.g. 2009 Honda Civic Si — clean build">
         </div>
 
-        <div class="frow frow-2" style="margin-bottom:6px;">
-          <div class="fgroup" style="margin-bottom:0;">
-            <label>Instagram <span style="color:var(--steel-dim);font-weight:400;font-size:11px;">(optional)</span></label>
-            <div style="display:flex;align-items:center;gap:0;">
-              <span style="background:var(--panel);border:1px solid var(--line);border-right:none;border-radius:6px 0 0 6px;padding:11px 12px;color:var(--steel-dim);font-size:15px;white-space:nowrap;">@</span>
-              <input type="text" id="listing-instagram" placeholder="yourhandle" style="border-radius:0 6px 6px 0;border-left:none;">
-            </div>
-          </div>
-          <div class="fgroup" style="margin-bottom:0;">
-            <label>Email <span style="color:var(--steel-dim);font-weight:400;font-size:11px;">(optional)</span></label>
-            <input type="email" id="listing-email" placeholder="you@email.com">
+        <div class="fgroup" style="margin-bottom:14px;">
+          <label>Contact method <span style="color:var(--steel-dim);font-weight:400;">(choose at least 1, required)</span></label>
+          <select id="contact-method" style="width:100%;">
+            <option value="instagram">Instagram</option>
+            <option value="email">Email</option>
+            <option value="both">Both</option>
+          </select>
+        </div>
+
+        <div id="contact-instagram" class="fgroup" style="margin-bottom:14px;">
+          <label>Instagram handle</label>
+          <div style="display:flex;align-items:center;gap:0;">
+            <span style="background:var(--panel);border:1px solid var(--line);border-right:none;border-radius:6px 0 0 6px;padding:11px 12px;color:var(--steel-dim);font-size:15px;white-space:nowrap;">@</span>
+            <input type="text" id="listing-instagram" placeholder="yourhandle" style="border-radius:0 6px 6px 0;border-left:none;">
           </div>
         </div>
-        <p class="field-hint" style="margin-bottom:18px;">At least one contact method required — buyers will use this to reach you.</p>
+
+        <div id="contact-email" class="fgroup" style="margin-bottom:14px;display:none;">
+          <label>Email address</label>
+          <input type="email" id="listing-email" placeholder="you@email.com">
+        </div>
+
+        <p class="field-hint" style="margin-bottom:18px;display:flex;align-items:flex-start;gap:6px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;flex-shrink:0;margin-top:2px;color:var(--steel-dim)"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span>Your email is never displayed publicly or shared with third parties — buyers can only message you through a secure contact form. Your Instagram handle, if provided, will be shown on your listing.</span>
+        </p>
 
         <label class="photo-zone" id="photo-zone" for="photo-input">
           <input type="file" id="photo-input" accept="image/*" multiple>
@@ -2050,6 +2062,13 @@
     loadListings();
   });
 
+  // Contact method dropdown — show/hide fields
+  document.getElementById('contact-method').addEventListener('change', function(){
+    var val = this.value;
+    document.getElementById('contact-instagram').style.display = (val === 'instagram' || val === 'both') ? 'block' : 'none';
+    document.getElementById('contact-email').style.display     = (val === 'email'     || val === 'both') ? 'block' : 'none';
+  });
+
   // Live format the key input as user types
   document.getElementById('perf-key-input').addEventListener('input', function(){
     var raw = this.value.replace(/[^A-Z0-9]/gi,'').toUpperCase();
@@ -2064,13 +2083,15 @@
     var errEl  = document.getElementById('submit-error');
     errEl.style.display = 'none';
 
-    var titleVal = document.getElementById('listing-title').value.trim();
-    var igVal    = document.getElementById('listing-instagram').value.trim().replace(/^@/,'');
-    var emailVal = document.getElementById('listing-email').value.trim();
-    var keyRaw   = document.getElementById('perf-key-input').value.trim();
+    var titleVal   = document.getElementById('listing-title').value.trim();
+    var contactVal = document.getElementById('contact-method').value;
+    var igVal      = document.getElementById('listing-instagram').value.trim().replace(/^@/,'');
+    var emailVal   = document.getElementById('listing-email').value.trim();
+    var keyRaw     = document.getElementById('perf-key-input').value.trim();
 
     if (!titleVal) { showError('Please add a listing title.'); return; }
-    if (!igVal && !emailVal) { showError('Please add at least one contact method — Instagram or email — so buyers can reach you.'); return; }
+    if ((contactVal === 'instagram' || contactVal === 'both') && !igVal) { showError('Please enter your Instagram handle.'); return; }
+    if ((contactVal === 'email'     || contactVal === 'both') && !emailVal) { showError('Please enter your email address.'); return; }
     if (emailVal && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) { showError('Please enter a valid email address.'); return; }
 
     btn.textContent = 'Saving...';
@@ -2222,6 +2243,9 @@
     document.getElementById('listing-title').value = '';
     document.getElementById('listing-instagram').value = '';
     document.getElementById('listing-email').value = '';
+    document.getElementById('contact-method').value = 'instagram';
+    document.getElementById('contact-instagram').style.display = 'block';
+    document.getElementById('contact-email').style.display = 'none';
     document.getElementById('photo-input').value = '';
     document.getElementById('photo-previews').innerHTML = '';
     document.getElementById('perf-key-input').value = '';
