@@ -15,7 +15,7 @@
     --cyan:#1FA9CF;--cyan-bright:#3DC9F0;
     --steel:#8FA0A6;--steel-dim:#5C6A6E;--white:#F2F6F7;
     --col-oem:#3DC9F0;--col-tire:#F0B83D;--col-tool:#3DF08A;
-    --col-perf:#F03D6E;--col-after:#C43DF0;
+    --col-perf:#F03D6E;--col-after:#C43DF0;--col-body:#FF7A3D;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   html,body{background:var(--black);color:var(--white);font-family:'Inter',sans-serif;height:100%;}
@@ -74,6 +74,7 @@
   .filter-pill[data-cat="tool"]  .dot{background:var(--col-tool);}
   .filter-pill[data-cat="perf"]  .dot{background:var(--col-perf);}
   .filter-pill[data-cat="after"] .dot{background:var(--col-after);}
+  .filter-pill[data-cat="body"]  .dot{background:var(--col-body);}
   .filter-pill.active{background:rgba(31,169,207,0.08);border-color:rgba(31,169,207,0.3);color:var(--white);}
   .filter-pill:not(.active){background:var(--panel);border-color:var(--line);color:var(--steel-dim);}
   .filter-pill:hover{border-color:rgba(31,169,207,0.4);color:var(--white);}
@@ -180,6 +181,7 @@
     <button class="filter-pill active" data-cat="tool"><span class="dot"></span>Tool Stores</button>
     <button class="filter-pill active" data-cat="perf"><span class="dot"></span>Performance Shops</button>
     <button class="filter-pill active" data-cat="after"><span class="dot"></span>Aftermarket Parts</button>
+    <button class="filter-pill active" data-cat="body"><span class="dot"></span>Body Shops</button>
   </div>
 
   <div class="map-count" id="map-count">&nbsp;</div>
@@ -227,6 +229,10 @@ var catConfig = {
   after: {
     color:'#C43DF0', label:'Aftermarket Parts',
     icon:'<circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
+  },
+  body: {
+    color:'#FF7A3D', label:'Body Shop',
+    icon:'<path d="M19 17H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.5L8 4h8l1.5 3H21a1 1 0 0 1 1 1v8a2 2 0 0 1-2 2zM9 12a3 3 0 1 0 6 0 3 3 0 0 0-6 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'
   }
 };
 
