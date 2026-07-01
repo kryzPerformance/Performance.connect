@@ -1,15 +1,4 @@
 [
-  {
-    "cat": "oem",
-    "name": "OEM Honda Markham",
-    "address": "100 Honda Blvd, Markham, ON L6C 0H9",
-    "phone": "(905) 887-3355",
-    "web": "https://oemhonda.com",
-    "instagram": "@oem.honda",
-    "lat": 43.8868,
-    "lng": -79.2967,
-    "notes": "Genuine Honda OEM parts and accessories"
-  } ,
 {
 "cat": "perf",
   "name": "MGMT Autoworks",
@@ -21,4 +10,14 @@
   "lng": -79.4916,
   "notes": "Performance tuning, EV/Tesla specialists, wraps, PPF, and ceramic coatings"
 }
-]
+{
+  "cat": "dealer",
+  "name": "Auto City",
+  "address": "260 Dundas St W, Mississauga, ON L5B 1J2",
+  "phone": "(905) 279-9990",
+  "web": "https://autocitygta.ca",
+  "instagram": "@autocitygta",
+  "lat": 43.5905,
+  "lng": -79.6441,
+  "notes": "Buy, sell, trade, finance and wholesale — serving Mississauga since 1995"
+}
