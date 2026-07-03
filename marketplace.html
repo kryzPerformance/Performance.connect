@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
   :root{
     --black:#070808;
@@ -616,6 +617,48 @@
   }
   .pk-close:hover{color:var(--white);border-color:var(--steel);}
 
+  /* Returning seller success screen — shown inside the modal */
+  .lstep-success{
+    display:none;text-align:center;padding:8px 0 4px;
+  }
+  .lstep-success.active{ display:block; }
+  .lstep-success .success-icon{
+    width:52px;height:52px;border-radius:50%;
+    background:rgba(61,240,138,0.1);border:1px solid rgba(61,240,138,0.3);
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 18px;
+  }
+  .lstep-success .success-icon svg{ width:24px;height:24px;color:#3DF08A; }
+  .lstep-success h3{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;
+    font-size:22px;text-transform:uppercase;color:var(--white);margin-bottom:8px;
+  }
+  .lstep-success .success-sub{ font-size:13.5px;color:var(--steel);margin-bottom:18px;line-height:1.6; }
+  .lstep-success .success-key{
+    display:inline-block;font-family:'Rajdhani',sans-serif;font-weight:700;
+    font-size:18px;letter-spacing:0.1em;color:var(--cyan-bright);
+    background:rgba(31,169,207,0.08);border:1px solid rgba(31,169,207,0.2);
+    border-radius:8px;padding:8px 18px;margin-bottom:22px;
+  }
+  .lstep-success .success-actions{ display:flex;gap:10px; }
+  .lstep-success .success-actions a,
+  .lstep-success .success-actions button{
+    flex:1;display:flex;align-items:center;justify-content:center;
+    padding:12px 16px;border-radius:9px;font-size:13px;font-weight:600;
+    transition:all 0.15s;cursor:pointer;text-decoration:none;
+  }
+  .lstep-success .btn-view-listing{
+    background:var(--cyan-bright);color:#03171D;border:none;
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;
+    letter-spacing:0.04em;text-transform:uppercase;
+  }
+  .lstep-success .btn-view-listing:hover{ background:#62D6F5; }
+  .lstep-success .btn-list-another{
+    background:transparent;border:0.5px solid var(--line);
+    color:var(--steel);font-family:'Inter',sans-serif;
+  }
+  .lstep-success .btn-list-another:hover{ color:var(--white);border-color:var(--steel); }
+
   footer{
     padding:28px clamp(20px, 6vw, 64px) 36px;
     display:flex;
@@ -660,8 +703,8 @@
   .lmodal-overlay{
     position:fixed;
     inset:0;
-    background:rgba(4,5,5,0.85);
-    backdrop-filter:blur(6px);
+    background:rgba(4,5,5,0.92);
+    backdrop-filter:blur(2px);
     z-index:100;
     display:none;
     align-items:flex-start;
@@ -671,15 +714,41 @@
   }
   .lmodal-overlay.open{ display:flex; }
 
+  /* GTA map sits behind the modal card */
+  .lmodal-map{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    opacity:0.18;
+    pointer-events:none;
+  }
+
   .lmodal{
-    background:#0E1112;
-    border:0.5px solid #23292b;
-    border-radius:16px;
+    background:#0A0C0D;
+    border:0.5px solid rgba(35,41,43,0.9);
+    border-radius:18px;
     max-width:640px;
     width:100%;
     position:relative;
-    box-shadow:0 40px 100px rgba(0,0,0,0.6);
+    z-index:1;
+    box-shadow:0 40px 100px rgba(0,0,0,0.7), 0 0 0 0.5px rgba(31,169,207,0.08);
     overflow:hidden;
+  }
+
+  /* hex texture on modal background */
+  .lmodal::before{
+    content:'';
+    position:absolute;inset:0;
+    background-image:url("data:image/svg+xml,%3Csvg width='60' height='52' viewBox='0 0 60 52' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 17.3V34.6L30 52L0 34.6V17.3L30 0Z' fill='none' stroke='rgba(31,169,207,0.04)' stroke-width='1'/%3E%3C/svg%3E");
+    background-size:60px 52px;
+    pointer-events:none;z-index:0;
+  }
+
+  /* cyan accent bar at top */
+  .lmodal-accent-bar{
+    height:2.5px;
+    background:linear-gradient(90deg,transparent 0%,var(--cyan) 25%,var(--cyan-bright) 50%,var(--cyan) 75%,transparent 100%);
+    position:relative;z-index:1;
   }
 
   /* top strip */
@@ -687,8 +756,9 @@
     display:flex;
     align-items:center;
     justify-content:space-between;
-    padding:22px 28px 20px;
-    border-bottom:0.5px solid #23292b;
+    padding:20px 28px 18px;
+    border-bottom:0.5px solid rgba(35,41,43,0.8);
+    position:relative;z-index:1;
   }
   .lmodal-title{
     font-family:'Rajdhani', sans-serif;
@@ -702,37 +772,37 @@
   .lmodal-close{
     width:32px; height:32px;
     border-radius:8px;
-    border:0.5px solid #23292b;
-    background:transparent;
+    border:0.5px solid rgba(35,41,43,0.8);
+    background:rgba(255,255,255,0.03);
     color:var(--steel);
     cursor:pointer;
     display:flex;
     align-items:center;
     justify-content:center;
-    transition:color 0.15s, border-color 0.15s;
+    transition:color 0.15s, border-color 0.15s, background 0.15s;
     flex-shrink:0;
   }
-  .lmodal-close:hover{ color:var(--cyan-bright); border-color:var(--cyan); }
+  .lmodal-close:hover{ color:var(--cyan-bright); border-color:var(--cyan); background:rgba(31,169,207,0.08); }
   .lmodal-close svg{ width:16px; height:16px; }
 
   /* step progress bar */
   .lmodal-progress{
     display:flex;
     gap:4px;
-    padding:0 28px 20px;
-    margin-top:18px;
+    padding:18px 28px 16px;
+    position:relative;z-index:1;
   }
   .progress-step{
     height:3px;
     flex:1;
-    background:#23292b;
+    background:rgba(35,41,43,0.8);
     border-radius:2px;
-    transition:background 0.25s ease;
+    transition:background 0.3s ease;
   }
   .progress-step.done{ background:var(--cyan); }
   .progress-step.active{ background:var(--cyan-bright); }
 
-  .lmodal-body{ padding:0 28px 28px; }
+  .lmodal-body{ padding:0 28px 28px; position:relative;z-index:1; }
 
   /* step panels */
   .lstep{ display:none; }
@@ -740,28 +810,29 @@
 
   .step-eyebrow{
     font-family:'Inter', sans-serif;
-    font-size:11px;
-    font-weight:600;
-    letter-spacing:0.14em;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:0.18em;
     text-transform:uppercase;
-    color:var(--cyan);
-    margin-bottom:6px;
+    color:var(--steel-dim);
+    margin-bottom:5px;
   }
   .step-heading{
     font-family:'Rajdhani', sans-serif;
     font-weight:700;
     font-style:italic;
-    font-size:20px;
+    font-size:24px;
     text-transform:uppercase;
     color:var(--white);
-    margin-bottom:18px;
+    margin-bottom:20px;
+    letter-spacing:0.01em;
   }
 
   /* category selector (step 1) */
   .cat-grid{
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:12px;
+    gap:10px;
     margin-bottom:28px;
   }
   .cat-btn{
@@ -769,33 +840,43 @@
     flex-direction:column;
     align-items:center;
     gap:10px;
-    padding:20px 14px 16px;
-    background:#111415;
-    border:1px solid #23292b;
-    border-radius:10px;
+    padding:22px 14px 18px;
+    background:rgba(255,255,255,0.025);
+    border:1px solid rgba(35,41,43,0.9);
+    border-radius:12px;
     cursor:pointer;
-    transition:border-color 0.15s, background 0.15s;
+    transition:border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.15s;
     text-align:center;
+    position:relative;overflow:hidden;
   }
-  .cat-btn img{ width:52px; height:auto; }
+  .cat-btn::before{
+    content:'';position:absolute;inset:0;
+    background:radial-gradient(ellipse at 50% 0%, rgba(31,169,207,0.15) 0%, transparent 70%);
+    opacity:0;transition:opacity 0.2s;pointer-events:none;
+  }
+  .cat-btn:hover{ border-color:rgba(31,169,207,0.4); background:rgba(31,169,207,0.05); transform:translateY(-1px); }
+  .cat-btn:hover::before{ opacity:1; }
+  .cat-btn img{ width:56px; height:auto; transition:filter 0.2s; }
+  .cat-btn:hover img{ filter:drop-shadow(0 0 10px rgba(61,201,240,0.5)); }
   .cat-btn span{
     font-family:'Rajdhani', sans-serif;
     font-weight:700;
     font-style:italic;
     font-size:15px;
     text-transform:uppercase;
-    color:var(--white);
+    color:var(--steel);
     letter-spacing:0.01em;
+    transition:color 0.15s;
   }
-  .cat-btn:hover{
-    border-color:rgba(31,169,207,0.5);
-    background:#161B1C;
-  }
+  .cat-btn:hover span{ color:var(--white); }
   .cat-btn.selected{
     border-color:var(--cyan-bright);
-    background:rgba(31,169,207,0.08);
+    background:rgba(31,169,207,0.1);
+    box-shadow:0 0 0 1px rgba(31,169,207,0.15), inset 0 0 20px rgba(31,169,207,0.05);
   }
+  .cat-btn.selected::before{ opacity:1; }
   .cat-btn.selected span{ color:var(--cyan-bright); }
+  .cat-btn.selected img{ filter:drop-shadow(0 0 14px rgba(61,201,240,0.7)); }
 
   /* form fields */
   .fgroup{
@@ -841,7 +922,7 @@
   .fgroup select:focus,
   .fgroup textarea:focus{
     border-color:var(--cyan);
-    box-shadow:0 0 0 3px rgba(31,169,207,0.14);
+    box-shadow:0 0 0 3px rgba(31,169,207,0.12), -3px 0 0 0 var(--cyan-bright);
   }
   .fgroup select option{ background:#0E1112; color:var(--white); }
 
@@ -975,6 +1056,7 @@
   }
 
 </style>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -1168,8 +1250,10 @@
      CREATE LISTING MODAL
      ============================================================ -->
 <div class="lmodal-overlay" id="lmodal-overlay">
+  <!-- Dark GTA map — sits behind the modal card -->
+  <div class="lmodal-map" id="lmodal-map"></div>
   <div class="lmodal" id="lmodal">
-
+    <div class="lmodal-accent-bar"></div>
     <div class="lmodal-head">
       <div class="lmodal-title" id="lmodal-title">Create a listing</div>
       <button class="lmodal-close" id="lmodal-close" aria-label="Close">
@@ -1523,6 +1607,20 @@
         </div>
       </div>
 
+      <!-- Returning seller success screen -->
+      <div class="lstep-success" id="lstep-success">
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3>Listing posted!</h3>
+        <p class="success-sub">Your listing is now live on the marketplace,<br>attached to your Performance Key.</p>
+        <div class="success-key" id="success-key-display">PC-XXXX-XXXX</div>
+        <div class="success-actions">
+          <a href="marketplace.html" class="btn-view-listing" id="success-view-btn">View marketplace</a>
+          <button class="btn-list-another" id="success-list-another">List another</button>
+        </div>
+      </div>
+
     </div><!-- /lmodal-body -->
   </div><!-- /lmodal -->
 </div><!-- /lmodal-overlay -->
@@ -1683,17 +1781,66 @@
   var step    = 1;
   var selectedCat = null;
 
+  // ── GTA map background inside modal overlay ──────────────────────────────
+  // Initialised lazily on first modal open so it doesn't run on page load
+  var modalMap = null;
+  function initModalMap(){
+    if(modalMap) return;
+    var mapEl = document.getElementById('lmodal-map');
+    if(!mapEl || typeof L === 'undefined') return;
+    modalMap = L.map(mapEl, {
+      center: [43.7184, -79.5181], zoom: 11,
+      zoomControl: false, dragging: false, scrollWheelZoom: false,
+      doubleClickZoom: false, touchZoom: false, keyboard: false,
+      attributionControl: false
+    });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+      subdomains:'abcd', maxZoom:19
+    }).addTo(modalMap);
+  }
+
   function openModal(){
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
     goStep(1);
+    // Init map on first open, invalidate size so tiles render correctly
+    setTimeout(function(){
+      initModalMap();
+      if(modalMap) modalMap.invalidateSize();
+    }, 80);
   }
   function closeModal(){
     overlay.classList.remove('open');
     document.body.style.overflow = '';
   }
 
+  // ── Returning seller success screen ──────────────────────────────────────
+  function showReturningSellerSuccess(perfKey, listingTitle){
+    document.getElementById('success-key-display').textContent = perfKey;
+    // Show success step, hide all others
+    document.querySelectorAll('.lstep').forEach(function(s){ s.classList.remove('active'); });
+    document.getElementById('lstep-success').classList.add('active');
+    // Update progress to all done
+    ['prog-1','prog-2','prog-3'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el){ el.className = 'progress-step done'; }
+    });
+    document.getElementById('lmodal-title').textContent = 'Listing posted!';
+  }
+
+  document.getElementById('success-list-another').addEventListener('click', function(){
+    resetForm();
+    openModal();
+  });
+
   document.getElementById('open-listing-modal').addEventListener('click', openModal);
+
+  // Auto-open listing modal if arriving from homepage "Sell Something" button
+  if(new URLSearchParams(window.location.search).get('list') === 'true'){
+    openModal();
+    // Clean the URL so refresh doesn't re-open it
+    history.replaceState(null, '', window.location.pathname);
+  }
   document.getElementById('lmodal-close').addEventListener('click', closeModal);
   overlay.addEventListener('click', function(e){
     if(e.target === overlay){ closeModal(); }
@@ -2218,11 +2365,7 @@
         showPerfKeySuccess(perfKey);
       } else {
         // Returning seller — just show a brief banner
-        var banner = document.createElement('div');
-        banner.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#0E6E8C;color:#fff;font-family:Inter,sans-serif;font-size:14px;padding:12px 24px;border-radius:8px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.4);text-align:center;';
-        banner.innerHTML = '✓ Listing posted — attached to <strong>' + perfKey + '</strong>';
-        document.body.appendChild(banner);
-        setTimeout(function(){ banner.remove(); }, 5000);
+        showReturningSellerSuccess(perfKey, listing.title);
         loadListings();
       }
 
