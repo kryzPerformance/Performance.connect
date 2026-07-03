@@ -3,8 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Performance Connect — Coming soon</title>
-<meta name="description" content="The marketplace for performance cars, parts, and the people who build them. JDM, Euro, USDM — every scene, one platform.">
+<title>Performance Connect — Canada's Performance Car Marketplace</title>
+<meta name="description" content="Buy and sell performance cars, wheels, and parts across the GTA. JDM, Euro, USDM, domestic — every scene, one platform. Fitment-first listings, free to post.">
+<link rel="canonical" href="https://performanceconnect.ca/">
+<meta name="theme-color" content="#070808">
+
+<!-- Link previews (iMessage, Instagram, Discord, Facebook) -->
+<meta property="og:title" content="Performance Connect — Canada's Performance Car Marketplace">
+<meta property="og:description" content="Buy and sell performance cars, wheels, and parts. Every scene. One platform.">
+<meta property="og:url" content="https://performanceconnect.ca/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Performance Connect">
+<meta property="og:image" content="https://performanceconnect.ca/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -206,6 +217,61 @@
     font-weight:400;
     margin-bottom:44px;
     letter-spacing:0.01em;
+  }
+
+  /* ---------- hero CTAs ---------- */
+  .hero-ctas{
+    display:flex;
+    gap:12px;
+    justify-content:center;
+    flex-wrap:wrap;
+    width:100%;
+    max-width:560px;
+    margin-bottom:40px;
+  }
+  .cta-primary, .cta-secondary{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:16px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    border-radius:6px;
+    padding:16px 30px;
+    text-decoration:none;
+    text-align:center;
+    flex:1 1 auto;
+    white-space:nowrap;
+    transition:transform 0.12s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .cta-primary{
+    background:var(--cyan-bright);
+    color:#03171D;
+  }
+  .cta-primary:hover{ background:#62D6F5; }
+  .cta-primary:active{ transform:scale(0.97); }
+  .cta-secondary{
+    background:rgba(31,169,207,0.06);
+    color:var(--cyan-bright);
+    border:1px solid rgba(31,169,207,0.45);
+  }
+  .cta-secondary:hover{
+    border-color:var(--cyan-bright);
+    background:rgba(31,169,207,0.12);
+  }
+  .cta-secondary:active{ transform:scale(0.97); }
+  .cta-primary:focus-visible, .cta-secondary:focus-visible{
+    outline:2px solid var(--white);
+    outline-offset:2px;
+  }
+
+  .capture-label{
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    font-weight:500;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--steel-dim);
+    margin-bottom:14px;
   }
 
   /* ---------- email capture ---------- */
@@ -544,6 +610,8 @@
   .modal-photo-btn svg{ width:18px; height:18px; }
 
   @media (max-width: 520px){
+    .hero-ctas{ flex-direction:column; }
+    .cta-primary, .cta-secondary{ width:100%; }
     .capture-row{ flex-direction:column; }
     .btn{ padding:14px 24px; }
     header{
@@ -590,17 +658,24 @@
         <h1>Buy. Sell. Build.<br><span class="accent">Connect.</span></h1>
         <p class="subline">Every scene. One platform.<br>The marketplace for performance cars, parts, and the people who build them.</p>
 
+        <div class="hero-ctas">
+          <a href="marketplace.html" class="cta-primary">Browse the Marketplace</a>
+          <!-- TODO: point this at your actual listing creation page -->
+          <a href="create-listing.html" class="cta-secondary">Sell Something</a>
+        </div>
+
+        <p class="capture-label">Get updates as we grow</p>
         <form class="capture" id="signup-form" action="https://app.kit.com/forms/9590783/subscriptions" method="post" data-sv-form="9590783" target="signup-target">
           <div class="capture-row">
             <label for="email" class="visually-hidden" style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);">Email address</label>
             <input type="email" id="email" name="email_address" placeholder="you@email.com" required autocomplete="email">
-            <button type="submit" class="btn">Notify me</button>
+            <button type="submit" class="btn">Sign up</button>
           </div>
-          <p class="form-note">Be first to list, browse, and join the community at launch.</p>
+          <p class="form-note">New features, community events, and featured builds — no spam.</p>
         </form>
 
         <div class="form-success" id="form-success" role="status">
-          <span>You're on the list — we'll be in touch before launch.</span>
+          <span>You're on the list — we'll keep you posted as the platform grows.</span>
         </div>
 
         <div class="secondary-actions">
@@ -626,7 +701,7 @@
             <circle cx="17.2" cy="6.8" r="1"/>
           </svg>
         </a>
-        <a href="https://www.tiktok.com/@performance.connec" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+        <a href="https://www.tiktok.com/@performance.connect" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M16 4v9.5a3.5 3.5 0 1 1-3.5-3.5"/>
             <path d="M16 4c0 2.5 2 4.5 4.5 4.5"/>
