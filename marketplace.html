@@ -315,11 +315,28 @@
     transform:rotateY(180deg);
     display:flex;flex-direction:column;padding:16px;
     border-color:rgba(31,169,207,0.3);
+    position:relative;
   }
+
+  /* GTA map tile background on card back */
+  .card-back-map{
+    position:absolute;inset:0;border-radius:16px;overflow:hidden;
+    opacity:0.18;pointer-events:none;z-index:0;
+  }
+  .card-back-map img{
+    width:100%;height:100%;object-fit:cover;object-position:center;
+    display:block;
+  }
+
+  /* all card-back children sit above the map */
+  .card-back-head,.back-listings,.card-back-footer{
+    position:relative;z-index:1;
+  }
+
   .card-back-head{
     display:flex;align-items:center;justify-content:space-between;
     margin-bottom:12px;padding-bottom:10px;
-    border-bottom:0.5px solid var(--line);
+    border-bottom:0.5px solid rgba(35,41,43,0.9);
   }
   .card-back-title{
     font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;
@@ -329,6 +346,7 @@
   .card-back-close{
     font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;
     color:var(--steel-dim);display:flex;align-items:center;gap:4px;
+    cursor:pointer;
   }
   .card-back-close svg{ width:10px;height:10px; }
 
@@ -336,14 +354,27 @@
   .back-listings{ display:flex;flex-direction:column;gap:8px;flex:1; }
   .back-listing{
     display:flex;align-items:center;gap:10px;
-    background:rgba(255,255,255,0.03);border:0.5px solid var(--line);
+    background:rgba(7,8,8,0.55);border:0.5px solid rgba(35,41,43,0.9);
     border-radius:8px;padding:7px 10px;
-    text-decoration:none;transition:border-color 0.15s,background 0.15s;
+    text-decoration:none;
+    /* explicit pointer-events — needed inside 3D-transformed card face */
+    pointer-events:auto;
+    cursor:pointer;
+    transition:border-color 0.2s, background 0.2s, transform 0.15s;
     flex:1;min-height:0;
+    position:relative;z-index:1;
   }
   .back-listing:hover{
-    border-color:rgba(31,169,207,0.35);background:rgba(31,169,207,0.05);
+    border-color:rgba(31,169,207,0.5);
+    background:rgba(31,169,207,0.1);
+    transform:translateY(-1px);
   }
+  .back-listing:active{
+    transform:translateY(0);
+  }
+  /* title and price colour changes on hover */
+  .back-listing:hover .back-listing-title{ color:var(--cyan-bright); }
+  .back-listing:hover .back-listing-price{ color:var(--white); }
   .back-thumb{
     width:46px;height:38px;border-radius:5px;overflow:hidden;
     background:var(--panel);flex-shrink:0;
@@ -1107,6 +1138,7 @@
               </div>
             </div>
             <div class="card-back">
+              <div class="card-back-map"><img src="https://a.basemaps.cartocdn.com/dark_all/10/285/374.png" alt="" loading="lazy"></div>
               <div class="card-back-head">
                 <div class="card-back-title">Vehicles</div>
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
@@ -1132,6 +1164,7 @@
               </div>
             </div>
             <div class="card-back">
+              <div class="card-back-map"><img src="https://a.basemaps.cartocdn.com/dark_all/10/285/374.png" alt="" loading="lazy"></div>
               <div class="card-back-head">
                 <div class="card-back-title">Wheels &amp; Tires</div>
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
@@ -1157,6 +1190,7 @@
               </div>
             </div>
             <div class="card-back">
+              <div class="card-back-map"><img src="https://a.basemaps.cartocdn.com/dark_all/10/285/374.png" alt="" loading="lazy"></div>
               <div class="card-back-head">
                 <div class="card-back-title">Parts</div>
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
@@ -1182,6 +1216,7 @@
               </div>
             </div>
             <div class="card-back">
+              <div class="card-back-map"><img src="https://a.basemaps.cartocdn.com/dark_all/10/285/374.png" alt="" loading="lazy"></div>
               <div class="card-back-head">
                 <div class="card-back-title">Tools</div>
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
@@ -1207,6 +1242,7 @@
               </div>
             </div>
             <div class="card-back">
+              <div class="card-back-map"><img src="https://a.basemaps.cartocdn.com/dark_all/10/285/374.png" alt="" loading="lazy"></div>
               <div class="card-back-head">
                 <div class="card-back-title">Fluids &amp; Products</div>
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
