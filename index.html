@@ -57,28 +57,18 @@
     z-index:0;
     overflow:hidden;
     background:var(--black);
-    /* prevent layout recalculation during mobile scroll */
-    transform:translateZ(0);
-    -webkit-transform:translateZ(0);
+    /* NO transform here — any transform on a fixed ancestor breaks
+       position:fixed on iOS Safari, causing the scroll-zoom bug */
   }
   .bg-video-wrap video{
-    position:absolute;
-    top:50%;
-    left:50%;
-    /* fixed minimum size larger than any viewport — avoids object-fit
-       recalculating when mobile browser chrome shows/hides on scroll */
-    min-width:100%;
-    min-height:100%;
-    width:auto;
-    height:auto;
-    transform:translate(-50%, -50%);
-    -webkit-transform:translate(-50%, -50%);
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    object-position:center;
     opacity:0.65;
     filter:grayscale(0.1) contrast(1.05);
-    /* GPU-composited layer — prevents repaint during scroll */
-    will-change:transform;
-    backface-visibility:hidden;
-    -webkit-backface-visibility:hidden;
+    /* No will-change, no translateZ, no backface tricks —
+       these force extra compositing layers and cause repaints on mobile */
   }
   .bg-scrim{
     position:fixed;
