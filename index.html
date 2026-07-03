@@ -39,7 +39,7 @@
     background:var(--black);
     color:var(--white);
     font-family:'Inter', sans-serif;
-    min-height:100vh;
+    min-height:100dvh;
     overflow-x:hidden;
     position:relative;
   }
@@ -51,24 +51,31 @@
   a{color:inherit;}
 
   /* ---------- video background ---------- */
+  /*
+   * iOS Safari repaints position:fixed elements when the dynamic viewport
+   * changes (address bar shows/hides). No pure-CSS fix exists.
+   * Solution: wrapper is fixed and covers the viewport. The video is
+   * position:absolute inside it with width/height set to explicit px values
+   * via JS at load time — so object-fit:cover never recalculates during scroll.
+   */
   .bg-video-wrap{
     position:fixed;
-    inset:0;
+    top:0;left:0;right:0;bottom:0;
     z-index:0;
     overflow:hidden;
     background:var(--black);
-    /* NO transform here — any transform on a fixed ancestor breaks
-       position:fixed on iOS Safari, causing the scroll-zoom bug */
   }
   .bg-video-wrap video{
+    position:absolute;
+    top:0;
+    left:0;
+    /* width/height set to px via JS — do not use % or vh here */
     width:100%;
     height:100%;
     object-fit:cover;
     object-position:center;
     opacity:0.65;
     filter:grayscale(0.1) contrast(1.05);
-    /* No will-change, no translateZ, no backface tricks —
-       these force extra compositing layers and cause repaints on mobile */
   }
   .bg-scrim{
     position:fixed;
@@ -94,7 +101,7 @@
   .page{
     position:relative;
     z-index:1;
-    min-height:100vh;
+    min-height:100dvh;
     display:flex;
     flex-direction:column;
   }
@@ -803,11 +810,79 @@
   // empty video element gracefully so the page still looks intentional
   // (solid black background with grid) instead of showing a broken frame.
   var bgVideo = document.querySelector('.bg-video-wrap video');
+  var bgWrap  = document.querySelector('.bg-video-wrap');
   if (bgVideo) {
     bgVideo.addEventListener('error', function(){
-      document.querySelector('.bg-video-wrap').style.display = 'none';
+      if(bgWrap) bgWrap.style.display = 'none';
     });
   }
+
+  // ── iOS Safari video height lock ─────────────────────────────────────────
+  // iOS Safari animates window.innerHeight when the address bar shows/hides.
+  // Any element using % or vh relative to the viewport will resize with it.
+  // Fix: capture pixel values at load time and set them directly on the
+  // video element. The browser then has no viewport-relative value to
+  // recalculate during scroll — the dimensions are static integers.
+  (function lockVideoHeight(){
+    if(!bgWrap || !bgVideo) return;
+
+    function setHeight(){
+      // window.innerHeight = visual viewport at this moment (excludes hidden chrome)
+      var w = window.innerWidth;
+      var h = window.innerHeight;
+
+      // Size the wrapper to exactly the visual viewport
+      bgWrap.style.width  = w + 'px';
+      bgWrap.style.height = h + 'px';
+
+      // Size the video to slightly oversized to guarantee coverage even if
+      // the wrapper sub-pixel rounds, and set as px not % so nothing recalcs
+      // Aspect ratio of the video is unknown so we cover both axes:
+      var videoW, videoH;
+      var nativeW = bgVideo.videoWidth  || 1920;
+      var nativeH = bgVideo.videoHeight || 1080;
+      var nativeRatio = nativeW / nativeH;
+      var viewRatio   = w / h;
+
+      if(viewRatio > nativeRatio){
+        // viewport is wider than video — fit to width
+        videoW = w;
+        videoH = Math.ceil(w / nativeRatio);
+      } else {
+        // viewport is taller than video — fit to height
+        videoH = h;
+        videoW = Math.ceil(h * nativeRatio);
+      }
+
+      // Centre the video within the wrapper
+      bgVideo.style.width  = videoW + 'px';
+      bgVideo.style.height = videoH + 'px';
+      bgVideo.style.top    = Math.floor((h - videoH) / 2) + 'px';
+      bgVideo.style.left   = Math.floor((w - videoW) / 2) + 'px';
+    }
+
+    // Set immediately
+    setHeight();
+
+    // Re-set once video metadata is available (gives us real native dimensions)
+    bgVideo.addEventListener('loadedmetadata', setHeight);
+
+    // Re-lock on orientation change only (resize fires on every scroll on mobile)
+    window.addEventListener('orientationchange', function(){
+      setTimeout(setHeight, 300);
+    });
+
+    // Only re-lock when width changes (genuine resize/rotation).
+    // Ignores height-only changes — those are just the address bar
+    // animating, which is exactly the event we're protecting against.
+    var lastWidth = window.innerWidth;
+    window.addEventListener('resize', function(){
+      if(window.innerWidth !== lastWidth){
+        lastWidth = window.innerWidth;
+        setHeight();
+      }
+    });
+  })();
 
   // ---------- Feature My Car modal ----------
   var FORM_ID = '1FAIpQLSfotoegdFpAmy-QgJz3ZY1rE30hJJn5t8gJ0B_qijSrQf3GaA';
