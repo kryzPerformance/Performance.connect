@@ -196,10 +196,16 @@
   .pillar-grid{
     display:grid;
     grid-template-columns:repeat(2, 1fr);
-    gap:22px;
+    gap:18px;
   }
 
-  @media (min-width: 980px){
+  @media (min-width:700px){
+    .pillar-grid{
+      grid-template-columns:repeat(3, 1fr);
+    }
+  }
+
+  @media (min-width:1100px){
     .pillar-grid{
       grid-template-columns:repeat(5, 1fr);
     }
@@ -209,10 +215,12 @@
   .pillar-card{
     position:relative;
     cursor:pointer;
-    /* flip perspective */
     perspective:1000px;
     height:320px;
     border-radius:16px;
+    /* force equal height on all cards regardless of content */
+    min-height:320px;
+    max-height:320px;
   }
 
   /* the flipping inner wrapper */
@@ -295,6 +303,11 @@
   .pillar-desc{
     font-size:12.5px;color:var(--steel);line-height:1.5;
     position:relative;z-index:3;margin-bottom:0;
+    /* clamp to 3 lines max so long descriptions don't distort card height */
+    display:-webkit-box;
+    -webkit-line-clamp:3;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
   }
 
   /* "tap to explore" hint */
@@ -318,13 +331,13 @@
     position:relative;
   }
 
-  /* GTA map tile background on card back */
+  /* GTA map tile background on card back — Leaflet instance */
   .card-back-map{
     position:absolute;inset:0;border-radius:16px;overflow:hidden;
-    opacity:0.18;pointer-events:none;z-index:0;
+    opacity:0.22;pointer-events:none;z-index:0;
   }
   .card-back-map img{
-    width:100%;height:100%;object-fit:cover;object-position:center;
+    width:100%;height:100%;object-fit:cover;object-position:center top;
     display:block;
   }
 
@@ -1138,7 +1151,7 @@
               </div>
             </div>
             <div class="card-back">
-              <div class="card-back-map"><img src="https://a.basemaps.cartocdn.com/dark_all/10/285/374.png" alt="" loading="lazy"></div>
+              <div class="card-back-map"><img src="gta-map.svg" alt=""></div>
               <div class="card-back-head">
                 <div class="card-back-title">Vehicles</div>
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
@@ -1164,7 +1177,7 @@
               </div>
             </div>
             <div class="card-back">
-              <div class="card-back-map"><img src="https://a.basemaps.cartocdn.com/dark_all/10/285/374.png" alt="" loading="lazy"></div>
+              <div class="card-back-map"><img src="gta-map.svg" alt=""></div>
               <div class="card-back-head">
                 <div class="card-back-title">Wheels &amp; Tires</div>
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
@@ -1190,7 +1203,7 @@
               </div>
             </div>
             <div class="card-back">
-              <div class="card-back-map"><img src="https://a.basemaps.cartocdn.com/dark_all/10/285/374.png" alt="" loading="lazy"></div>
+              <div class="card-back-map"><img src="gta-map.svg" alt=""></div>
               <div class="card-back-head">
                 <div class="card-back-title">Parts</div>
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
@@ -1216,7 +1229,7 @@
               </div>
             </div>
             <div class="card-back">
-              <div class="card-back-map"><img src="https://a.basemaps.cartocdn.com/dark_all/10/285/374.png" alt="" loading="lazy"></div>
+              <div class="card-back-map"><img src="gta-map.svg" alt=""></div>
               <div class="card-back-head">
                 <div class="card-back-title">Tools</div>
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
@@ -1242,7 +1255,7 @@
               </div>
             </div>
             <div class="card-back">
-              <div class="card-back-map"><img src="https://a.basemaps.cartocdn.com/dark_all/10/285/374.png" alt="" loading="lazy"></div>
+              <div class="card-back-map"><img src="gta-map.svg" alt=""></div>
               <div class="card-back-head">
                 <div class="card-back-title">Fluids &amp; Products</div>
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
@@ -1769,6 +1782,7 @@
     card.addEventListener('mouseenter', function(){
       card.classList.add('flipped');
       loadBackListings(cat);
+      initCardBackMap(cat);
     });
     card.addEventListener('mouseleave', function(){
       card.classList.remove('flipped');
@@ -1785,6 +1799,7 @@
         pillarCards.forEach(function(c){ if(c !== card) c.classList.remove('flipped'); });
         card.classList.add('flipped');
         loadBackListings(cat);
+        initCardBackMap(cat);
       }
     });
 
@@ -1833,6 +1848,30 @@
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
       subdomains:'abcd', maxZoom:19
     }).addTo(modalMap);
+  }
+
+  // ── Card back mini-maps (GTA with cyan filter) ────────────────────────────
+  var cardBackMaps = {};
+  var CARD_MAP_CATS = ['vehicles','wheels','parts','tools','fluids'];
+  // GTA centre — same for all cards, static background
+  var GTA = [43.7184, -79.5181];
+
+  function initCardBackMap(cat){
+    if(cardBackMaps[cat]) return;
+    var el = document.getElementById('card-map-' + cat);
+    if(!el || typeof L === 'undefined') return;
+    var m = L.map(el, {
+      center: GTA, zoom: 10,
+      zoomControl:false, dragging:false, scrollWheelZoom:false,
+      doubleClickZoom:false, touchZoom:false, keyboard:false,
+      attributionControl:false
+    });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+      subdomains:'abcd', maxZoom:19
+    }).addTo(m);
+    cardBackMaps[cat] = m;
+    // invalidate size after the card flip transition completes
+    setTimeout(function(){ m.invalidateSize(); }, 600);
   }
 
   function openModal(){
