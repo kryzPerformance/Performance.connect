@@ -472,26 +472,119 @@
     background:rgba(31,169,207,0.08);
   }
 
-  /* ---------- listing cards ---------- */
-  .listings-grid{
+  /* ── SEARCH BAR ── */
+  .search-wrap{ width:100%; }
+  .search-inner{
+    position:relative;display:flex;align-items:center;
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    transition:border-color 0.15s;
+  }
+  .search-inner:focus-within{ border-color:var(--cyan); }
+  .search-icon{
+    width:16px;height:16px;color:var(--steel-dim);
+    position:absolute;left:14px;pointer-events:none;flex-shrink:0;
+  }
+  .search-input{
+    width:100%;padding:12px 44px 12px 42px;
+    background:transparent;border:none;outline:none;
+    color:var(--white);font-family:'Inter',sans-serif;font-size:14px;
+  }
+  .search-input::placeholder{ color:var(--steel-dim); }
+  .search-clear{
+    position:absolute;right:12px;
+    width:24px;height:24px;border-radius:50%;
+    background:rgba(255,255,255,0.07);border:none;
+    color:var(--steel);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:all 0.15s;
+  }
+  .search-clear:hover{ background:rgba(255,255,255,0.12);color:var(--white); }
+  .search-clear svg{ width:11px;height:11px; }
+
+  /* ── CONTROLS ROW ── */
+  .listings-controls{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:12px;margin-bottom:16px;flex-wrap:wrap;
+  }
+  .filter-btns-wrap{
+    display:flex;gap:8px;flex-wrap:wrap;flex:1;
+  }
+
+  /* ── LAYOUT SWITCHER ── */
+  .layout-switcher{
+    display:flex;gap:4px;flex-shrink:0;
+    background:var(--panel);border:0.5px solid var(--line);
+    border-radius:8px;padding:3px;
+  }
+  .layout-btn{
+    width:32px;height:32px;border-radius:6px;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--steel-dim);cursor:pointer;border:none;background:transparent;
+    transition:all 0.15s;
+  }
+  .layout-btn svg{ width:14px;height:14px; }
+  .layout-btn:hover{ color:var(--steel);background:rgba(255,255,255,0.04); }
+  .layout-btn.active{ background:rgba(31,169,207,0.15);color:var(--cyan-bright); }
+
+  /* ── LAYOUT MODES ── */
+  /* List — one card per row, horizontal layout */
+  .listings-grid.layout-list{
+    grid-template-columns:1fr !important;
+    gap:12px;
+  }
+  .listings-grid.layout-list .listing-card{
     display:grid;
+    grid-template-columns:140px 1fr;
+    border-radius:10px;
+  }
+  .listings-grid.layout-list .listing-thumb-wrap{
+    height:100%;min-height:100px;border-radius:10px 0 0 10px;
+  }
+  .listings-grid.layout-list .listing-thumb{
+    height:100%;border-radius:10px 0 0 10px;
+  }
+  .listings-grid.layout-list .listing-thumb-placeholder{
+    height:100%;min-height:100px;border-radius:10px 0 0 10px;aspect-ratio:unset;
+  }
+  .listings-grid.layout-list .listing-body{
+    padding:14px 16px;display:flex;flex-direction:column;justify-content:space-between;
+  }
+  .listings-grid.layout-list .listing-title{ font-size:16px; }
+  .listings-grid.layout-list .listing-meta{ font-size:12px; }
+
+  /* Grid — default responsive columns */
+  .listings-grid.layout-grid{
     grid-template-columns:1fr;
-    gap:18px;
   }
   @media(min-width:540px){
-    .listings-grid{
-      grid-template-columns:repeat(2, 1fr);
-    }
+    .listings-grid.layout-grid{ grid-template-columns:repeat(2,1fr); }
   }
   @media(min-width:900px){
-    .listings-grid{
-      grid-template-columns:repeat(3, 1fr);
-    }
+    .listings-grid.layout-grid{ grid-template-columns:repeat(3,1fr); }
   }
   @media(min-width:1200px){
-    .listings-grid{
-      grid-template-columns:repeat(4, 1fr);
-    }
+    .listings-grid.layout-grid{ grid-template-columns:repeat(4,1fr); }
+  }
+
+  /* Wide — fewer, larger cards */
+  .listings-grid.layout-wide{
+    grid-template-columns:1fr;
+  }
+  @media(min-width:540px){
+    .listings-grid.layout-wide{ grid-template-columns:repeat(2,1fr); }
+  }
+  @media(min-width:1100px){
+    .listings-grid.layout-wide{ grid-template-columns:repeat(3,1fr); }
+  }
+  .listings-grid.layout-wide .listing-thumb,
+  .listings-grid.layout-wide .listing-thumb-placeholder{
+    aspect-ratio:16/10;
+  }
+  .listings-grid.layout-wide .listing-title{ font-size:19px; }
+
+  .listings-grid{
+    display:grid;
+    gap:18px;
   }
   .listings-loading, .listings-empty{
     grid-column:1/-1;
@@ -1286,20 +1379,52 @@
 
       <!-- Live listings -->
       <div id="listings-section" style="margin-top:56px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:14px;">
-          <div style="text-align:center;width:100%;">
-            <p class="eyebrow" style="margin-bottom:6px;">Live listings</p>
-            <h2 style="font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;font-size:clamp(22px,4vw,30px);text-transform:uppercase;letter-spacing:0.01em;">What's for sale right now</h2>
+
+        <!-- Heading -->
+        <div style="text-align:center;margin-bottom:20px;">
+          <p class="eyebrow" style="margin-bottom:6px;">Live listings</p>
+          <h2 style="font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;font-size:clamp(22px,4vw,30px);text-transform:uppercase;letter-spacing:0.01em;">What's for sale right now</h2>
+        </div>
+
+        <!-- Search bar -->
+        <div class="search-wrap" style="margin-bottom:16px;">
+          <div class="search-inner">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" id="listing-search" class="search-input" placeholder="Search listings — title, location, category...">
+            <button class="search-clear" id="search-clear" style="display:none;" aria-label="Clear search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:100%;" id="filter-btns">
+        </div>
+
+        <!-- Filters + layout switcher row -->
+        <div class="listings-controls">
+          <div class="filter-btns-wrap" id="filter-btns">
             <button class="filter-btn active" data-filter="all">All</button>
             <button class="filter-btn" data-filter="vehicles">Vehicles</button>
             <button class="filter-btn" data-filter="wheels">Wheels</button>
             <button class="filter-btn" data-filter="parts">Parts</button>
             <button class="filter-btn" data-filter="tools">Tools</button>
+            <button class="filter-btn" data-filter="fluids">Fluids</button>
+          </div>
+          <!-- Layout switcher -->
+          <div class="layout-switcher" id="layout-switcher">
+            <button class="layout-btn" data-layout="list" title="List view">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </button>
+            <button class="layout-btn active" data-layout="grid" title="Grid view">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            </button>
+            <button class="layout-btn" data-layout="wide" title="Wide grid">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="9"/><rect x="3" y="14" width="8" height="7"/><rect x="13" y="14" width="8" height="7"/></svg>
+            </button>
           </div>
         </div>
-        <div id="listings-grid" class="listings-grid">
+
+        <!-- Results count -->
+        <div id="search-results-count" style="font-size:12px;color:var(--steel-dim);margin-bottom:14px;display:none;"></div>
+
+        <div id="listings-grid" class="listings-grid layout-grid">
           <div class="listings-loading">Loading listings...</div>
         </div>
       </div>
@@ -2527,29 +2652,94 @@
   }
 
   // ── Load and display listings ──
-  var activeFilter = 'all';
+  var activeFilter  = 'all';
+  var activeLayout  = 'grid';
+  var searchQuery   = '';
+  var allListings   = []; // full set from Supabase, filtered client-side
+
+  // ── Layout switcher ──────────────────────────────────────────────────────
+  document.querySelectorAll('.layout-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.layout-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      activeLayout = btn.dataset.layout;
+      var grid = document.getElementById('listings-grid');
+      grid.classList.remove('layout-list','layout-grid','layout-wide');
+      grid.classList.add('layout-' + activeLayout);
+    });
+  });
+
+  // ── Search ───────────────────────────────────────────────────────────────
+  var searchInput = document.getElementById('listing-search');
+  var searchClear = document.getElementById('search-clear');
+
+  searchInput.addEventListener('input', function(){
+    searchQuery = this.value.trim().toLowerCase();
+    searchClear.style.display = searchQuery ? 'flex' : 'none';
+    renderListings();
+  });
+
+  searchClear.addEventListener('click', function(){
+    searchInput.value = '';
+    searchQuery = '';
+    this.style.display = 'none';
+    searchInput.focus();
+    renderListings();
+  });
+
+  // ── Render from cache (no Supabase call) ─────────────────────────────────
+  function renderListings(){
+    var grid = document.getElementById('listings-grid');
+    var countEl = document.getElementById('search-results-count');
+
+    var filtered = allListings.filter(function(l){
+      // Category filter
+      if(activeFilter !== 'all' && l.category !== activeFilter) return false;
+      // Search filter — title, description, location, category
+      if(searchQuery){
+        var haystack = [
+          l.title        || '',
+          l.description  || '',
+          l.location     || '',
+          l.category     || '',
+          l.instagram    || '',
+          l.email        || ''
+        ].join(' ').toLowerCase();
+        if(!haystack.includes(searchQuery)) return false;
+      }
+      return true;
+    });
+
+    // Results count when searching
+    if(searchQuery){
+      countEl.textContent = filtered.length + ' result' + (filtered.length !== 1 ? 's' : '') + ' for "' + searchInput.value.trim() + '"';
+      countEl.style.display = 'block';
+    } else {
+      countEl.style.display = 'none';
+    }
+
+    if(filtered.length === 0){
+      grid.innerHTML = '<div class="listings-empty">' +
+        (searchQuery ? 'No listings match "' + escHtml(searchInput.value.trim()) + '"' : 'No listings in this category yet.') +
+        '</div>';
+      return;
+    }
+
+    grid.innerHTML = '';
+    filtered.forEach(function(l){ grid.appendChild(buildCard(l)); });
+  }
 
   async function loadListings(){
     var grid = document.getElementById('listings-grid');
     grid.innerHTML = '<div class="listings-loading">Loading listings...</div>';
 
-    var query = sb.from('listings').select('*').eq('status','active').order('created_at', { ascending: false });
-    if(activeFilter !== 'all') query = query.eq('category', activeFilter);
-
-    var res = await query;
+    var res = await sb.from('listings').select('*').eq('status','active').order('created_at',{ascending:false});
     if(res.error){
       grid.innerHTML = '<div class="listings-empty">Couldn\'t load listings right now.</div>';
       return;
     }
-    var listings = res.data;
-    if(!listings || listings.length === 0){
-      grid.innerHTML = '<div class="listings-empty">No listings yet — be the first to post one.</div>';
-      return;
-    }
-    grid.innerHTML = '';
-    listings.forEach(function(listing){
-      grid.appendChild(buildCard(listing));
-    });
+    allListings = res.data || [];
+    renderListings();
   }
 
   function buildCard(l){
@@ -2603,7 +2793,7 @@
       document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
       btn.classList.add('active');
       activeFilter = btn.dataset.filter;
-      loadListings();
+      renderListings();
     });
   });
 
