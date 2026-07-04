@@ -418,11 +418,14 @@
   .card-back-footer{
     margin-top:10px;padding-top:10px;border-top:0.5px solid var(--line);text-align:center;
   }
-  .card-back-footer a{
+  .card-back-footer a,
+  .card-back-footer .view-all-btn{
     font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;
     color:var(--cyan);text-decoration:none;transition:color 0.15s;
+    background:none;border:none;cursor:pointer;padding:0;font-family:'Inter',sans-serif;
   }
-  .card-back-footer a:hover{ color:var(--cyan-bright); }
+  .card-back-footer a:hover,
+  .card-back-footer .view-all-btn:hover{ color:var(--cyan-bright); }
 
   @media(max-width:640px){
     .pillar-card{ height:260px; }
@@ -1170,7 +1173,7 @@
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
               </div>
               <div class="back-listings" id="back-vehicles"><div class="back-loading"><div class="spin"></div></div></div>
-              <div class="card-back-footer"><a href="marketplace.html?filter=vehicles">View all vehicles →</a></div>
+              <div class="card-back-footer"><button class="view-all-btn" data-filter="vehicles">View all vehicles →</button></div>
             </div>
           </div>
         </div>
@@ -1196,7 +1199,7 @@
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
               </div>
               <div class="back-listings" id="back-wheels"><div class="back-loading"><div class="spin"></div></div></div>
-              <div class="card-back-footer"><a href="marketplace.html?filter=wheels">View all wheels →</a></div>
+              <div class="card-back-footer"><button class="view-all-btn" data-filter="wheels">View all wheels →</button></div>
             </div>
           </div>
         </div>
@@ -1222,7 +1225,7 @@
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
               </div>
               <div class="back-listings" id="back-parts"><div class="back-loading"><div class="spin"></div></div></div>
-              <div class="card-back-footer"><a href="marketplace.html?filter=parts">View all parts →</a></div>
+              <div class="card-back-footer"><button class="view-all-btn" data-filter="parts">View all parts →</button></div>
             </div>
           </div>
         </div>
@@ -1248,7 +1251,7 @@
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
               </div>
               <div class="back-listings" id="back-tools"><div class="back-loading"><div class="spin"></div></div></div>
-              <div class="card-back-footer"><a href="marketplace.html?filter=tools">View all tools →</a></div>
+              <div class="card-back-footer"><button class="view-all-btn" data-filter="tools">View all tools →</button></div>
             </div>
           </div>
         </div>
@@ -1274,7 +1277,7 @@
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
               </div>
               <div class="back-listings" id="back-fluids"><div class="back-loading"><div class="spin"></div></div></div>
-              <div class="card-back-footer"><a href="marketplace.html?filter=fluids">View all fluids →</a></div>
+              <div class="card-back-footer"><button class="view-all-btn" data-filter="fluids">View all fluids →</button></div>
             </div>
           </div>
         </div>
@@ -1807,7 +1810,7 @@
     } else {
       // Mobile: tap to toggle flip — no mouseleave involved
       card.addEventListener('click', function(e){
-        if(e.target.closest('.card-back-close') || e.target.closest('.back-listing') || e.target.closest('.card-back-footer a')) return;
+        if(e.target.closest('.card-back-close') || e.target.closest('.back-listing') || e.target.closest('.view-all-btn')) return;
         if(card.classList.contains('flipped')){
           card.classList.remove('flipped');
         } else {
@@ -1929,22 +1932,26 @@
   document.getElementById('open-listing-modal').addEventListener('click', openModal);
 
 
+  // "View all [category]" buttons on card back — scroll + filter without reload
+  document.querySelectorAll('.view-all-btn').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var filter = this.dataset.filter;
+      // Close all flipped cards
+      pillarCards.forEach(function(c){ c.classList.remove('flipped'); });
+      // Activate the matching filter button
+      var matchBtn = document.querySelector('.filter-btn[data-filter="'+filter+'"]');
+      if(matchBtn) matchBtn.click();
+      // Smooth scroll to listings
+      var section = document.getElementById('listings-section');
+      if(section) section.scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+  });
+
   // Auto-open listing modal if arriving from homepage "Sell Something" button
   if(new URLSearchParams(window.location.search).get('list') === 'true'){
     openModal();
     history.replaceState(null, '', window.location.pathname);
-  }
-
-  // "View all [category]" from flip card back — scroll to listings and apply filter
-  var filterParam = new URLSearchParams(window.location.search).get('filter');
-  if(filterParam){
-    history.replaceState(null, '', window.location.pathname);
-    setTimeout(function(){
-      var matchBtn = document.querySelector('.filter-btn[data-filter="'+filterParam+'"]');
-      if(matchBtn) matchBtn.click();
-      var section = document.getElementById('listings-section');
-      if(section) section.scrollIntoView({ behavior:'smooth', block:'start' });
-    }, 500);
   }
 
   document.getElementById('lmodal-close').addEventListener('click', closeModal);
