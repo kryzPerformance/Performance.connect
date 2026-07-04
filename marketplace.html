@@ -431,12 +431,17 @@
   }
   .card-back-footer a:hover{ color:var(--cyan-bright); }
 
-  @media(max-width:540px){
-    .pillar-card{ height:280px; }
+  @media(max-width:640px){
+    .pillar-card{ height:260px; }
   }
 
-  @media (max-width: 540px){
+  @media(max-width:640px){
+    .pillar-grid{ grid-template-columns:1fr 1fr; }
+  }
+
+  @media(max-width:400px){
     .pillar-grid{ grid-template-columns:1fr; }
+    .pillar-card{ height:240px; }
   }
 
   @media (max-width: 520px){
@@ -474,8 +479,23 @@
   /* ---------- listing cards ---------- */
   .listings-grid{
     display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns:1fr;
     gap:18px;
+  }
+  @media(min-width:540px){
+    .listings-grid{
+      grid-template-columns:repeat(2, 1fr);
+    }
+  }
+  @media(min-width:900px){
+    .listings-grid{
+      grid-template-columns:repeat(3, 1fr);
+    }
+  }
+  @media(min-width:1200px){
+    .listings-grid{
+      grid-template-columns:repeat(4, 1fr);
+    }
   }
   .listings-loading, .listings-empty{
     grid-column:1/-1;
@@ -1270,12 +1290,12 @@
 
       <!-- Live listings -->
       <div id="listings-section" style="margin-top:56px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
-          <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:14px;">
+          <div style="text-align:center;width:100%;">
             <p class="eyebrow" style="margin-bottom:6px;">Live listings</p>
             <h2 style="font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;font-size:clamp(22px,4vw,30px);text-transform:uppercase;letter-spacing:0.01em;">What's for sale right now</h2>
           </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;" id="filter-btns">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:100%;" id="filter-btns">
             <button class="filter-btn active" data-filter="all">All</button>
             <button class="filter-btn" data-filter="vehicles">Vehicles</button>
             <button class="filter-btn" data-filter="wheels">Wheels</button>
