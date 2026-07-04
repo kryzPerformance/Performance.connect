@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Affiliate — Performance Connect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#070808;--panel:#111415;--panel-2:#161B1C;--line:#23292b;
+    --cyan:#1FA9CF;--cyan-bright:#3DC9F0;
+    --steel:#8FA0A6;--steel-dim:#5C6A6E;--white:#F2F6F7;
+    --green:#3DF08A;--red:#E84545;--amber:#F0B83D;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--black);color:var(--white);font-family:'Inter',sans-serif;min-height:100vh;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:'Inter',sans-serif;cursor:pointer;border:none;background:none;}
+
+  .bg-grid{
+    position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:linear-gradient(to right,rgba(255,255,255,0.015) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,0.015) 1px,transparent 1px);
+    background-size:64px 64px;
+  }
+  .page{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:36px clamp(16px,5vw,40px) 80px;}
+
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:36px;padding-bottom:20px;border-bottom:0.5px solid var(--line);flex-wrap:wrap;gap:10px;}
+  .wordmark{display:flex;align-items:center;gap:10px;}
+  .wordmark img{height:26px;width:auto;}
+  .wordmark span{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.18em;color:var(--white);}
+  .wordmark .accent{color:var(--cyan-bright);}
+  .back-link{font-size:12.5px;color:var(--steel);display:flex;align-items:center;gap:5px;transition:color 0.15s;}
+  .back-link:hover{color:var(--cyan-bright);}
+  .back-link svg{width:14px;height:14px;}
+
+  .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:8px;}
+  h1{font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;font-size:clamp(26px,5vw,34px);text-transform:uppercase;margin-bottom:6px;}
+  h1 .accent{color:var(--cyan-bright);}
+  .intro{font-size:13.5px;color:var(--steel);margin-bottom:28px;line-height:1.6;}
+
+  .card{background:var(--panel);border:0.5px solid var(--line);border-radius:14px;padding:24px;margin-bottom:20px;}
+  .card-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;text-transform:uppercase;letter-spacing:0.04em;color:var(--cyan-bright);margin-bottom:18px;padding-bottom:10px;border-bottom:0.5px solid var(--line);}
+
+  .fgroup{margin-bottom:16px;}
+  .fgroup label{display:block;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--steel);margin-bottom:6px;}
+  .fgroup input,.fgroup select,.fgroup textarea{
+    width:100%;padding:11px 13px;border-radius:8px;
+    background:var(--panel-2);border:1px solid var(--line);
+    color:var(--white);font-family:'Inter',sans-serif;font-size:14px;
+    outline:none;transition:border-color 0.15s;
+  }
+  .fgroup input:focus,.fgroup select:focus,.fgroup textarea:focus{border-color:var(--cyan);}
+  .fgroup input::placeholder,.fgroup textarea::placeholder{color:var(--steel-dim);}
+  .fgroup textarea{resize:vertical;min-height:70px;}
+  .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+  /* category colours */
+  .cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:4px;}
+  @media(max-width:480px){.cat-grid{grid-template-columns:repeat(2,1fr);}}
+  .cat-btn{
+    padding:10px 8px;border-radius:8px;border:1px solid var(--line);
+    background:var(--panel-2);font-size:11px;font-weight:700;
+    letter-spacing:0.06em;text-transform:uppercase;
+    color:var(--steel-dim);cursor:pointer;transition:all 0.15s;text-align:center;
+  }
+  .cat-btn:hover{border-color:var(--steel);color:var(--steel);}
+  .cat-btn.active{color:#03171D !important;border-color:transparent !important;}
+  .cat-btn[data-cat="oem"].active   {background:#3DC9F0;}
+  .cat-btn[data-cat="tire"].active  {background:#F0B83D;}
+  .cat-btn[data-cat="tool"].active  {background:#3DF08A;}
+  .cat-btn[data-cat="perf"].active  {background:#F03D6E;}
+  .cat-btn[data-cat="after"].active {background:#C43DF0;}
+  .cat-btn[data-cat="body"].active  {background:#FF7A3D;}
+  .cat-btn[data-cat="spec"].active  {background:#E8D44D;}
+  .cat-btn[data-cat="dealer"].active{background:#A8FF78;}
+
+  /* address + geocode */
+  .addr-row{display:flex;gap:8px;align-items:flex-end;}
+  .addr-row .fgroup{flex:1;margin-bottom:0;}
+  .btn-geocode{
+    padding:11px 14px;border-radius:8px;background:var(--panel-2);
+    border:1px solid var(--line);color:var(--steel);font-size:12px;font-weight:600;
+    white-space:nowrap;transition:all 0.15s;flex-shrink:0;height:44px;
+    display:flex;align-items:center;gap:6px;
+  }
+  .btn-geocode:hover{color:var(--cyan-bright);border-color:var(--cyan);}
+  .btn-geocode svg{width:13px;height:13px;}
+  .geocode-status{font-size:12px;margin-top:6px;display:none;}
+  .geocode-status.ok{color:var(--green);}
+  .geocode-status.err{color:var(--red);}
+  .latlong-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+  /* output */
+  .output-block{
+    background:#0A0C0D;border:1px solid rgba(31,169,207,0.3);
+    border-radius:10px;padding:18px;
+    font-family:'Courier New',monospace;font-size:13px;
+    line-height:1.7;color:#C0CDD0;
+    white-space:pre;overflow-x:auto;
+    position:relative;
+    display:none;
+  }
+  .output-block.visible{display:block;}
+
+  .btn-primary{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:13px 24px;border-radius:10px;
+    background:var(--cyan-bright);color:#03171D;
+    font-family:'Rajdhani',sans-serif;font-weight:700;
+    font-size:15px;letter-spacing:0.06em;text-transform:uppercase;
+    cursor:pointer;border:none;transition:background 0.15s;
+  }
+  .btn-primary:hover{background:#62D6F5;}
+  .btn-primary svg{width:15px;height:15px;}
+  .btn-ghost{
+    display:inline-flex;align-items:center;gap:7px;
+    padding:11px 18px;border-radius:10px;
+    background:transparent;border:0.5px solid var(--line);
+    color:var(--steel);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s;
+  }
+  .btn-ghost:hover{color:var(--white);border-color:var(--steel);}
+  .btn-copy{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:8px 14px;border-radius:7px;background:rgba(31,169,207,0.1);
+    border:0.5px solid rgba(31,169,207,0.3);color:var(--cyan-bright);
+    font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;
+  }
+  .btn-copy:hover{background:rgba(31,169,207,0.18);}
+  .btn-copy svg{width:13px;height:13px;}
+
+  .action-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;}
+  .hint{font-size:12px;color:var(--steel-dim);line-height:1.6;margin-top:10px;}
+  .hint a{color:var(--cyan);}
+  .hint code{background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:4px;font-size:11px;}
+
+  .validation-msg{font-size:12.5px;color:var(--red);margin-top:8px;display:none;}
+</style>
+</head>
+<body>
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="page">
+
+  <header>
+    <div class="wordmark">
+      <img src="logo_transparent.png" alt="Performance Connect">
+      <span>PERFORMANCE<span class="accent">CONNECT</span></span>
+    </div>
+    <a href="affiliates.html" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Affiliates map
+    </a>
+  </header>
+
+  <div class="eyebrow">Admin Tool</div>
+  <h1>Add an <span class="accent">Affiliate</span></h1>
+  <p class="intro">Fill in the shop details, look up the coordinates, then copy the generated JSON entry and paste it into <code>affiliates.json</code> on GitHub.</p>
+
+  <!-- CATEGORY -->
+  <div class="card">
+    <div class="card-title">Category</div>
+    <div class="cat-grid" id="cat-grid">
+      <button class="cat-btn" data-cat="oem">OEM Dealer</button>
+      <button class="cat-btn" data-cat="tire">Tire Shop</button>
+      <button class="cat-btn" data-cat="tool">Tool Store</button>
+      <button class="cat-btn" data-cat="perf">Perf Shop</button>
+      <button class="cat-btn" data-cat="after">Aftermarket</button>
+      <button class="cat-btn" data-cat="body">Body Shop</button>
+      <button class="cat-btn" data-cat="spec">Specialty</button>
+      <button class="cat-btn" data-cat="dealer">Vehicle Sales</button>
+    </div>
+    <div class="validation-msg" id="cat-err">Please select a category.</div>
+  </div>
+
+  <!-- SHOP INFO -->
+  <div class="card">
+    <div class="card-title">Shop Details</div>
+    <div class="fgroup">
+      <label>Shop name <span style="color:var(--red)">*</span></label>
+      <input type="text" id="f-name" placeholder="e.g. MGMT Autoworks">
+    </div>
+    <div class="frow">
+      <div class="fgroup">
+        <label>Phone</label>
+        <input type="tel" id="f-phone" placeholder="(416) 555-0000">
+      </div>
+      <div class="fgroup">
+        <label>Website</label>
+        <input type="url" id="f-web" placeholder="https://theirsite.com">
+      </div>
+    </div>
+    <div class="fgroup">
+      <label>Instagram handle</label>
+      <div style="display:flex;align-items:center;gap:0;">
+        <span style="background:var(--panel);border:1px solid var(--line);border-right:none;border-radius:6px 0 0 6px;padding:11px 12px;color:var(--steel-dim);font-size:14px;white-space:nowrap;">@</span>
+        <input type="text" id="f-instagram" placeholder="shophandle" style="border-radius:0 6px 6px 0;border-left:none;">
+      </div>
+    </div>
+    <div class="fgroup">
+      <label>One-line specialty note</label>
+      <input type="text" id="f-notes" placeholder="e.g. Performance tuning, wraps, and ceramic coatings">
+    </div>
+  </div>
+
+  <!-- ADDRESS + GEOCODE -->
+  <div class="card">
+    <div class="card-title">Location</div>
+    <div class="fgroup">
+      <label>Full address <span style="color:var(--red)">*</span></label>
+      <div class="addr-row">
+        <div class="fgroup">
+          <input type="text" id="f-address" placeholder="123 Street, City, ON L4K 1V6">
+        </div>
+        <button class="btn-geocode" id="btn-geocode" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 13-8 13S4 15.25 4 10a8 8 0 0 1 8-8z"/></svg>
+          Look up
+        </button>
+      </div>
+      <div class="geocode-status" id="geocode-status"></div>
+    </div>
+    <div class="latlong-row">
+      <div class="fgroup">
+        <label>Latitude</label>
+        <input type="number" id="f-lat" placeholder="43.8030" step="0.0001">
+      </div>
+      <div class="fgroup">
+        <label>Longitude</label>
+        <input type="number" id="f-lng" placeholder="-79.4916" step="0.0001">
+      </div>
+    </div>
+    <p class="hint">Coordinates auto-fill when you click "Look up". You can also <a href="https://maps.google.com" target="_blank">right-click on Google Maps</a> to get them manually.</p>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="action-row">
+    <button class="btn-primary" id="btn-generate" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      Generate JSON
+    </button>
+    <button class="btn-ghost" id="btn-reset" type="button">Reset</button>
+  </div>
+  <div class="validation-msg" id="gen-err" style="margin-top:10px;"></div>
+
+  <!-- OUTPUT -->
+  <div style="margin-top:24px;" id="output-wrap" style="display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);">✓ Ready to paste into affiliates.json</div>
+      <button class="btn-copy" id="btn-copy" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy JSON
+      </button>
+    </div>
+    <div class="output-block visible" id="output-block"></div>
+    <p class="hint" style="margin-top:12px;">
+      1. Open <code>affiliates.json</code> in GitHub<br>
+      2. Add a comma after the last <code>}</code><br>
+      3. Paste this entry<br>
+      4. Commit — the shop appears on the map instantly
+    </p>
+  </div>
+
+</div>
+
+<script>
+  var selectedCat = null;
+
+  // ── Category selection ──
+  document.getElementById('cat-grid').addEventListener('click', function(e){
+    var btn = e.target.closest('.cat-btn');
+    if(!btn) return;
+    document.querySelectorAll('.cat-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    selectedCat = btn.dataset.cat;
+    document.getElementById('cat-err').style.display = 'none';
+  });
+
+  // ── Geocoding via Nominatim (free, no API key) ──
+  document.getElementById('btn-geocode').addEventListener('click', async function(){
+    var addr = document.getElementById('f-address').value.trim();
+    if(!addr){ showGeocodeStatus('Please enter an address first.', false); return; }
+
+    var btn = this;
+    btn.textContent = 'Looking up...';
+    btn.disabled = true;
+
+    try{
+      var url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(addr);
+      var res = await fetch(url, { headers:{ 'Accept-Language':'en', 'User-Agent':'PerformanceConnect-Admin/1.0' }});
+      var data = await res.json();
+
+      if(data && data.length > 0){
+        var lat = parseFloat(data[0].lat).toFixed(4);
+        var lng = parseFloat(data[0].lon).toFixed(4);
+        document.getElementById('f-lat').value = lat;
+        document.getElementById('f-lng').value = lng;
+        showGeocodeStatus('✓ Found: ' + data[0].display_name.split(',').slice(0,3).join(','), true);
+      } else {
+        showGeocodeStatus('Address not found. Try a more specific address or enter coordinates manually.', false);
+      }
+    } catch(err){
+      showGeocodeStatus('Lookup failed. Enter coordinates manually.', false);
+    }
+
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 13-8 13S4 15.25 4 10a8 8 0 0 1 8-8z"/></svg> Look up';
+    btn.disabled = false;
+  });
+
+  function showGeocodeStatus(msg, ok){
+    var el = document.getElementById('geocode-status');
+    el.textContent = msg;
+    el.className = 'geocode-status ' + (ok ? 'ok' : 'err');
+    el.style.display = 'block';
+  }
+
+  // ── Generate JSON ──
+  document.getElementById('btn-generate').addEventListener('click', function(){
+    var errEl = document.getElementById('gen-err');
+    errEl.style.display = 'none';
+
+    var name      = document.getElementById('f-name').value.trim();
+    var address   = document.getElementById('f-address').value.trim();
+    var phone     = document.getElementById('f-phone').value.trim();
+    var web       = document.getElementById('f-web').value.trim();
+    var instagram = document.getElementById('f-instagram').value.trim().replace(/^@/,'');
+    var notes     = document.getElementById('f-notes').value.trim();
+    var lat       = parseFloat(document.getElementById('f-lat').value);
+    var lng       = parseFloat(document.getElementById('f-lng').value);
+
+    // Validation
+    if(!selectedCat){ document.getElementById('cat-err').style.display='block'; return; }
+    if(!name)  { showErr('Please enter a shop name.'); return; }
+    if(!address){ showErr('Please enter an address.'); return; }
+    if(isNaN(lat) || isNaN(lng)){ showErr('Please look up or enter coordinates.'); return; }
+
+    // Build entry — only include fields that have values
+    var entry = {};
+    entry.cat     = selectedCat;
+    entry.name    = name;
+    entry.address = address;
+    if(phone)     entry.phone     = phone;
+    if(web)       entry.web       = web;
+    if(instagram) entry.instagram = '@' + instagram;
+    entry.lat     = parseFloat(lat.toFixed(4));
+    entry.lng     = parseFloat(lng.toFixed(4));
+    if(notes)     entry.notes     = notes;
+
+    var json = JSON.stringify(entry, null, 2);
+    document.getElementById('output-block').textContent = json;
+    document.getElementById('output-wrap').style.display = 'block';
+    document.getElementById('output-wrap').scrollIntoView({ behavior:'smooth', block:'start' });
+  });
+
+  function showErr(msg){
+    var el = document.getElementById('gen-err');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  // ── Copy to clipboard ──
+  document.getElementById('btn-copy').addEventListener('click', function(){
+    var text = document.getElementById('output-block').textContent;
+    navigator.clipboard.writeText(text).then(function(){
+      var btn = document.getElementById('btn-copy');
+      btn.textContent = '✓ Copied!';
+      setTimeout(function(){
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy JSON';
+      }, 2000);
+    });
+  });
+
+  // ── Reset ──
+  document.getElementById('btn-reset').addEventListener('click', function(){
+    document.querySelectorAll('.cat-btn').forEach(function(b){ b.classList.remove('active'); });
+    selectedCat = null;
+    ['f-name','f-phone','f-web','f-instagram','f-notes','f-address','f-lat','f-lng'].forEach(function(id){
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('geocode-status').style.display = 'none';
+    document.getElementById('output-wrap').style.display = 'none';
+    document.getElementById('output-block').textContent = '';
+    document.getElementById('gen-err').style.display = 'none';
+    document.getElementById('cat-err').style.display = 'none';
+  });
+</script>
+</body>
+</html>
