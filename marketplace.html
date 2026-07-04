@@ -332,14 +332,7 @@
   }
 
   /* GTA map tile background on card back — Leaflet instance */
-  .card-back-map{
-    position:absolute;inset:0;border-radius:16px;overflow:hidden;
-    opacity:0.22;pointer-events:none;z-index:0;
-  }
-  .card-back-map img{
-    width:100%;height:100%;object-fit:cover;object-position:center top;
-    display:block;
-  }
+
 
   /* all card-back children sit above the map */
   .card-back-head,.back-listings,.card-back-footer{
@@ -1171,7 +1164,7 @@
               </div>
             </div>
             <div class="card-back">
-              <div class="card-back-map"><img src="gta-map.svg" alt=""></div>
+              
               <div class="card-back-head">
                 <div class="card-back-title">Vehicles</div>
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
@@ -1197,7 +1190,7 @@
               </div>
             </div>
             <div class="card-back">
-              <div class="card-back-map"><img src="gta-map.svg" alt=""></div>
+              
               <div class="card-back-head">
                 <div class="card-back-title">Wheels &amp; Tires</div>
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
@@ -1223,7 +1216,7 @@
               </div>
             </div>
             <div class="card-back">
-              <div class="card-back-map"><img src="gta-map.svg" alt=""></div>
+              
               <div class="card-back-head">
                 <div class="card-back-title">Parts</div>
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
@@ -1249,7 +1242,7 @@
               </div>
             </div>
             <div class="card-back">
-              <div class="card-back-map"><img src="gta-map.svg" alt=""></div>
+              
               <div class="card-back-head">
                 <div class="card-back-title">Tools</div>
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
@@ -1275,7 +1268,7 @@
               </div>
             </div>
             <div class="card-back">
-              <div class="card-back-map"><img src="gta-map.svg" alt=""></div>
+              
               <div class="card-back-head">
                 <div class="card-back-title">Fluids &amp; Products</div>
                 <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
@@ -1773,9 +1766,9 @@
 
     container.innerHTML = '';
     res.data.forEach(function(l){
-      var thumb = l.photo_urls && l.photo_urls.length
-        ? '<img src="'+escHtml(l.photo_urls[0])+'" alt="'+escHtml(l.title)+'" loading="lazy">'
-        : '<div class="no-img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
+      var thumbInner = l.photo_urls && l.photo_urls.length
+        ? '<img src="'+escHtml(l.photo_urls[0])+'" alt="'+escHtml(l.title)+'" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:5px;">'
+        : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.04);border-radius:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(140,160,166,0.4)" stroke-width="1.5" width="18" height="18"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
       var price = l.price
         ? '<div class="back-listing-price">$'+Number(l.price).toLocaleString()+'</div>'
         : '<div class="back-listing-price offer">Make offer</div>';
@@ -1783,7 +1776,7 @@
       item.className = 'back-listing';
       item.href = 'listing.html?id='+l.id;
       item.innerHTML =
-        '<div class="back-thumb">'+thumb+'</div>'+
+        '<div class="back-thumb">'+thumbInner+'</div>'+
         '<div class="back-info">'+
           '<div class="back-listing-title">'+escHtml(l.title)+'</div>'+
           price+
@@ -1794,36 +1787,39 @@
     });
   }
 
-  // Flip logic — hover on desktop, tap on mobile
+  // Flip logic — hover on desktop only, tap on mobile only
+  // Detect touch device once at init time
+  var isTouchDevice = (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
+
   pillarCards.forEach(function(card){
     var cat = card.dataset.cat;
 
-    // Desktop: hover to flip, un-hover to flip back
-    card.addEventListener('mouseenter', function(){
-      card.classList.add('flipped');
-      loadBackListings(cat);
-      initCardBackMap(cat);
-    });
-    card.addEventListener('mouseleave', function(){
-      card.classList.remove('flipped');
-    });
-
-    // Mobile: tap to flip, tap again (or elsewhere) to flip back
-    card.addEventListener('click', function(e){
-      // Don't flip if clicking the "Back" button or a listing link
-      if(e.target.closest('.card-back-close') || e.target.closest('.back-listing') || e.target.closest('.card-back-footer a')) return;
-      if(card.classList.contains('flipped')){
-        card.classList.remove('flipped');
-      } else {
-        // Close any other flipped card first
-        pillarCards.forEach(function(c){ if(c !== card) c.classList.remove('flipped'); });
+    if(!isTouchDevice){
+      // Desktop: hover to flip, mouseleave to flip back
+      card.addEventListener('mouseenter', function(){
         card.classList.add('flipped');
         loadBackListings(cat);
         initCardBackMap(cat);
-      }
-    });
+      });
+      card.addEventListener('mouseleave', function(){
+        card.classList.remove('flipped');
+      });
+    } else {
+      // Mobile: tap to toggle flip — no mouseleave involved
+      card.addEventListener('click', function(e){
+        if(e.target.closest('.card-back-close') || e.target.closest('.back-listing') || e.target.closest('.card-back-footer a')) return;
+        if(card.classList.contains('flipped')){
+          card.classList.remove('flipped');
+        } else {
+          pillarCards.forEach(function(c){ if(c !== card) c.classList.remove('flipped'); });
+          card.classList.add('flipped');
+          loadBackListings(cat);
+          initCardBackMap(cat);
+        }
+      });
+    }
 
-    // "Back" button on card back
+    // "Back" button always works regardless of device
     var closeBtn = card.querySelector('.card-back-close');
     if(closeBtn){
       closeBtn.addEventListener('click', function(e){
@@ -1833,12 +1829,14 @@
     }
   });
 
-  // Close flipped card when clicking outside
-  document.addEventListener('click', function(e){
-    if(!e.target.closest('.pillar-card')){
-      pillarCards.forEach(function(c){ c.classList.remove('flipped'); });
-    }
-  });
+  // Close flipped card when tapping outside (mobile only)
+  if(isTouchDevice){
+    document.addEventListener('click', function(e){
+      if(!e.target.closest('.pillar-card')){
+        pillarCards.forEach(function(c){ c.classList.remove('flipped'); });
+      }
+    });
+  }
 
   // ── Per-card video fade-in ──
   document.querySelectorAll('.card-video video').forEach(function(video){
@@ -1930,12 +1928,25 @@
 
   document.getElementById('open-listing-modal').addEventListener('click', openModal);
 
+
   // Auto-open listing modal if arriving from homepage "Sell Something" button
   if(new URLSearchParams(window.location.search).get('list') === 'true'){
     openModal();
-    // Clean the URL so refresh doesn't re-open it
     history.replaceState(null, '', window.location.pathname);
   }
+
+  // "View all [category]" from flip card back — scroll to listings and apply filter
+  var filterParam = new URLSearchParams(window.location.search).get('filter');
+  if(filterParam){
+    history.replaceState(null, '', window.location.pathname);
+    setTimeout(function(){
+      var matchBtn = document.querySelector('.filter-btn[data-filter="'+filterParam+'"]');
+      if(matchBtn) matchBtn.click();
+      var section = document.getElementById('listings-section');
+      if(section) section.scrollIntoView({ behavior:'smooth', block:'start' });
+    }, 500);
+  }
+
   document.getElementById('lmodal-close').addEventListener('click', closeModal);
   overlay.addEventListener('click', function(e){
     if(e.target === overlay){ closeModal(); }
