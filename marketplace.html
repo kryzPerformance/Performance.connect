@@ -503,18 +503,18 @@
 
   /* ── CONTROLS ROW ── */
   .listings-controls{
-    display:flex;align-items:center;justify-content:space-between;
-    gap:12px;margin-bottom:16px;flex-wrap:wrap;
+    display:flex;align-items:flex-start;
+    gap:10px;margin-bottom:16px;flex-wrap:wrap;
   }
   .filter-btns-wrap{
-    display:flex;gap:8px;flex-wrap:wrap;flex:1;
+    display:flex;gap:8px;flex-wrap:wrap;flex:1;min-width:0;
   }
-
-  /* ── LAYOUT SWITCHER ── */
+  /* Layout switcher always stays on the right, aligned to first row of pills */
   .layout-switcher{
     display:flex;gap:4px;flex-shrink:0;
     background:var(--panel);border:0.5px solid var(--line);
-    border-radius:8px;padding:3px;
+    border-radius:8px;padding:3px;margin-top:0;
+    align-self:flex-start;
   }
   .layout-btn{
     width:32px;height:32px;border-radius:6px;
@@ -534,43 +534,43 @@
   }
   .listings-grid.layout-list .listing-card{
     display:grid;
-    grid-template-columns:140px 1fr;
+    grid-template-columns:130px 1fr;
     border-radius:10px;
+    min-height:100px;
   }
   .listings-grid.layout-list .listing-thumb-wrap{
-    height:100%;min-height:100px;border-radius:10px 0 0 10px;
+    height:100%;border-radius:10px 0 0 10px;overflow:hidden;
   }
   .listings-grid.layout-list .listing-thumb{
-    height:100%;border-radius:10px 0 0 10px;
+    width:100%;height:100%;object-fit:cover;aspect-ratio:unset;
+    border-radius:10px 0 0 10px;
   }
   .listings-grid.layout-list .listing-thumb-placeholder{
     height:100%;min-height:100px;border-radius:10px 0 0 10px;aspect-ratio:unset;
   }
   .listings-grid.layout-list .listing-body{
-    padding:14px 16px;display:flex;flex-direction:column;justify-content:space-between;
+    padding:12px 14px;display:flex;flex-direction:column;justify-content:space-between;
   }
-  .listings-grid.layout-list .listing-title{ font-size:16px; }
+  .listings-grid.layout-list .listing-title{ font-size:15px; }
   .listings-grid.layout-list .listing-meta{ font-size:12px; }
+  .listings-grid.layout-list .listing-card::after{ display:none; }
 
-  /* Grid — default responsive columns */
+  /* Grid — 2 cols mobile, 3 tablet, 4 desktop */
   .listings-grid.layout-grid{
-    grid-template-columns:1fr;
+    grid-template-columns:repeat(2,1fr);
   }
-  @media(min-width:540px){
-    .listings-grid.layout-grid{ grid-template-columns:repeat(2,1fr); }
-  }
-  @media(min-width:900px){
+  @media(min-width:700px){
     .listings-grid.layout-grid{ grid-template-columns:repeat(3,1fr); }
   }
-  @media(min-width:1200px){
+  @media(min-width:1100px){
     .listings-grid.layout-grid{ grid-template-columns:repeat(4,1fr); }
   }
 
-  /* Wide — fewer, larger cards */
+  /* Wide — 1 col mobile, 2 tablet, 3 desktop, bigger photos */
   .listings-grid.layout-wide{
     grid-template-columns:1fr;
   }
-  @media(min-width:540px){
+  @media(min-width:600px){
     .listings-grid.layout-wide{ grid-template-columns:repeat(2,1fr); }
   }
   @media(min-width:1100px){
@@ -578,7 +578,7 @@
   }
   .listings-grid.layout-wide .listing-thumb,
   .listings-grid.layout-wide .listing-thumb-placeholder{
-    aspect-ratio:16/10;
+    aspect-ratio:16/9;
   }
   .listings-grid.layout-wide .listing-title{ font-size:19px; }
 
