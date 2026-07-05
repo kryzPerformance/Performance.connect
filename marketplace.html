@@ -223,7 +223,8 @@
     border-radius:16px;
     min-height:320px;
     max-height:320px;
-    overflow:hidden; /* safe here — no preserve-3d parent */
+    overflow:hidden;
+    contain:layout paint;
   }
 
   /* front and back are both absolutely positioned, same size */
@@ -236,7 +237,6 @@
     transition:
       transform 0.55s cubic-bezier(0.4,0.2,0.2,1),
       opacity   0.55s cubic-bezier(0.4,0.2,0.2,1);
-    will-change:transform,opacity;
   }
 
   /* FRONT — visible by default, hides on flip */
@@ -351,7 +351,7 @@
     position:relative;
   }
 
-  /* GTA map tile background on card back — Leaflet instance */
+  /* all card-back children sit above any background layer */
 
 
   /* all card-back children sit above the map */
@@ -1287,7 +1287,6 @@
               <div class="back-listings" id="back-vehicles"><div class="back-loading"><div class="spin"></div></div></div>
               <div class="card-back-footer"><button class="view-all-btn" data-filter="vehicles">View all vehicles →</button></div>
             </div>
-          </div>
         </div>
 
         <div class="pillar-card" tabindex="0" data-cat="wheels">
@@ -1312,7 +1311,6 @@
               <div class="back-listings" id="back-wheels"><div class="back-loading"><div class="spin"></div></div></div>
               <div class="card-back-footer"><button class="view-all-btn" data-filter="wheels">View all wheels →</button></div>
             </div>
-          </div>
         </div>
 
         <div class="pillar-card" tabindex="0" data-cat="parts">
@@ -1337,7 +1335,6 @@
               <div class="back-listings" id="back-parts"><div class="back-loading"><div class="spin"></div></div></div>
               <div class="card-back-footer"><button class="view-all-btn" data-filter="parts">View all parts →</button></div>
             </div>
-          </div>
         </div>
 
         <div class="pillar-card" tabindex="0" data-cat="tools">
@@ -1362,7 +1359,6 @@
               <div class="back-listings" id="back-tools"><div class="back-loading"><div class="spin"></div></div></div>
               <div class="card-back-footer"><button class="view-all-btn" data-filter="tools">View all tools →</button></div>
             </div>
-          </div>
         </div>
 
         <div class="pillar-card" tabindex="0" data-cat="fluids">
@@ -1387,7 +1383,6 @@
               <div class="back-listings" id="back-fluids"><div class="back-loading"><div class="spin"></div></div></div>
               <div class="card-back-footer"><button class="view-all-btn" data-filter="fluids">View all fluids →</button></div>
             </div>
-          </div>
         </div>
 
       </div>
@@ -1942,7 +1937,6 @@
       card.addEventListener('mouseenter', function(){
         card.classList.add('flipped');
         loadBackListings(cat);
-        initCardBackMap(cat);
       });
       card.addEventListener('mouseleave', function(){
         card.classList.remove('flipped');
@@ -1957,7 +1951,6 @@
           pillarCards.forEach(function(c){ if(c !== card) c.classList.remove('flipped'); });
           card.classList.add('flipped');
           loadBackListings(cat);
-          initCardBackMap(cat);
         }
       });
     }
@@ -2012,35 +2005,6 @@
   }
 
   // ── Card back mini-maps (GTA with cyan filter) ────────────────────────────
-  var cardBackMaps = {};
-  var CARD_MAP_CATS = ['vehicles','wheels','parts','tools','fluids'];
-  // GTA centre — same for all cards, static background
-  var GTA = [43.7184, -79.5181];
-
-  function initCardBackMap(cat){
-    if(cardBackMaps[cat]) return;
-    var el = document.getElementById('card-map-' + cat);
-    if(!el || typeof L === 'undefined') return;
-    // Wait for the flip transition to fully complete (550ms) before
-    // initialising Leaflet — if we init while the card is mid-rotate,
-    // the browser reports wrong container dimensions on mobile, causing
-    // the Leaflet container to exceed card width and push page scroll
-    setTimeout(function(){
-      if(cardBackMaps[cat]) return; // guard double-call
-      var m = L.map(el, {
-        center: GTA, zoom: 10,
-        zoomControl:false, dragging:false, scrollWheelZoom:false,
-        doubleClickZoom:false, touchZoom:false, keyboard:false,
-        attributionControl:false
-      });
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
-        subdomains:'abcd', maxZoom:19
-      }).addTo(m);
-      cardBackMaps[cat] = m;
-      m.invalidateSize();
-    }, 580); // slightly longer than the 550ms flip transition
-  }
-
   function openModal(){
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
