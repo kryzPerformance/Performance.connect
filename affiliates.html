@@ -77,11 +77,11 @@
   .filter-pill[data-cat="body"]   .dot{background:var(--col-body);}
   .filter-pill[data-cat="spec"]   .dot{background:var(--col-spec);}
   .filter-pill[data-cat="dealer"] .dot{background:var(--col-dealer);}
-  .filter-pill.active{background:rgba(31,169,207,0.08);border-color:rgba(31,169,207,0.3);color:var(--white);}
+  .filter-pill.active{color:var(--white);}
   .filter-pill:not(.active){background:var(--panel);border-color:var(--line);color:var(--steel-dim);opacity:0.5;}
   .filter-pill:not(.active) .dot{opacity:0.4;}
   .filter-pill:hover{opacity:1;border-color:rgba(31,169,207,0.4);color:var(--white);}
-  /* Per-category active tint using each pill's own colour */
+  /* Per-category active tint — only these rules set background/border on active pills */
   .filter-pill[data-cat="oem"].active   {background:rgba(0,217,255,0.1);border-color:rgba(0,217,255,0.4);}
   .filter-pill[data-cat="tire"].active  {background:rgba(255,193,7,0.1);border-color:rgba(255,193,7,0.4);}
   .filter-pill[data-cat="tool"].active  {background:rgba(57,255,136,0.1);border-color:rgba(57,255,136,0.4);}
@@ -90,11 +90,10 @@
   .filter-pill[data-cat="body"].active  {background:rgba(255,140,66,0.1);border-color:rgba(255,140,66,0.4);}
   .filter-pill[data-cat="spec"].active  {background:rgba(255,214,0,0.1);border-color:rgba(255,214,0,0.4);}
   .filter-pill[data-cat="dealer"].active{background:rgba(124,255,107,0.1);border-color:rgba(124,255,107,0.4);}
-  /* Round focus outline to match pill shape */
+  /* Focus — rounded to match pill, no rectangle */
+  .filter-pill:focus{outline:none;}
   .filter-pill:focus-visible{outline:2px solid var(--cyan-bright);outline-offset:2px;border-radius:999px;}
-  .filter-pill:focus:not(:focus-visible){outline:none;}
-  /* Active/pressed state — rounded highlight, no square flash */
-  .filter-pill:active{outline:none;box-shadow:0 0 0 3px rgba(31,169,207,0.25);border-radius:999px;}
+  .filter-pill:active{outline:none;box-shadow:none;}
 
   .map-count{
     padding:0 clamp(16px,5vw,56px) 12px;
@@ -176,50 +175,41 @@
     z-index:9999 !important;
   }
 
-  /* ── Bottom sheet ── */
-  .bottom-sheet{
-    position:fixed;bottom:0;left:0;right:0;z-index:800;
+  /* ── Floating popup ── */
+  .float-popup{
+    position:absolute;
+    z-index:600;
+    min-width:240px;max-width:290px;
     background:var(--panel);
-    border-top:1px solid var(--line);
-    border-radius:20px 20px 0 0;
-    box-shadow:0 -8px 40px rgba(0,0,0,0.55);
-    transform:translateY(100%);
-    transition:transform 0.35s cubic-bezier(0.4,0.2,0.2,1);
-    max-width:600px;margin:0 auto;
-    /* allow sheet to sit above Leaflet controls */
+    border:1px solid var(--line);
+    border-radius:12px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.55);
+    pointer-events:auto;
+    opacity:0;
+    transform:scale(0.95);
+    transition:opacity 0.18s ease, transform 0.18s ease;
   }
-  .bottom-sheet.open{ transform:translateY(0); }
-
-  .sheet-handle{
-    width:36px;height:4px;border-radius:2px;background:var(--steel-dim);
-    margin:10px auto 0;
+  .float-popup.visible{
+    opacity:1;
+    transform:scale(1);
   }
-  .sheet-nav{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:10px 16px 0;
+  .float-popup-inner{ padding:16px 18px 14px; }
+  .float-popup-close{
+    position:absolute;top:10px;right:10px;
+    width:22px;height:22px;border-radius:6px;
+    background:rgba(255,255,255,0.05);border:0.5px solid var(--line);
+    color:var(--steel);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:all 0.15s;
   }
-  .sheet-counter{ font-size:11px;color:var(--steel-dim);font-weight:600;letter-spacing:0.06em; }
-  .sheet-arrows{ display:flex;gap:6px; }
-  .sheet-arrow{
-    width:30px;height:30px;border-radius:8px;
-    border:0.5px solid var(--line);background:rgba(255,255,255,0.04);
-    color:var(--steel);display:flex;align-items:center;justify-content:center;
-    cursor:pointer;transition:all 0.15s;
+  .float-popup-close:hover{ color:var(--white);border-color:var(--steel); }
+  .float-popup-close svg{ width:11px;height:11px; }
+  /* Pointer triangle — injected via JS as inline SVG on the popup element */
+  .float-popup-pointer{
+    position:absolute;
+    width:14px;height:8px;
+    overflow:visible;
   }
-  .sheet-arrow:hover{ color:var(--cyan-bright);border-color:var(--cyan); }
-  .sheet-arrow:disabled{ opacity:0.3;cursor:default;pointer-events:none; }
-  .sheet-arrow svg{ width:14px;height:14px; }
-
-  .sheet-close{
-    width:30px;height:30px;border-radius:8px;
-    border:0.5px solid var(--line);background:rgba(255,255,255,0.04);
-    color:var(--steel);display:flex;align-items:center;justify-content:center;
-    cursor:pointer;transition:all 0.15s;
-  }
-  .sheet-close:hover{ color:var(--white);border-color:var(--steel); }
-  .sheet-close svg{ width:14px;height:14px; }
-
-  .sheet-body{ padding:12px 18px 24px; }
 
   footer{padding:20px clamp(16px,5vw,56px);display:flex;flex-direction:column;align-items:center;border-top:0.5px solid var(--line);gap:6px;text-align:center;}
   .footer-text{font-size:12px;color:var(--steel-dim);}
@@ -267,7 +257,7 @@
   <div class="map-count" id="map-count">&nbsp;</div>
   <div class="map-hint" id="map-hint">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 13-8 13S4 15.25 4 10a8 8 0 0 1 8-8z"/></svg>
-    Tap a pin to see partner details — swipe the card to browse nearby
+    Tap a pin to see partner details
   </div>
 
   <div class="map-wrap">
@@ -276,6 +266,13 @@
       Loading partners...
     </div>
     <div id="map"></div>
+    <!-- Floating popup — positioned absolutely over the map -->
+    <div class="float-popup" id="float-popup">
+      <button class="float-popup-close" id="float-popup-close" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="float-popup-inner" id="float-popup-inner"></div>
+    </div>
   </div>
 
   <footer>
@@ -284,26 +281,6 @@
       <a href="mailto:info@performanceconnect.ca" style="color:var(--cyan);margin-left:4px;">Get in touch</a>
     </div>
   </footer>
-</div>
-
-<!-- Bottom sheet — replaces Leaflet popup -->
-<div class="bottom-sheet" id="bottom-sheet" role="dialog" aria-label="Partner details">
-  <div class="sheet-handle"></div>
-  <div class="sheet-nav">
-    <div style="display:flex;align-items:center;gap:8px;">
-      <button class="sheet-arrow" id="sheet-prev" title="Previous partner">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
-      </button>
-      <button class="sheet-arrow" id="sheet-next" title="Next partner">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
-      </button>
-      <span class="sheet-counter" id="sheet-counter"></span>
-    </div>
-    <button class="sheet-close" id="sheet-close" title="Close">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
-  </div>
-  <div class="sheet-body" id="sheet-body"></div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -437,83 +414,45 @@ fetch('affiliates.json')
       var marker = L.marker([loc.lat, loc.lng], { icon: makeIcon(cat) })
         .addTo(map);
       marker._locData = loc;
-      marker._idx    = idx;
+      marker._idx     = idx;
       allMarkers[cat].push(marker);
-
-      marker.on('click', function(){
-        openSheet(idx, locations);
+      marker.on('click', function(e){
+        L.DomEvent.stopPropagation(e);
+        openPopup(idx);
       });
     });
 
-    // fit map to all markers
     var allLatLngs = locations.map(function(l){ return [l.lat, l.lng]; });
-    if(allLatLngs.length > 1){
-      map.fitBounds(allLatLngs, { padding:[40,40] });
-    }
+    if(allLatLngs.length > 1) map.fitBounds(allLatLngs, { padding:[40,40] });
 
     updateCount();
 
-    // ── Bottom sheet logic ─────────────────────────────────────────────────
-    var sheet      = document.getElementById('bottom-sheet');
-    var sheetBody  = document.getElementById('sheet-body');
-    var sheetCount = document.getElementById('sheet-counter');
-    var btnPrev    = document.getElementById('sheet-prev');
-    var btnNext    = document.getElementById('sheet-next');
-    var btnClose   = document.getElementById('sheet-close');
-
-    var activeMarkerEl = null;  // DOM element of the currently highlighted marker
-    var nearbyList     = [];    // ordered list of location indices (by distance)
-    var nearbyPos      = 0;     // current position within nearbyList
+    // ── Floating popup logic ────────────────────────────────────────────────
+    var popup      = document.getElementById('float-popup');
+    var popupInner = document.getElementById('float-popup-inner');
+    var activeMarkerEl = null;
+    var activeIdx      = null;
 
     function getMarkerEl(idx){
-      // Find the Leaflet marker element for a given location index
       var found = null;
       Object.keys(allMarkers).forEach(function(cat){
-        allMarkers[cat].forEach(function(m){
-          if(m._idx === idx) found = m.getElement();
-        });
+        allMarkers[cat].forEach(function(m){ if(m._idx===idx) found=m.getElement(); });
       });
       return found;
     }
-
     function getMarkerObj(idx){
       var found = null;
       Object.keys(allMarkers).forEach(function(cat){
-        allMarkers[cat].forEach(function(m){
-          if(m._idx === idx) found = m;
-        });
+        allMarkers[cat].forEach(function(m){ if(m._idx===idx) found=m; });
       });
       return found;
     }
 
-    function distanceBetween(a, b){
-      var dlat = a.lat - b.lat, dlng = a.lng - b.lng;
-      return dlat*dlat + dlng*dlng;
-    }
-
-    function buildNearbyList(fromIdx){
-      // Sort all visible markers by distance from the tapped one
-      var origin = locations[fromIdx];
-      var visible = [];
-      Object.keys(allMarkers).forEach(function(cat){
-        if(!activeCats[cat]) return;
-        allMarkers[cat].forEach(function(m){
-          visible.push(m._idx);
-        });
-      });
-      visible.sort(function(a, b){
-        return distanceBetween(locations[a], origin) - distanceBetween(locations[b], origin);
-      });
-      return visible;
-    }
-
     function highlightMarker(idx){
-      // Remove highlight from previous
       if(activeMarkerEl){
-        var inner = activeMarkerEl.querySelector('.pc-marker');
-        if(inner) inner.classList.remove('pc-marker--active');
+        var prev = activeMarkerEl.querySelector('.pc-marker');
+        if(prev) prev.classList.remove('pc-marker--active');
       }
-      // Add highlight to new
       var el = getMarkerEl(idx);
       if(el){
         var inner = el.querySelector('.pc-marker');
@@ -522,61 +461,125 @@ fetch('affiliates.json')
       }
     }
 
-    function renderSheet(locIdx){
-      var loc = locations[locIdx];
+    function buildPopupContent(loc){
       var cfg = catConfig[loc.cat] || catConfig.oem;
-      var webBtn   = loc.web       ? '<a href="' + loc.web + '" target="_blank" rel="noopener" class="popup-link primary">Visit website</a>' : '';
-      var phoneBtn = loc.phone     ? '<a href="tel:' + loc.phone.replace(/[^0-9+]/g,'') + '" class="popup-link secondary">' + loc.phone + '</a>' : '';
-      var igBtn    = loc.instagram ? '<a href="https://instagram.com/' + loc.instagram.replace('@','') + '" target="_blank" rel="noopener" class="popup-link secondary">' + loc.instagram + '</a>' : '';
-      var notes    = loc.notes     ? '<div class="popup-notes">' + loc.notes + '</div>' : '';
-
-      sheetBody.innerHTML =
-        '<div class="popup-cat-tag" style="background:' + cfg.color + '18;color:' + cfg.color + '">' +
-          '<span class="dot" style="background:' + cfg.color + '"></span>' + cfg.label +
-        '</div>' +
-        '<div class="popup-name">' + loc.name + '</div>' +
-        '<div class="popup-address">' + loc.address + '</div>' +
-        notes +
-        '<div class="popup-links">' + webBtn + phoneBtn + igBtn + '</div>';
-
-      var pos = nearbyList.indexOf(locIdx);
-      sheetCount.textContent = (pos + 1) + ' / ' + nearbyList.length;
-      btnPrev.disabled = pos === 0;
-      btnNext.disabled = pos === nearbyList.length - 1;
+      var webBtn   = loc.web       ? '<a href="'+loc.web+'" target="_blank" rel="noopener" class="popup-link primary">Visit website</a>' : '';
+      var phoneBtn = loc.phone     ? '<a href="tel:'+loc.phone.replace(/[^0-9+]/g,'')+'" class="popup-link secondary">'+loc.phone+'</a>' : '';
+      var igBtn    = loc.instagram ? '<a href="https://instagram.com/'+loc.instagram.replace('@','')+'" target="_blank" rel="noopener" class="popup-link secondary">'+loc.instagram+'</a>' : '';
+      var notes    = loc.notes     ? '<div class="popup-notes">'+loc.notes+'</div>' : '';
+      return '<div class="popup-cat-tag" style="background:'+cfg.color+'18;color:'+cfg.color+'">'+
+               '<span class="dot" style="background:'+cfg.color+'"></span>'+cfg.label+
+             '</div>'+
+             '<div class="popup-name">'+loc.name+'</div>'+
+             '<div class="popup-address">'+loc.address+'</div>'+
+             notes+
+             '<div class="popup-links">'+webBtn+phoneBtn+igBtn+'</div>';
     }
 
-    function openSheet(locIdx, locs){
-      nearbyList = buildNearbyList(locIdx);
-      nearbyPos  = nearbyList.indexOf(locIdx);
+    function positionPopup(markerIdx){
+      var markerObj = getMarkerObj(markerIdx);
+      if(!markerObj) return;
 
-      renderSheet(locIdx);
-      highlightMarker(locIdx);
+      // Get pixel position of marker on map container
+      var pt      = map.latLngToContainerPoint(markerObj.getLatLng());
+      var mapEl   = document.getElementById('map');
+      var mapW    = mapEl.offsetWidth;
+      var mapH    = mapEl.offsetHeight;
+      var popW    = popup.offsetWidth  || 270;
+      var popH    = popup.offsetHeight || 180;
+      var markerR = 15; // half of 30px marker
+      var gap     = 10; // gap between marker and popup
+      var ptr     = 8;  // pointer triangle height
 
-      // Auto-pan so marker isn't hidden behind the sheet or edge
-      var marker = getMarkerObj(locIdx);
-      if(marker){
-        var pt  = map.latLngToContainerPoint(marker.getLatLng());
-        var shH = sheet.offsetHeight || 220;
-        var mapH = map.getSize().y;
-        var padBottom = shH + 20;
-        // If marker is in lower third, pan up
-        if(pt.y > mapH - padBottom){
-          map.panBy([0, -(padBottom - (mapH - pt.y))], { animate:true, duration:0.4 });
-        }
-        // If too close to edges, pan in
-        var padSide = 60;
-        var mapW = map.getSize().x;
-        var dx = 0, dy = 0;
-        if(pt.x < padSide)       dx =  padSide - pt.x;
-        if(pt.x > mapW - padSide) dx = -(pt.x - (mapW - padSide));
-        if(dx !== 0) map.panBy([-dx, 0], { animate:true, duration:0.3 });
+      // Decide vertical: above or below marker
+      var spaceAbove = pt.y - markerR - gap - ptr;
+      var spaceBelow = mapH - pt.y - markerR - gap - ptr;
+      var placeAbove = spaceAbove >= popH || spaceAbove >= spaceBelow;
+
+      // Horizontal: centre on marker, clamp to viewport
+      var left = pt.x - popW / 2;
+      left = Math.max(8, Math.min(left, mapW - popW - 8));
+
+      // Vertical position
+      var top;
+      if(placeAbove){
+        top = pt.y - markerR - gap - ptr - popH;
+      } else {
+        top = pt.y + markerR + gap + ptr;
       }
+      top = Math.max(8, Math.min(top, mapH - popH - 8));
 
-      sheet.classList.add('open');
+      popup.style.left = left + 'px';
+      popup.style.top  = top  + 'px';
+
+      // Remove old pointer
+      var oldPtr = popup.querySelector('.float-popup-pointer');
+      if(oldPtr) oldPtr.remove();
+
+      // Draw pointer triangle pointing toward the marker
+      var ptrEl = document.createElement('svg');
+      ptrEl.className = 'float-popup-pointer';
+      ptrEl.setAttribute('viewBox','0 0 14 8');
+      ptrEl.setAttribute('width','14');
+      ptrEl.setAttribute('height','8');
+
+      // Triangle points toward marker
+      var ptrPoly = document.createElement('polygon');
+      if(placeAbove){
+        // Popup is above — pointer at bottom pointing down
+        ptrEl.style.bottom  = (-ptr) + 'px';
+        ptrEl.style.top     = 'auto';
+        ptrEl.style.left    = (pt.x - left - 7) + 'px';
+        ptrEl.style.left    = Math.max(8, Math.min(pt.x - left - 7, popW - 22)) + 'px';
+        ptrPoly.setAttribute('points','0,0 14,0 7,8');
+        ptrPoly.setAttribute('fill','#111415');
+        // Outline triangle
+        var ptrOutline = document.createElement('polyline');
+        ptrOutline.setAttribute('points','0,0 7,8 14,0');
+        ptrOutline.setAttribute('fill','none');
+        ptrOutline.setAttribute('stroke','#23292b');
+        ptrOutline.setAttribute('stroke-width','1');
+        ptrEl.appendChild(ptrOutline);
+      } else {
+        // Popup is below — pointer at top pointing up
+        ptrEl.style.top    = (-ptr) + 'px';
+        ptrEl.style.bottom = 'auto';
+        ptrEl.style.left   = Math.max(8, Math.min(pt.x - left - 7, popW - 22)) + 'px';
+        ptrPoly.setAttribute('points','0,8 14,8 7,0');
+        ptrPoly.setAttribute('fill','#111415');
+        var ptrOutline = document.createElement('polyline');
+        ptrOutline.setAttribute('points','0,8 7,0 14,8');
+        ptrOutline.setAttribute('fill','none');
+        ptrOutline.setAttribute('stroke','#23292b');
+        ptrOutline.setAttribute('stroke-width','1');
+        ptrEl.appendChild(ptrOutline);
+      }
+      ptrEl.insertBefore(ptrPoly, ptrEl.firstChild);
+      popup.appendChild(ptrEl);
     }
 
-    function closeSheet(){
-      sheet.classList.remove('open');
+    function openPopup(idx){
+      if(activeIdx === idx && popup.classList.contains('visible')){
+        closePopup(); return;
+      }
+      activeIdx = idx;
+      var loc = locations[idx];
+      popupInner.innerHTML = buildPopupContent(loc);
+
+      // Show invisibly first to measure dimensions, then position
+      popup.style.opacity = '0';
+      popup.classList.add('visible');
+      requestAnimationFrame(function(){
+        positionPopup(idx);
+        popup.style.opacity = '';
+      });
+
+      highlightMarker(idx);
+    }
+
+    function closePopup(){
+      popup.classList.remove('visible');
+      activeIdx = null;
       if(activeMarkerEl){
         var inner = activeMarkerEl.querySelector('.pc-marker');
         if(inner) inner.classList.remove('pc-marker--active');
@@ -584,33 +587,10 @@ fetch('affiliates.json')
       }
     }
 
-    btnClose.addEventListener('click', closeSheet);
-
-    btnPrev.addEventListener('click', function(){
-      if(nearbyPos > 0){
-        nearbyPos--;
-        var idx = nearbyList[nearbyPos];
-        renderSheet(idx);
-        highlightMarker(idx);
-        // Pan map to newly selected marker
-        var m = getMarkerObj(idx);
-        if(m) map.panTo(m.getLatLng(), { animate:true, duration:0.4 });
-      }
-    });
-
-    btnNext.addEventListener('click', function(){
-      if(nearbyPos < nearbyList.length - 1){
-        nearbyPos++;
-        var idx = nearbyList[nearbyPos];
-        renderSheet(idx);
-        highlightMarker(idx);
-        var m = getMarkerObj(idx);
-        if(m) map.panTo(m.getLatLng(), { animate:true, duration:0.4 });
-      }
-    });
-
-    // Close sheet when tapping map
-    map.on('click', closeSheet);
+    document.getElementById('float-popup-close').addEventListener('click', closePopup);
+    // Prevent map click from closing when clicking inside popup
+    popup.addEventListener('click', function(e){ e.stopPropagation(); });
+    map.on('click', closePopup);
   })
   .catch(function(err){
     document.getElementById('map-loading').innerHTML =
@@ -634,9 +614,6 @@ document.getElementById('filter-bar').addEventListener('click', function(e){
 
   updateCount();
 });
-
-// close popup on tap outside marker on mobile
-map.on('click', function(){ map.closePopup(); });
 </script>
 </body>
 </html>
