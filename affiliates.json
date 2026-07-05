@@ -20,5 +20,16 @@
   "lat": 43.5905,
   "lng": -79.6441,
   "notes": "Buy, sell, trade, finance and wholesale — serving Mississauga since 1995"
+},
+{
+  "cat": "body",
+  "name": "Royal Auto Collision",
+  "address": "1725 Sismet Rd, Mississauga, ON L4W 1P9",
+  "phone": "(905) 282-1622",
+  "web": "https://royalautocollision.ca/",
+  "instagram": "@royalautocollision",
+  "lat": 43.6457,
+  "lng": -79.6215,
+  "notes": "5 Star rates body shop approved by multiple OEM brands"
 }
 ]
