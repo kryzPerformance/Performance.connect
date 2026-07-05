@@ -218,9 +218,10 @@
     perspective:1000px;
     height:320px;
     border-radius:16px;
-    /* force equal height on all cards regardless of content */
     min-height:320px;
     max-height:320px;
+    /* contain: layout prevents 3D children from affecting page scroll width */
+    contain:layout;
   }
 
   /* the flipping inner wrapper */
@@ -230,6 +231,10 @@
     transform-style:preserve-3d;
     transition:transform 0.55s cubic-bezier(0.4,0.2,0.2,1);
     border-radius:16px;
+    /* clip children to prevent Leaflet overflow from escaping the card.
+       clip is used instead of overflow:hidden because overflow:hidden would
+       break backface-visibility on some browsers. */
+    clip-path:inset(0 round 16px);
   }
   .pillar-card.flipped .card-flipper{
     transform:rotateY(180deg);
@@ -2006,18 +2011,24 @@
     if(cardBackMaps[cat]) return;
     var el = document.getElementById('card-map-' + cat);
     if(!el || typeof L === 'undefined') return;
-    var m = L.map(el, {
-      center: GTA, zoom: 10,
-      zoomControl:false, dragging:false, scrollWheelZoom:false,
-      doubleClickZoom:false, touchZoom:false, keyboard:false,
-      attributionControl:false
-    });
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
-      subdomains:'abcd', maxZoom:19
-    }).addTo(m);
-    cardBackMaps[cat] = m;
-    // invalidate size after the card flip transition completes
-    setTimeout(function(){ m.invalidateSize(); }, 600);
+    // Wait for the flip transition to fully complete (550ms) before
+    // initialising Leaflet — if we init while the card is mid-rotate,
+    // the browser reports wrong container dimensions on mobile, causing
+    // the Leaflet container to exceed card width and push page scroll
+    setTimeout(function(){
+      if(cardBackMaps[cat]) return; // guard double-call
+      var m = L.map(el, {
+        center: GTA, zoom: 10,
+        zoomControl:false, dragging:false, scrollWheelZoom:false,
+        doubleClickZoom:false, touchZoom:false, keyboard:false,
+        attributionControl:false
+      });
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+        subdomains:'abcd', maxZoom:19
+      }).addTo(m);
+      cardBackMaps[cat] = m;
+      m.invalidateSize();
+    }, 580); // slightly longer than the 550ms flip transition
   }
 
   function openModal(){
