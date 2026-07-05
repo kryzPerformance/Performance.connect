@@ -78,8 +78,23 @@
   .filter-pill[data-cat="spec"]   .dot{background:var(--col-spec);}
   .filter-pill[data-cat="dealer"] .dot{background:var(--col-dealer);}
   .filter-pill.active{background:rgba(31,169,207,0.08);border-color:rgba(31,169,207,0.3);color:var(--white);}
-  .filter-pill:not(.active){background:var(--panel);border-color:var(--line);color:var(--steel-dim);}
-  .filter-pill:hover{border-color:rgba(31,169,207,0.4);color:var(--white);}
+  .filter-pill:not(.active){background:var(--panel);border-color:var(--line);color:var(--steel-dim);opacity:0.5;}
+  .filter-pill:not(.active) .dot{opacity:0.4;}
+  .filter-pill:hover{opacity:1;border-color:rgba(31,169,207,0.4);color:var(--white);}
+  /* Per-category active tint using each pill's own colour */
+  .filter-pill[data-cat="oem"].active   {background:rgba(0,217,255,0.1);border-color:rgba(0,217,255,0.4);}
+  .filter-pill[data-cat="tire"].active  {background:rgba(255,193,7,0.1);border-color:rgba(255,193,7,0.4);}
+  .filter-pill[data-cat="tool"].active  {background:rgba(57,255,136,0.1);border-color:rgba(57,255,136,0.4);}
+  .filter-pill[data-cat="perf"].active  {background:rgba(255,77,166,0.1);border-color:rgba(255,77,166,0.4);}
+  .filter-pill[data-cat="after"].active {background:rgba(179,77,255,0.1);border-color:rgba(179,77,255,0.4);}
+  .filter-pill[data-cat="body"].active  {background:rgba(255,140,66,0.1);border-color:rgba(255,140,66,0.4);}
+  .filter-pill[data-cat="spec"].active  {background:rgba(255,214,0,0.1);border-color:rgba(255,214,0,0.4);}
+  .filter-pill[data-cat="dealer"].active{background:rgba(124,255,107,0.1);border-color:rgba(124,255,107,0.4);}
+  /* Round focus outline to match pill shape */
+  .filter-pill:focus-visible{outline:2px solid var(--cyan-bright);outline-offset:2px;border-radius:999px;}
+  .filter-pill:focus:not(:focus-visible){outline:none;}
+  /* Active/pressed state — rounded highlight, no square flash */
+  .filter-pill:active{outline:none;box-shadow:0 0 0 3px rgba(31,169,207,0.25);border-radius:999px;}
 
   .map-count{
     padding:0 clamp(16px,5vw,56px) 12px;
