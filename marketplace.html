@@ -211,53 +211,68 @@
     }
   }
 
-  /* ── FLIP CARD SYSTEM ── */
+  /* ── FLIP CARD SYSTEM ──
+     Uses opacity + rotateY instead of preserve-3d stacking.
+     preserve-3d causes backface-visibility failures and overflow
+     escapes on Samsung Chrome/WebKit mobile. This approach works
+     identically on all browsers with zero overflow side effects. */
   .pillar-card{
     position:relative;
     cursor:pointer;
-    perspective:1000px;
     height:320px;
     border-radius:16px;
     min-height:320px;
     max-height:320px;
-    /* contain: layout prevents 3D children from affecting page scroll width */
-    contain:layout;
+    overflow:hidden; /* safe here — no preserve-3d parent */
   }
 
-  /* the flipping inner wrapper */
-  .card-flipper{
-    position:relative;
-    width:100%;height:100%;
-    transform-style:preserve-3d;
-    transition:transform 0.55s cubic-bezier(0.4,0.2,0.2,1);
-    border-radius:16px;
-    /* clip children to prevent Leaflet overflow from escaping the card.
-       clip is used instead of overflow:hidden because overflow:hidden would
-       break backface-visibility on some browsers. */
-    clip-path:inset(0 round 16px);
-  }
-  .pillar-card.flipped .card-flipper{
-    transform:rotateY(180deg);
-  }
-
-  /* shared face styles */
+  /* front and back are both absolutely positioned, same size */
   .card-front,
   .card-back{
     position:absolute;inset:0;
-    backface-visibility:hidden;
-    -webkit-backface-visibility:hidden;
     border-radius:16px;
     border:1px solid var(--line);
     overflow:hidden;
+    transition:
+      transform 0.55s cubic-bezier(0.4,0.2,0.2,1),
+      opacity   0.55s cubic-bezier(0.4,0.2,0.2,1);
+    will-change:transform,opacity;
   }
 
-  /* ── FRONT FACE ── */
+  /* FRONT — visible by default, hides on flip */
   .card-front{
     background:var(--panel);
+    transform:rotateY(0deg);
+    opacity:1;
+    z-index:2;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     text-align:center;padding:32px 24px 24px;
-    transition:border-color 0.25s ease, box-shadow 0.25s ease;
   }
+  .pillar-card.flipped .card-front{
+    transform:rotateY(-180deg);
+    opacity:0;
+    pointer-events:none;
+  }
+
+  /* BACK — hidden by default, shows on flip */
+  .card-back{
+    background:#0C0F10;
+    transform:rotateY(180deg);
+    opacity:0;
+    z-index:1;
+    pointer-events:none;
+    display:flex;flex-direction:column;padding:16px;
+    border-color:rgba(31,169,207,0.3);
+    position:absolute;
+  }
+  .pillar-card.flipped .card-back{
+    transform:rotateY(0deg);
+    opacity:1;
+    pointer-events:auto;
+    z-index:3;
+  }
+
+  /* hover glow on front face */
   .pillar-card:hover .card-front,
   .pillar-card.touch-active .card-front{
     border-color:rgba(31,169,207,0.55);
@@ -1251,7 +1266,6 @@
       <div class="pillar-grid">
 
         <div class="pillar-card" tabindex="0" data-cat="vehicles">
-          <div class="card-flipper">
             <div class="card-front">
               <div class="card-video">
                 <video autoplay muted loop playsinline><source src="bg-vehicles.mp4" type="video/mp4"></video>
@@ -1277,7 +1291,6 @@
         </div>
 
         <div class="pillar-card" tabindex="0" data-cat="wheels">
-          <div class="card-flipper">
             <div class="card-front">
               <div class="card-video">
                 <video autoplay muted loop playsinline><source src="bg-wheels.mp4" type="video/mp4"></video>
@@ -1303,7 +1316,6 @@
         </div>
 
         <div class="pillar-card" tabindex="0" data-cat="parts">
-          <div class="card-flipper">
             <div class="card-front">
               <div class="card-video">
                 <video autoplay muted loop playsinline><source src="bg-parts.mp4" type="video/mp4"></video>
@@ -1329,7 +1341,6 @@
         </div>
 
         <div class="pillar-card" tabindex="0" data-cat="tools">
-          <div class="card-flipper">
             <div class="card-front">
               <div class="card-video">
                 <video autoplay muted loop playsinline><source src="bg-tools.mp4" type="video/mp4"></video>
@@ -1355,7 +1366,6 @@
         </div>
 
         <div class="pillar-card" tabindex="0" data-cat="fluids">
-          <div class="card-flipper">
             <div class="card-front">
               <div class="card-video">
                 <video autoplay muted loop playsinline><source src="bg-fluids.mp4" type="video/mp4"></video>
@@ -2076,11 +2086,21 @@
       // Close all flipped cards
       pillarCards.forEach(function(c){ c.classList.remove('flipped'); });
       // Activate the matching filter button
+      document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
       var matchBtn = document.querySelector('.filter-btn[data-filter="'+filter+'"]');
-      if(matchBtn) matchBtn.click();
-      // Smooth scroll to listings
-      var section = document.getElementById('listings-section');
-      if(section) section.scrollIntoView({ behavior:'smooth', block:'start' });
+      if(matchBtn) matchBtn.classList.add('active');
+      activeFilter = filter;
+      // Load if cache empty, otherwise just re-render
+      if(allListings.length === 0){
+        loadListings();
+      } else {
+        renderListings();
+      }
+      // Scroll to listings after a short delay to let render settle
+      setTimeout(function(){
+        var section = document.getElementById('listings-section');
+        if(section) section.scrollIntoView({ behavior:'smooth', block:'start' });
+      }, 80);
     });
   });
 
