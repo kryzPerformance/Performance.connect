@@ -66,7 +66,9 @@
     display:flex;align-items:center;gap:7px;
     font-size:11.5px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;
     padding:7px 14px;border-radius:999px;cursor:pointer;border:1px solid transparent;
-    transition:all 0.2s ease;user-select:none;
+    /* Only transition the properties that change — not opacity or all */
+    transition:background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    user-select:none;
   }
   .filter-pill .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
   .filter-pill[data-cat="oem"]    .dot{background:var(--col-oem);}
@@ -77,8 +79,8 @@
   .filter-pill[data-cat="body"]   .dot{background:var(--col-body);}
   .filter-pill[data-cat="spec"]   .dot{background:var(--col-spec);}
   .filter-pill[data-cat="dealer"] .dot{background:var(--col-dealer);}
-  .filter-pill.active{color:var(--white);}
-  .filter-pill:not(.active){background:var(--panel);border-color:var(--line);color:var(--steel-dim);opacity:0.5;}
+  .filter-pill:not(.active){background:var(--panel);border-color:var(--line);color:var(--steel-dim);opacity:0.45;transition:none;}
+  .filter-pill.active{color:var(--white);opacity:1;transition:background 0.2s ease, border-color 0.2s ease, color 0.2s ease;}
   .filter-pill:not(.active) .dot{opacity:0.4;}
   .filter-pill:hover{opacity:1;border-color:rgba(31,169,207,0.4);color:var(--white);}
   /* Per-category active tint — only these rules set background/border on active pills */
