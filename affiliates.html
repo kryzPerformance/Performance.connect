@@ -65,12 +65,13 @@
   .filter-pill{
     display:flex;align-items:center;gap:7px;
     font-size:11.5px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;
-    padding:7px 14px;border-radius:999px;cursor:pointer;border:1px solid transparent;
-    /* Only transition the properties that change — not opacity or all */
-    transition:background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    padding:7px 14px;border-radius:999px;cursor:pointer;border:1px solid var(--line);
+    background:var(--panel-2, #161B1C);color:var(--steel-dim);
+    transition:background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     user-select:none;
+    /* No opacity — inactive state is muted text + dark bg, never faded */
   }
-  .filter-pill .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .filter-pill .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;flex-shrink:0;}
   .filter-pill[data-cat="oem"]    .dot{background:var(--col-oem);}
   .filter-pill[data-cat="tire"]   .dot{background:var(--col-tire);}
   .filter-pill[data-cat="tool"]   .dot{background:var(--col-tool);}
@@ -79,23 +80,29 @@
   .filter-pill[data-cat="body"]   .dot{background:var(--col-body);}
   .filter-pill[data-cat="spec"]   .dot{background:var(--col-spec);}
   .filter-pill[data-cat="dealer"] .dot{background:var(--col-dealer);}
-  .filter-pill:not(.active){background:var(--panel);border-color:var(--line);color:var(--steel-dim);opacity:0.45;transition:none;}
-  .filter-pill.active{color:var(--white);opacity:1;transition:background 0.2s ease, border-color 0.2s ease, color 0.2s ease;}
-  .filter-pill:not(.active) .dot{opacity:0.4;}
-  .filter-pill:hover{opacity:1;border-color:rgba(31,169,207,0.4);color:var(--white);}
-  /* Per-category active tint — only these rules set background/border on active pills */
-  .filter-pill[data-cat="oem"].active   {background:rgba(0,217,255,0.1);border-color:rgba(0,217,255,0.4);}
-  .filter-pill[data-cat="tire"].active  {background:rgba(255,193,7,0.1);border-color:rgba(255,193,7,0.4);}
-  .filter-pill[data-cat="tool"].active  {background:rgba(57,255,136,0.1);border-color:rgba(57,255,136,0.4);}
-  .filter-pill[data-cat="perf"].active  {background:rgba(255,77,166,0.1);border-color:rgba(255,77,166,0.4);}
-  .filter-pill[data-cat="after"].active {background:rgba(179,77,255,0.1);border-color:rgba(179,77,255,0.4);}
-  .filter-pill[data-cat="body"].active  {background:rgba(255,140,66,0.1);border-color:rgba(255,140,66,0.4);}
-  .filter-pill[data-cat="spec"].active  {background:rgba(255,214,0,0.1);border-color:rgba(255,214,0,0.4);}
-  .filter-pill[data-cat="dealer"].active{background:rgba(124,255,107,0.1);border-color:rgba(124,255,107,0.4);}
-  /* Focus — rounded to match pill, no rectangle */
+  /* Inactive pill — muted text, darker bg, lower contrast border. No opacity. */
+  .filter-pill:not(.active){
+    background:#0D1012;
+    border-color:#1C2225;
+    color:#5C6A6E;
+  }
+  /* Dot always fully opaque regardless of pill state */
+  .filter-pill .dot{ opacity:1 !important; }
+  /* Hover — restore full colour, never partially faded */
+  .filter-pill:hover{color:var(--white);border-color:rgba(255,255,255,0.15);background:#161B1C;}
+  /* Per-category active state — background + border in category colour */
+  .filter-pill[data-cat="oem"].active   {background:rgba(0,217,255,0.1);border-color:rgba(0,217,255,0.5);color:var(--white);}
+  .filter-pill[data-cat="tire"].active  {background:rgba(255,193,7,0.1);border-color:rgba(255,193,7,0.5);color:var(--white);}
+  .filter-pill[data-cat="tool"].active  {background:rgba(57,255,136,0.1);border-color:rgba(57,255,136,0.5);color:var(--white);}
+  .filter-pill[data-cat="perf"].active  {background:rgba(255,77,166,0.1);border-color:rgba(255,77,166,0.5);color:var(--white);}
+  .filter-pill[data-cat="after"].active {background:rgba(179,77,255,0.1);border-color:rgba(179,77,255,0.5);color:var(--white);}
+  .filter-pill[data-cat="body"].active  {background:rgba(255,140,66,0.1);border-color:rgba(255,140,66,0.5);color:var(--white);}
+  .filter-pill[data-cat="spec"].active  {background:rgba(255,214,0,0.1);border-color:rgba(255,214,0,0.5);color:var(--white);}
+  .filter-pill[data-cat="dealer"].active{background:rgba(124,255,107,0.1);border-color:rgba(124,255,107,0.5);color:var(--white);}
+  /* Focus — rounded outline, no rectangle */
   .filter-pill:focus{outline:none;}
   .filter-pill:focus-visible{outline:2px solid var(--cyan-bright);outline-offset:2px;border-radius:999px;}
-  .filter-pill:active{outline:none;box-shadow:none;}
+  .filter-pill:active{outline:none;}
 
   .map-count{
     padding:0 clamp(16px,5vw,56px) 12px;
@@ -144,7 +151,8 @@
   .pc-marker{
     display:flex;align-items:center;justify-content:center;
     width:30px;height:30px;border-radius:50%;border:2px solid;
-    box-shadow:0 2px 8px rgba(0,0,0,0.6);transition:transform 0.15s;
+    box-shadow:0 2px 8px rgba(0,0,0,0.6);
+    transition:transform .12s ease, box-shadow .12s ease;
   }
   .pc-marker:hover{transform:scale(1.15);}
   .pc-marker svg{width:14px;height:14px;}
@@ -181,7 +189,9 @@
   .float-popup{
     position:absolute;
     z-index:600;
-    min-width:240px;max-width:290px;
+    min-width:240px;
+    max-width:290px;
+    width:min(290px, calc(100vw - 24px));
     background:var(--panel);
     border:1px solid var(--line);
     border-radius:12px;
@@ -378,221 +388,250 @@ function makePopupHTML(loc){
 }
 
 // ============================================================
+// INTERACTION STATE — single source of truth
+// ============================================================
+var state = {
+  selectedIdx:      null,   // index into locations[], or null
+  popupOpen:        false,
+  activeCats:       {}      // cat -> boolean
+};
+Object.keys(catConfig).forEach(function(c){ state.activeCats[c] = true; });
+
+// ============================================================
 // LOAD AFFILIATES FROM JSON
 // ============================================================
-var allMarkers = {}; // { cat: [L.marker, ...] }
+var allMarkers = {};
 Object.keys(catConfig).forEach(function(c){ allMarkers[c] = []; });
 
-var activeCats = {};
-Object.keys(catConfig).forEach(function(c){ activeCats[c] = true; });
+var popup      = document.getElementById('float-popup');
+var popupInner = document.getElementById('float-popup-inner');
+var _locations = [];  // full locations array, set after fetch
 
-function updateCount(){
-  var visible = 0;
-  Object.keys(allMarkers).forEach(function(c){
-    if(activeCats[c]) visible += allMarkers[c].length;
+// ── Helpers ───────────────────────────────────────────────────────────────
+function getMarkerObj(idx){
+  var found = null;
+  Object.keys(allMarkers).forEach(function(cat){
+    allMarkers[cat].forEach(function(m){ if(m._idx === idx) found = m; });
   });
-  var total = 0;
-  Object.keys(allMarkers).forEach(function(c){ total += allMarkers[c].length; });
-  var el = document.getElementById('map-count');
-  if(total === 0){
-    el.innerHTML = 'No partners added yet — <a href="mailto:info@performanceconnect.ca" style="color:var(--cyan)">be the first</a>.';
-  } else {
-    el.innerHTML = 'Showing <span>' + visible + '</span> of <span>' + total + '</span> partners';
+  return found;
+}
+
+function isMarkerVisible(idx){
+  var loc = _locations[idx];
+  if(!loc) return false;
+  return !!state.activeCats[loc.cat || 'oem'];
+}
+
+// ── Highlight — derived from state.selectedIdx only ───────────────────────
+function applyHighlight(){
+  // Clear all highlights first
+  Object.keys(allMarkers).forEach(function(cat){
+    allMarkers[cat].forEach(function(m){
+      var el = m.getElement();
+      if(el){ var inner = el.querySelector('.pc-marker'); if(inner) inner.classList.remove('pc-marker--active'); }
+    });
+  });
+  // Apply to selected
+  if(state.selectedIdx !== null){
+    var m = getMarkerObj(state.selectedIdx);
+    if(m){ var el = m.getElement(); if(el){ var inner = el.querySelector('.pc-marker'); if(inner) inner.classList.add('pc-marker--active'); } }
   }
 }
 
+// ── Popup positioning ─────────────────────────────────────────────────────
+// Pointer SVG created once — only attributes updated on each reposition
+var _ns  = 'http://www.w3.org/2000/svg';
+var _ptr = document.createElementNS(_ns, 'svg');
+_ptr.setAttribute('class','float-popup-pointer');
+_ptr.setAttribute('viewBox','0 0 14 8');
+_ptr.setAttribute('width','14');
+_ptr.setAttribute('height','8');
+var _ptrPoly = document.createElementNS(_ns, 'polygon');
+var _ptrLine = document.createElementNS(_ns, 'polyline');
+_ptrLine.setAttribute('fill','none');
+_ptrLine.setAttribute('stroke','#23292b');
+_ptrLine.setAttribute('stroke-width','1');
+_ptr.appendChild(_ptrPoly);
+_ptr.appendChild(_ptrLine);
+popup.appendChild(_ptr);
+
+function positionPopup(){
+  if(state.selectedIdx === null || !state.popupOpen) return;
+  var markerObj = getMarkerObj(state.selectedIdx);
+  if(!markerObj) return;
+
+  var pt    = map.latLngToContainerPoint(markerObj.getLatLng());
+  var mapEl = document.getElementById('map');
+  var mapW  = mapEl.offsetWidth;
+  var mapH  = mapEl.offsetHeight;
+  var popW  = popup.offsetWidth  || 270;
+  var popH  = popup.offsetHeight || 180;
+  var MARGIN = 8, GAP = 10, PTR = 8, MR = 15;
+
+  // Vertical placement — prefer above, fall back to below
+  var spaceAbove = pt.y - MR - GAP - PTR - MARGIN;
+  var spaceBelow = mapH - pt.y - MR - GAP - PTR - MARGIN;
+  var placeAbove = spaceAbove >= popH || spaceAbove >= spaceBelow;
+
+  // Horizontal — centred on marker, clamped to margins
+  var left = Math.max(MARGIN, Math.min(pt.x - popW / 2, mapW - popW - MARGIN));
+
+  // Vertical
+  var top = placeAbove
+    ? pt.y - MR - GAP - PTR - popH
+    : pt.y + MR + GAP + PTR;
+  top = Math.max(MARGIN, Math.min(top, mapH - popH - MARGIN));
+
+  popup.style.left = left + 'px';
+  popup.style.top  = top  + 'px';
+
+  // Update pointer — only attributes, no DOM creation
+  var ptrX = Math.max(MARGIN, Math.min(pt.x - left - 7, popW - 22));
+
+  if(placeAbove){
+    _ptr.style.bottom = (-PTR) + 'px';
+    _ptr.style.top    = 'auto';
+    _ptr.style.left   = ptrX + 'px';
+    _ptrPoly.setAttribute('points','0,0 14,0 7,8');
+    _ptrPoly.setAttribute('fill','#111415');
+    _ptrLine.setAttribute('points','0,0 7,8 14,0');
+  } else {
+    _ptr.style.top    = (-PTR) + 'px';
+    _ptr.style.bottom = 'auto';
+    _ptr.style.left   = ptrX + 'px';
+    _ptrPoly.setAttribute('points','0,8 14,8 7,0');
+    _ptrPoly.setAttribute('fill','#111415');
+    _ptrLine.setAttribute('points','0,8 7,0 14,8');
+  }
+}
+
+// ── Popup open/close ──────────────────────────────────────────────────────
+function openPopupFor(idx){
+  var loc = _locations[idx];
+  if(!loc) return;
+  var cfg = catConfig[loc.cat] || catConfig.oem;
+  var webBtn   = loc.web       ? '<a href="'+loc.web+'" target="_blank" rel="noopener" class="popup-link primary">Visit website</a>' : '';
+  var phoneBtn = loc.phone     ? '<a href="tel:'+loc.phone.replace(/[^0-9+]/g,'')+'" class="popup-link secondary">'+loc.phone+'</a>' : '';
+  var igBtn    = loc.instagram ? '<a href="https://instagram.com/'+loc.instagram.replace('@','')+'" target="_blank" rel="noopener" class="popup-link secondary">'+loc.instagram+'</a>' : '';
+  var notes    = loc.notes     ? '<div class="popup-notes">'+loc.notes+'</div>' : '';
+  popupInner.innerHTML =
+    '<div class="popup-cat-tag" style="background:'+cfg.color+'18;color:'+cfg.color+'">'+
+      '<span class="dot" style="background:'+cfg.color+'"></span>'+cfg.label+
+    '</div>'+
+    '<div class="popup-name">'+loc.name+'</div>'+
+    '<div class="popup-address">'+loc.address+'</div>'+
+    notes+
+    '<div class="popup-links">'+webBtn+phoneBtn+igBtn+'</div>';
+
+  state.popupOpen = true;
+  popup.style.opacity = '0';
+  popup.classList.add('visible');
+  requestAnimationFrame(function(){
+    positionPopup();
+    popup.style.opacity = '';
+  });
+}
+
+function closePopup(){
+  if(!state.popupOpen) return;
+  state.selectedIdx = null;
+  state.popupOpen   = false;
+  popup.classList.remove('visible');
+  applyHighlight();
+}
+
+// ── Select marker ─────────────────────────────────────────────────────────
+function selectMarker(idx){
+  if(state.selectedIdx === idx && state.popupOpen){
+    // Tapping selected marker again → close
+    closePopup();
+    return;
+  }
+  state.selectedIdx = idx;
+  applyHighlight();
+  openPopupFor(idx);
+}
+
+// ── Map events for popup repositioning ────────────────────────────────────
+// Reposition continuously as map moves — popup stays anchored to marker
+map.on('move',    positionPopup);
+map.on('moveend', positionPopup);
+map.on('zoomend', positionPopup);
+// Close only on empty map click — not on drag/zoom start
+map.on('click', closePopup);
+
+// Keyboard Escape
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') closePopup();
+});
+
+// Window resize → reposition
+window.addEventListener('resize', positionPopup);
+
+// Close button
+document.getElementById('float-popup-close').addEventListener('click', function(e){
+  e.stopPropagation();
+  closePopup();
+});
+// Clicks inside popup don't bubble to map
+popup.addEventListener('click', function(e){ e.stopPropagation(); });
+
+// ── Count + bounds ────────────────────────────────────────────────────────
+function updateCount(){
+  var visible = 0, total = 0;
+  Object.keys(allMarkers).forEach(function(c){
+    total += allMarkers[c].length;
+    if(state.activeCats[c]) visible += allMarkers[c].length;
+  });
+  var el = document.getElementById('map-count');
+  if(total === 0){
+    el.innerHTML = 'No partners added yet — <a href="mailto:info@performanceconnect.ca" style="color:var(--cyan)">be the first</a>.';
+  } else if(visible === 0){
+    el.innerHTML = 'No partners match your filters.';
+  } else {
+    el.innerHTML = 'Showing <span>'+visible+'</span> of <span>'+total+'</span> partners';
+  }
+}
+
+function fitVisibleBounds(){
+  var pts = [];
+  Object.keys(allMarkers).forEach(function(cat){
+    if(!state.activeCats[cat]) return;
+    allMarkers[cat].forEach(function(m){ pts.push(m.getLatLng()); });
+  });
+  if(pts.length === 0) return;
+  if(pts.length === 1){
+    map.setView(pts[0], Math.max(map.getZoom(), 13), { animate:true });
+  } else {
+    map.fitBounds(L.latLngBounds(pts), { padding:[40,40], animate:true });
+  }
+}
+
+// ── Fetch + marker init ───────────────────────────────────────────────────
 fetch('affiliates.json')
   .then(function(r){ return r.json(); })
   .then(function(locations){
+    _locations = locations;
     document.getElementById('map-loading').style.display = 'none';
 
-    if(!locations || locations.length === 0){
-      updateCount();
-      return;
-    }
+    if(!locations || locations.length === 0){ updateCount(); return; }
 
     locations.forEach(function(loc, idx){
-      var cat = loc.cat && catConfig[loc.cat] ? loc.cat : 'oem';
-      var marker = L.marker([loc.lat, loc.lng], { icon: makeIcon(cat) })
-        .addTo(map);
-      marker._locData = loc;
-      marker._idx     = idx;
+      var cat = (loc.cat && catConfig[loc.cat]) ? loc.cat : 'oem';
+      var marker = L.marker([loc.lat, loc.lng], { icon: makeIcon(cat) }).addTo(map);
+      marker._idx = idx;
       allMarkers[cat].push(marker);
       marker.on('click', function(e){
         L.DomEvent.stopPropagation(e);
-        openPopup(idx);
+        selectMarker(idx);
       });
     });
 
-    var allLatLngs = locations.map(function(l){ return [l.lat, l.lng]; });
-    if(allLatLngs.length > 1) map.fitBounds(allLatLngs, { padding:[40,40] });
+    var allPts = locations.map(function(l){ return [l.lat, l.lng]; });
+    if(allPts.length > 1) map.fitBounds(allPts, { padding:[40,40] });
+    else if(allPts.length === 1) map.setView(allPts[0], 14);
 
     updateCount();
-
-    // ── Floating popup logic ────────────────────────────────────────────────
-    var popup      = document.getElementById('float-popup');
-    var popupInner = document.getElementById('float-popup-inner');
-    var activeMarkerEl = null;
-    var activeIdx      = null;
-
-    function getMarkerEl(idx){
-      var found = null;
-      Object.keys(allMarkers).forEach(function(cat){
-        allMarkers[cat].forEach(function(m){ if(m._idx===idx) found=m.getElement(); });
-      });
-      return found;
-    }
-    function getMarkerObj(idx){
-      var found = null;
-      Object.keys(allMarkers).forEach(function(cat){
-        allMarkers[cat].forEach(function(m){ if(m._idx===idx) found=m; });
-      });
-      return found;
-    }
-
-    function highlightMarker(idx){
-      if(activeMarkerEl){
-        var prev = activeMarkerEl.querySelector('.pc-marker');
-        if(prev) prev.classList.remove('pc-marker--active');
-      }
-      var el = getMarkerEl(idx);
-      if(el){
-        var inner = el.querySelector('.pc-marker');
-        if(inner) inner.classList.add('pc-marker--active');
-        activeMarkerEl = el;
-      }
-    }
-
-    function buildPopupContent(loc){
-      var cfg = catConfig[loc.cat] || catConfig.oem;
-      var webBtn   = loc.web       ? '<a href="'+loc.web+'" target="_blank" rel="noopener" class="popup-link primary">Visit website</a>' : '';
-      var phoneBtn = loc.phone     ? '<a href="tel:'+loc.phone.replace(/[^0-9+]/g,'')+'" class="popup-link secondary">'+loc.phone+'</a>' : '';
-      var igBtn    = loc.instagram ? '<a href="https://instagram.com/'+loc.instagram.replace('@','')+'" target="_blank" rel="noopener" class="popup-link secondary">'+loc.instagram+'</a>' : '';
-      var notes    = loc.notes     ? '<div class="popup-notes">'+loc.notes+'</div>' : '';
-      return '<div class="popup-cat-tag" style="background:'+cfg.color+'18;color:'+cfg.color+'">'+
-               '<span class="dot" style="background:'+cfg.color+'"></span>'+cfg.label+
-             '</div>'+
-             '<div class="popup-name">'+loc.name+'</div>'+
-             '<div class="popup-address">'+loc.address+'</div>'+
-             notes+
-             '<div class="popup-links">'+webBtn+phoneBtn+igBtn+'</div>';
-    }
-
-    function positionPopup(markerIdx){
-      var markerObj = getMarkerObj(markerIdx);
-      if(!markerObj) return;
-
-      // Get pixel position of marker on map container
-      var pt      = map.latLngToContainerPoint(markerObj.getLatLng());
-      var mapEl   = document.getElementById('map');
-      var mapW    = mapEl.offsetWidth;
-      var mapH    = mapEl.offsetHeight;
-      var popW    = popup.offsetWidth  || 270;
-      var popH    = popup.offsetHeight || 180;
-      var markerR = 15; // half of 30px marker
-      var gap     = 10; // gap between marker and popup
-      var ptr     = 8;  // pointer triangle height
-
-      // Decide vertical: above or below marker
-      var spaceAbove = pt.y - markerR - gap - ptr;
-      var spaceBelow = mapH - pt.y - markerR - gap - ptr;
-      var placeAbove = spaceAbove >= popH || spaceAbove >= spaceBelow;
-
-      // Horizontal: centre on marker, clamp to viewport
-      var left = pt.x - popW / 2;
-      left = Math.max(8, Math.min(left, mapW - popW - 8));
-
-      // Vertical position
-      var top;
-      if(placeAbove){
-        top = pt.y - markerR - gap - ptr - popH;
-      } else {
-        top = pt.y + markerR + gap + ptr;
-      }
-      top = Math.max(8, Math.min(top, mapH - popH - 8));
-
-      popup.style.left = left + 'px';
-      popup.style.top  = top  + 'px';
-
-      // Remove old pointer
-      var oldPtr = popup.querySelector('.float-popup-pointer');
-      if(oldPtr) oldPtr.remove();
-
-      // Draw pointer triangle pointing toward the marker
-      var ptrEl = document.createElement('svg');
-      ptrEl.className = 'float-popup-pointer';
-      ptrEl.setAttribute('viewBox','0 0 14 8');
-      ptrEl.setAttribute('width','14');
-      ptrEl.setAttribute('height','8');
-
-      // Triangle points toward marker
-      var ptrPoly = document.createElement('polygon');
-      if(placeAbove){
-        // Popup is above — pointer at bottom pointing down
-        ptrEl.style.bottom  = (-ptr) + 'px';
-        ptrEl.style.top     = 'auto';
-        ptrEl.style.left    = (pt.x - left - 7) + 'px';
-        ptrEl.style.left    = Math.max(8, Math.min(pt.x - left - 7, popW - 22)) + 'px';
-        ptrPoly.setAttribute('points','0,0 14,0 7,8');
-        ptrPoly.setAttribute('fill','#111415');
-        // Outline triangle
-        var ptrOutline = document.createElement('polyline');
-        ptrOutline.setAttribute('points','0,0 7,8 14,0');
-        ptrOutline.setAttribute('fill','none');
-        ptrOutline.setAttribute('stroke','#23292b');
-        ptrOutline.setAttribute('stroke-width','1');
-        ptrEl.appendChild(ptrOutline);
-      } else {
-        // Popup is below — pointer at top pointing up
-        ptrEl.style.top    = (-ptr) + 'px';
-        ptrEl.style.bottom = 'auto';
-        ptrEl.style.left   = Math.max(8, Math.min(pt.x - left - 7, popW - 22)) + 'px';
-        ptrPoly.setAttribute('points','0,8 14,8 7,0');
-        ptrPoly.setAttribute('fill','#111415');
-        var ptrOutline = document.createElement('polyline');
-        ptrOutline.setAttribute('points','0,8 7,0 14,8');
-        ptrOutline.setAttribute('fill','none');
-        ptrOutline.setAttribute('stroke','#23292b');
-        ptrOutline.setAttribute('stroke-width','1');
-        ptrEl.appendChild(ptrOutline);
-      }
-      ptrEl.insertBefore(ptrPoly, ptrEl.firstChild);
-      popup.appendChild(ptrEl);
-    }
-
-    function openPopup(idx){
-      if(activeIdx === idx && popup.classList.contains('visible')){
-        closePopup(); return;
-      }
-      activeIdx = idx;
-      var loc = locations[idx];
-      popupInner.innerHTML = buildPopupContent(loc);
-
-      // Show invisibly first to measure dimensions, then position
-      popup.style.opacity = '0';
-      popup.classList.add('visible');
-      requestAnimationFrame(function(){
-        positionPopup(idx);
-        popup.style.opacity = '';
-      });
-
-      highlightMarker(idx);
-    }
-
-    function closePopup(){
-      popup.classList.remove('visible');
-      activeIdx = null;
-      if(activeMarkerEl){
-        var inner = activeMarkerEl.querySelector('.pc-marker');
-        if(inner) inner.classList.remove('pc-marker--active');
-        activeMarkerEl = null;
-      }
-    }
-
-    document.getElementById('float-popup-close').addEventListener('click', closePopup);
-    // Prevent map click from closing when clicking inside popup
-    popup.addEventListener('click', function(e){ e.stopPropagation(); });
-    map.on('click', closePopup);
   })
   .catch(function(err){
     document.getElementById('map-loading').innerHTML =
@@ -607,15 +646,26 @@ document.getElementById('filter-bar').addEventListener('click', function(e){
   var pill = e.target.closest('.filter-pill');
   if(!pill) return;
   var cat = pill.dataset.cat;
-  activeCats[cat] = !activeCats[cat];
-  pill.classList.toggle('active', activeCats[cat]);
 
+  // Toggle state
+  state.activeCats[cat] = !state.activeCats[cat];
+  pill.classList.toggle('active', state.activeCats[cat]);
+
+  // Add/remove markers without recreating them
   allMarkers[cat].forEach(function(m){
-    if(activeCats[cat]){ m.addTo(map); } else { map.removeLayer(m); }
+    if(state.activeCats[cat]){ m.addTo(map); } else { map.removeLayer(m); }
   });
 
+  // Close popup if the selected marker was just filtered out
+  if(state.selectedIdx !== null && !isMarkerVisible(state.selectedIdx)){
+    closePopup();
+  }
+
   updateCount();
+  // NOTE: intentionally not calling fitVisibleBounds() here.
+  // Filter changes preserve the user's current map position and zoom.
 });
+
 </script>
 </body>
 </html>
