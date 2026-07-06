@@ -424,17 +424,22 @@ function isMarkerVisible(idx){
 
 // ── Highlight — derived from state.selectedIdx only ───────────────────────
 function applyHighlight(){
-  // Clear all highlights first
-  Object.keys(allMarkers).forEach(function(cat){
-    allMarkers[cat].forEach(function(m){
-      var el = m.getElement();
-      if(el){ var inner = el.querySelector('.pc-marker'); if(inner) inner.classList.remove('pc-marker--active'); }
-    });
+  // Clear ALL active classes directly from DOM — never relies on marker.getElement()
+  // which can return null after filter add/remove cycles
+  var mapEl = document.getElementById('map');
+  mapEl.querySelectorAll('.pc-marker--active').forEach(function(el){
+    el.classList.remove('pc-marker--active');
   });
-  // Apply to selected
+  // Apply to selected marker
   if(state.selectedIdx !== null){
     var m = getMarkerObj(state.selectedIdx);
-    if(m){ var el = m.getElement(); if(el){ var inner = el.querySelector('.pc-marker'); if(inner) inner.classList.add('pc-marker--active'); } }
+    if(m){
+      var el = m.getElement();
+      if(el){
+        var inner = el.querySelector('.pc-marker');
+        if(inner) inner.classList.add('pc-marker--active');
+      }
+    }
   }
 }
 
@@ -523,20 +528,23 @@ function openPopupFor(idx){
     notes+
     '<div class="popup-links">'+webBtn+phoneBtn+igBtn+'</div>';
 
+  // Remove any stale inline opacity before showing
+  popup.style.opacity = '';
   state.popupOpen = true;
-  popup.style.opacity = '0';
-  popup.classList.add('visible');
+
+  // Position first (while still invisible via CSS), then show
+  // Use a single RAF to let the browser measure offsetWidth/Height after content update
   requestAnimationFrame(function(){
     positionPopup();
-    popup.style.opacity = '';
+    popup.classList.add('visible');
   });
 }
 
 function closePopup(){
-  if(!state.popupOpen) return;
   state.selectedIdx = null;
   state.popupOpen   = false;
   popup.classList.remove('visible');
+  popup.style.opacity = ''; // ensure no stale inline opacity
   applyHighlight();
 }
 
