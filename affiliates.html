@@ -196,14 +196,21 @@
     border:1px solid var(--line);
     border-radius:12px;
     box-shadow:0 8px 32px rgba(0,0,0,0.55);
-    pointer-events:auto;
+    /* Hidden state — CSS is the single source of truth.
+       visibility:hidden means links are inert; opacity:0 fades it;
+       pointer-events:none ensures nothing inside can be clicked/tapped */
     opacity:0;
+    visibility:hidden;
+    pointer-events:none;
     transform:scale(0.95);
-    transition:opacity 0.18s ease, transform 0.18s ease;
+    transition:opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
   }
   .float-popup.visible{
     opacity:1;
+    visibility:visible;
+    pointer-events:auto;
     transform:scale(1);
+    transition:opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0s;
   }
   .float-popup-inner{ padding:16px 18px 14px; }
   .float-popup-close{
@@ -511,6 +518,9 @@ function positionPopup(){
 }
 
 // ── Popup open/close ──────────────────────────────────────────────────────
+// Track pending RAF so we never have two positioning passes active (Bug 8)
+var _rafId = null;
+
 function openPopupFor(idx){
   var loc = _locations[idx];
   if(!loc) return;
@@ -519,6 +529,12 @@ function openPopupFor(idx){
   var phoneBtn = loc.phone     ? '<a href="tel:'+loc.phone.replace(/[^0-9+]/g,'')+'" class="popup-link secondary">'+loc.phone+'</a>' : '';
   var igBtn    = loc.instagram ? '<a href="https://instagram.com/'+loc.instagram.replace('@','')+'" target="_blank" rel="noopener" class="popup-link secondary">'+loc.instagram+'</a>' : '';
   var notes    = loc.notes     ? '<div class="popup-notes">'+loc.notes+'</div>' : '';
+
+  // Always clear stale content + inline styles before filling (Bug 5)
+  popupInner.innerHTML = '';
+  popup.style.left = '';
+  popup.style.top  = '';
+
   popupInner.innerHTML =
     '<div class="popup-cat-tag" style="background:'+cfg.color+'18;color:'+cfg.color+'">'+
       '<span class="dot" style="background:'+cfg.color+'"></span>'+cfg.label+
@@ -528,15 +544,17 @@ function openPopupFor(idx){
     notes+
     '<div class="popup-links">'+webBtn+phoneBtn+igBtn+'</div>';
 
-  // Remove any stale inline opacity before showing
-  popup.style.opacity = '';
   state.popupOpen = true;
 
-  // Position first (while still invisible via CSS), then show
-  // Use a single RAF to let the browser measure offsetWidth/Height after content update
-  requestAnimationFrame(function(){
+  // Cancel any in-flight positioning pass before scheduling a new one (Bug 8)
+  if(_rafId !== null){ cancelAnimationFrame(_rafId); _rafId = null; }
+
+  // Let browser measure updated content dimensions, then position + show (Bug 6)
+  _rafId = requestAnimationFrame(function(){
+    _rafId = null;
     positionPopup();
     popup.classList.add('visible');
+    // No JS pointer-event timers — CSS visibility:hidden handles this (Bug 1+2)
   });
 }
 
@@ -544,36 +562,52 @@ function closePopup(){
   state.selectedIdx = null;
   state.popupOpen   = false;
   popup.classList.remove('visible');
-  popup.style.opacity = ''; // ensure no stale inline opacity
+  // Clear all stale inline styles and content (Bug 5)
+  popup.style.left   = '';
+  popup.style.top    = '';
+  popup.style.opacity = '';
+  popup.style.pointerEvents = '';
+  popupInner.innerHTML = '';
   applyHighlight();
 }
 
-// ── Select marker ─────────────────────────────────────────────────────────
+// ── Select marker (Bug 3) ─────────────────────────────────────────────────
+// Suppress the synthetic map click that fires after a marker tap (Bug 4)
+var _suppressMapClick = false;
+
 function selectMarker(idx){
+  // 175ms — covers mobile touch-to-click delay reliably (Bug 4)
+  _suppressMapClick = true;
+  setTimeout(function(){ _suppressMapClick = false; }, 175);
+
   if(state.selectedIdx === idx && state.popupOpen){
-    // Tapping selected marker again → close
+    // Same marker tapped again → close
     closePopup();
     return;
   }
+  // Different marker — update state and open immediately (Bug 3)
   state.selectedIdx = idx;
   applyHighlight();
   openPopupFor(idx);
 }
 
-// ── Map events for popup repositioning ────────────────────────────────────
-// Reposition continuously as map moves — popup stays anchored to marker
+// ── Map events (Bug 6) ────────────────────────────────────────────────────
 map.on('move',    positionPopup);
 map.on('moveend', positionPopup);
 map.on('zoomend', positionPopup);
-// Close only on empty map click — not on drag/zoom start
-map.on('click', closePopup);
+
+// Close only on genuine empty-map click (Bug 4)
+map.on('click', function(){
+  if(_suppressMapClick) return;
+  closePopup();
+});
 
 // Keyboard Escape
 document.addEventListener('keydown', function(e){
   if(e.key === 'Escape') closePopup();
 });
 
-// Window resize → reposition
+// Window resize → reposition (Bug 6)
 window.addEventListener('resize', positionPopup);
 
 // Close button
@@ -581,7 +615,7 @@ document.getElementById('float-popup-close').addEventListener('click', function(
   e.stopPropagation();
   closePopup();
 });
-// Clicks inside popup don't bubble to map
+// Clicks inside popup do not bubble to map
 popup.addEventListener('click', function(e){ e.stopPropagation(); });
 
 // ── Count + bounds ────────────────────────────────────────────────────────
@@ -647,15 +681,12 @@ fetch('affiliates.json')
     console.error('affiliates.json load error:', err);
   });
 
-// ============================================================
-// FILTER PILLS
-// ============================================================
+// ── Filter pills (Bug 7) ──────────────────────────────────────────────────
 document.getElementById('filter-bar').addEventListener('click', function(e){
   var pill = e.target.closest('.filter-pill');
   if(!pill) return;
   var cat = pill.dataset.cat;
 
-  // Toggle state
   state.activeCats[cat] = !state.activeCats[cat];
   pill.classList.toggle('active', state.activeCats[cat]);
 
@@ -664,14 +695,17 @@ document.getElementById('filter-bar').addEventListener('click', function(e){
     if(state.activeCats[cat]){ m.addTo(map); } else { map.removeLayer(m); }
   });
 
-  // Close popup if the selected marker was just filtered out
-  if(state.selectedIdx !== null && !isMarkerVisible(state.selectedIdx)){
-    closePopup();
+  // Bug 7: if selected marker filtered out → close; if still visible → reposition
+  if(state.selectedIdx !== null){
+    if(!isMarkerVisible(state.selectedIdx)){
+      closePopup();
+    } else {
+      positionPopup(); // keep popup anchored (Bug 6)
+    }
   }
 
   updateCount();
-  // NOTE: intentionally not calling fitVisibleBounds() here.
-  // Filter changes preserve the user's current map position and zoom.
+  // Do not recentre map on filter change — preserve user camera position
 });
 
 </script>
