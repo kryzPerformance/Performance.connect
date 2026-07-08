@@ -42,5 +42,16 @@
   "lat": 43.6858,
   "lng": -79.7599,
   "notes": "Remote starters, alarms, Sound Systems. All things electrical"
+},
+{
+  "cat": "perf",
+  "name": "Johns United Auto Clinic",
+  "address": "7195 tranmere drive unit 5",
+  "phone": "9056725927",
+  "web": "https://www.instagram.com/juac_performance?igsh=czZwbmc0djBsa2cw",
+  "instagram": "@juac_performance",
+  "lat": 43.6813,
+  "lng": -79.6745,
+  "notes": "Performance Tuning , Fleet Repair"
 }
 ]
