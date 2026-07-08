@@ -650,7 +650,7 @@ function fitVisibleBounds(){
 }
 
 // ── Fetch + marker init ───────────────────────────────────────────────────
-fetch('affiliates.json')
+fetch('affiliates.json?t=' + Date.now())
   .then(function(r){ return r.json(); })
   .then(function(locations){
     _locations = locations;
