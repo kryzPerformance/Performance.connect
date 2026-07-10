@@ -63,5 +63,15 @@
   "lat": 43.6513,
   "lng": -79.9142,
   "notes": "Appointment only -  Body and paint,  Collision Insurance work, Restorations, Paint tech specialist, Color retrieval"
-}
+},
+  {
+  "cat": "spec",
+  "name": "Srp Automotive and Truck Repair",
+  "address": "5 speers road oakville",
+  "phone": "905-629-1020",
+  "instagram": "@Srpautomotiveandtruckrepair  Srpautomotiveandtruckrepair@gmail.com",
+  "lat": 43.4211,
+  "lng": -79.715,
+  "notes": "Automotive and Truck Repair, 310T Certified"
+  }
 ]
