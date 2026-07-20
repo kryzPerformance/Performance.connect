@@ -3,20 +3,29 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Performance Connect Event Intelligence Engine API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: events
+    description: Event management
+  - name: moderation
+    description: Moderator dashboard operations
+  - name: flyer
+    description: AI flyer parsing
+  - name: sources
+    description: Event discovery sources
+  - name: stats
+    description: Dashboard statistics
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +33,418 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /events:
+    get:
+      operationId: listEvents
+      tags: [events]
+      summary: List all approved events
+      parameters:
+        - name: city
+          in: query
+          schema: { type: string }
+        - name: province
+          in: query
+          schema: { type: string }
+        - name: country
+          in: query
+          schema: { type: string }
+        - name: category
+          in: query
+          schema: { type: string }
+        - name: vehicleType
+          in: query
+          schema: { type: string }
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: featured
+          in: query
+          schema: { type: boolean }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        "200":
+          description: List of events
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [events, total]
+                properties:
+                  events:
+                    type: array
+                    items: { $ref: "#/components/schemas/Event" }
+                  total:
+                    type: integer
+    post:
+      operationId: createEvent
+      tags: [events]
+      summary: Submit a new event (community or organizer)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventInput"
+      responses:
+        "201":
+          description: Event created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Event" }
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /events/upcoming:
+    get:
+      operationId: listUpcomingEvents
+      tags: [events]
+      summary: List upcoming approved events
+      parameters:
+        - name: days
+          in: query
+          schema: { type: integer, default: 30 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Upcoming events
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Event" }
+
+  /events/nearby:
+    get:
+      operationId: listNearbyEvents
+      tags: [events]
+      summary: List events near a location
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema: { type: number }
+        - name: lng
+          in: query
+          required: true
+          schema: { type: number }
+        - name: radiusKm
+          in: query
+          schema: { type: number, default: 100 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Nearby events with distance
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/EventWithDistance" }
+
+  /events/stats:
+    get:
+      operationId: getEventStats
+      tags: [stats]
+      summary: Get dashboard statistics
+      responses:
+        "200":
+          description: Event statistics
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EventStats" }
+
+  /events/pending:
+    get:
+      operationId: listPendingEvents
+      tags: [moderation]
+      summary: List events pending moderation
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        "200":
+          description: Pending events
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [events, total]
+                properties:
+                  events:
+                    type: array
+                    items: { $ref: "#/components/schemas/EventWithMeta" }
+                  total:
+                    type: integer
+
+  /events/{id}:
+    get:
+      operationId: getEvent
+      tags: [events]
+      summary: Get a single event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Event detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Event" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+    patch:
+      operationId: updateEvent
+      tags: [events]
+      summary: Update an event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventUpdate"
+      responses:
+        "200":
+          description: Updated event
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Event" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+    delete:
+      operationId: deleteEvent
+      tags: [events]
+      summary: Delete an event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+
+  /events/{id}/approve:
+    post:
+      operationId: approveEvent
+      tags: [moderation]
+      summary: Approve a pending event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Approved event
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Event" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /events/{id}/reject:
+    post:
+      operationId: rejectEvent
+      tags: [moderation]
+      summary: Reject a pending event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RejectInput"
+      responses:
+        "200":
+          description: Rejected event
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Event" }
+
+  /events/{id}/merge:
+    post:
+      operationId: mergeEvents
+      tags: [moderation]
+      summary: Merge a duplicate event into an existing one
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MergeInput"
+      responses:
+        "200":
+          description: Merged event
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Event" }
+
+  /events/{id}/duplicates:
+    get:
+      operationId: getEventDuplicates
+      tags: [moderation]
+      summary: Get potential duplicates for an event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Potential duplicates
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/DuplicateMatch" }
+
+  /events/parse-flyer:
+    post:
+      operationId: parseFlyer
+      tags: [flyer]
+      summary: Parse a flyer image with AI and extract event data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlyerParseInput"
+      responses:
+        "200":
+          description: Parsed flyer data
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FlyerParseResult" }
+        "400":
+          description: Invalid image
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /sources:
+    get:
+      operationId: listSources
+      tags: [sources]
+      summary: List all discovery sources
+      responses:
+        "200":
+          description: Discovery sources
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/EventSource" }
+    post:
+      operationId: createSource
+      tags: [sources]
+      summary: Add a new discovery source
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventSourceInput"
+      responses:
+        "201":
+          description: Source created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EventSource" }
+
+  /sources/{id}:
+    patch:
+      operationId: updateSource
+      tags: [sources]
+      summary: Update a discovery source
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventSourceUpdate"
+      responses:
+        "200":
+          description: Updated source
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EventSource" }
+    delete:
+      operationId: deleteSource
+      tags: [sources]
+      summary: Remove a discovery source
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+
+  /geocode:
+    post:
+      operationId: geocodeAddress
+      tags: [events]
+      summary: Geocode an address to coordinates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeocodeInput"
+      responses:
+        "200":
+          description: Geocode result
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/GeocodeResult" }
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +452,469 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    Event:
+      type: object
+      required:
+        - id
+        - title
+        - source
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        organizer:
+          type: ["string", "null"]
+        source:
+          type: string
+          enum: [community, organizer, discovery, manual]
+        sourceUrl:
+          type: ["string", "null"]
+        flyerUrl:
+          type: ["string", "null"]
+        venueName:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        province:
+          type: ["string", "null"]
+        country:
+          type: ["string", "null"]
+        latitude:
+          type: ["number", "null"]
+        longitude:
+          type: ["number", "null"]
+        startDate:
+          type: ["string", "null"]
+        endDate:
+          type: ["string", "null"]
+        startTime:
+          type: ["string", "null"]
+        endTime:
+          type: ["string", "null"]
+        rainDate:
+          type: ["string", "null"]
+        categories:
+          type: array
+          items: { type: string }
+        vehicleTypes:
+          type: array
+          items: { type: string }
+        entryFee:
+          type: ["string", "null"]
+        isCharityEvent:
+          type: boolean
+        hasFoodVendors:
+          type: boolean
+        hasBurnoutContest:
+          type: boolean
+        hasDyno:
+          type: boolean
+        sponsors:
+          type: array
+          items: { type: string }
+        contactInfo:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [pending, approved, rejected, duplicate]
+        featured:
+          type: boolean
+        aiConfidenceScore:
+          type: ["number", "null"]
+        rejectionReason:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    EventWithMeta:
+      allOf:
+        - $ref: "#/components/schemas/Event"
+        - type: object
+          properties:
+            duplicateWarning:
+              type: boolean
+            duplicateCount:
+              type: integer
+            sourceLabel:
+              type: string
+
+    EventWithDistance:
+      allOf:
+        - $ref: "#/components/schemas/Event"
+        - type: object
+          required: [distanceKm]
+          properties:
+            distanceKm:
+              type: number
+
+    EventInput:
+      type: object
+      required: [title, source]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        organizer:
+          type: string
+        source:
+          type: string
+          enum: [community, organizer, discovery, manual]
+        sourceUrl:
+          type: string
+        flyerUrl:
+          type: string
+        venueName:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        province:
+          type: string
+        country:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        startDate:
+          type: string
+        endDate:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        rainDate:
+          type: string
+        categories:
+          type: array
+          items: { type: string }
+        vehicleTypes:
+          type: array
+          items: { type: string }
+        entryFee:
+          type: string
+        isCharityEvent:
+          type: boolean
+        hasFoodVendors:
+          type: boolean
+        hasBurnoutContest:
+          type: boolean
+        hasDyno:
+          type: boolean
+        sponsors:
+          type: array
+          items: { type: string }
+        contactInfo:
+          type: string
+
+    EventUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        organizer:
+          type: string
+        sourceUrl:
+          type: string
+        flyerUrl:
+          type: string
+        venueName:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        province:
+          type: string
+        country:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        startDate:
+          type: string
+        endDate:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        rainDate:
+          type: string
+        categories:
+          type: array
+          items: { type: string }
+        vehicleTypes:
+          type: array
+          items: { type: string }
+        entryFee:
+          type: string
+        isCharityEvent:
+          type: boolean
+        hasFoodVendors:
+          type: boolean
+        hasBurnoutContest:
+          type: boolean
+        hasDyno:
+          type: boolean
+        sponsors:
+          type: array
+          items: { type: string }
+        contactInfo:
+          type: string
+        featured:
+          type: boolean
+        status:
+          type: string
+          enum: [pending, approved, rejected, duplicate]
+
+    RejectInput:
+      type: object
+      properties:
+        reason:
+          type: string
+
+    MergeInput:
+      type: object
+      required: [targetEventId]
+      properties:
+        targetEventId:
+          type: integer
+
+    DuplicateMatch:
+      type: object
+      required: [event, confidenceScore, matchReasons]
+      properties:
+        event:
+          $ref: "#/components/schemas/Event"
+        confidenceScore:
+          type: number
+        matchReasons:
+          type: array
+          items: { type: string }
+
+    FlyerParseInput:
+      type: object
+      required: [imageData]
+      properties:
+        imageData:
+          type: string
+          description: Base64 encoded image data or public URL
+        isUrl:
+          type: boolean
+          default: false
+
+    FlyerParseResult:
+      type: object
+      required: [confidenceScore, extractedFields]
+      properties:
+        confidenceScore:
+          type: number
+        extractedFields:
+          type: object
+          properties:
+            title:
+              type: ["string", "null"]
+            description:
+              type: ["string", "null"]
+            organizer:
+              type: ["string", "null"]
+            venueName:
+              type: ["string", "null"]
+            address:
+              type: ["string", "null"]
+            city:
+              type: ["string", "null"]
+            province:
+              type: ["string", "null"]
+            country:
+              type: ["string", "null"]
+            startDate:
+              type: ["string", "null"]
+            endDate:
+              type: ["string", "null"]
+            startTime:
+              type: ["string", "null"]
+            endTime:
+              type: ["string", "null"]
+            rainDate:
+              type: ["string", "null"]
+            categories:
+              type: array
+              items: { type: string }
+            vehicleTypes:
+              type: array
+              items: { type: string }
+            entryFee:
+              type: ["string", "null"]
+            isCharityEvent:
+              type: ["boolean", "null"]
+            hasFoodVendors:
+              type: ["boolean", "null"]
+            hasBurnoutContest:
+              type: ["boolean", "null"]
+            hasDyno:
+              type: ["boolean", "null"]
+            sponsors:
+              type: array
+              items: { type: string }
+            contactInfo:
+              type: ["string", "null"]
+        rawText:
+          type: ["string", "null"]
+
+    EventStats:
+      type: object
+      required:
+        - totalEvents
+        - pendingCount
+        - approvedCount
+        - rejectedCount
+        - featuredCount
+        - duplicateCount
+        - eventsByProvince
+        - eventsByCategory
+        - recentlyAdded
+        - upcomingThisMonth
+      properties:
+        totalEvents:
+          type: integer
+        pendingCount:
+          type: integer
+        approvedCount:
+          type: integer
+        rejectedCount:
+          type: integer
+        featuredCount:
+          type: integer
+        duplicateCount:
+          type: integer
+        eventsByProvince:
+          type: array
+          items:
+            type: object
+            required: [province, count]
+            properties:
+              province: { type: string }
+              count: { type: integer }
+        eventsByCategory:
+          type: array
+          items:
+            type: object
+            required: [category, count]
+            properties:
+              category: { type: string }
+              count: { type: integer }
+        recentlyAdded:
+          type: integer
+        upcomingThisMonth:
+          type: integer
+
+    EventSource:
+      type: object
+      required: [id, name, type, active, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [instagram, facebook, website, api, manual]
+        url:
+          type: ["string", "null"]
+        active:
+          type: boolean
+        lastCheckedAt:
+          type: ["string", "null"]
+        eventsFound:
+          type: integer
+        createdAt:
+          type: string
+
+    EventSourceInput:
+      type: object
+      required: [name, type]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        type:
+          type: string
+          enum: [instagram, facebook, website, api, manual]
+        url:
+          type: string
+        active:
+          type: boolean
+          default: true
+
+    EventSourceUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        active:
+          type: boolean
+
+    GeocodeInput:
+      type: object
+      required: [address]
+      properties:
+        address:
+          type: string
+        city:
+          type: string
+        province:
+          type: string
+        country:
+          type: string
+
+    GeocodeResult:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+        latitude:
+          type: ["number", "null"]
+        longitude:
+          type: ["number", "null"]
+        normalizedAddress:
+          type: ["string", "null"]
+        normalizedCity:
+          type: ["string", "null"]
+        normalizedProvince:
+          type: ["string", "null"]
+        normalizedCountry:
+          type: ["string", "null"]
+        displayName:
+          type: ["string", "null"]
