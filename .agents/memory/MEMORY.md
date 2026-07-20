@@ -1,1 +1,2 @@
 - [Event category mapping](event-category-mapping.md) — first entry of the ordered categories array is the primary type; coffee matches before meet.
+- [GitHub repo layout](github-repo-layout.md) — push only to the `events-app` branch; `main` holds the live performanceconnect.ca site and must not be overwritten.
