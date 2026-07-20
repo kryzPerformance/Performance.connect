@@ -67,9 +67,9 @@ export default function Stats() {
           <div className="bg-card border border-border rounded-xl p-4 flex flex-col gap-2">
             <div className="flex items-center justify-between text-muted-foreground">
               <span className="text-xs font-bold uppercase">Duplicates</span>
-              <Copy className="w-4 h-4 text-orange-500" />
+              <Copy className="w-4 h-4 text-primary" />
             </div>
-            <span className="text-2xl font-black text-orange-500">{stats.duplicateCount}</span>
+            <span className="text-2xl font-black text-primary">{stats.duplicateCount}</span>
           </div>
 
           <div className="bg-card border border-border rounded-xl p-4 flex flex-col gap-2">

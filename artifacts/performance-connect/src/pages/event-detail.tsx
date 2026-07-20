@@ -138,7 +138,7 @@ export default function EventDetail() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   {event.hasBurnoutContest && (
                     <div className="flex flex-col items-center justify-center p-4 bg-secondary/50 rounded-lg border border-border/50 text-center gap-2">
-                      <Flame className="w-8 h-8 text-orange-500" />
+                      <Flame className="w-8 h-8 text-primary" />
                       <span className="text-sm font-semibold">Burnout Contest</span>
                     </div>
                   )}
@@ -189,7 +189,7 @@ export default function EventDetail() {
                       </span>
                     </div>
                     {event.rainDate && (
-                      <div className="text-xs text-orange-400 mt-2 font-medium bg-orange-400/10 inline-block px-2 py-1 rounded border border-orange-400/20">
+                      <div className="text-xs text-primary mt-2 font-medium bg-primary/10 inline-block px-2 py-1 rounded border border-primary/20">
                         Rain Date: {format(new Date(event.rainDate), 'MMM d, yyyy')}
                       </div>
                     )}

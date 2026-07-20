@@ -112,7 +112,7 @@ export default function Dashboard() {
           </div>
           <div className="bg-card border border-border rounded-xl p-4 flex flex-col">
             <span className="text-sm font-medium text-muted-foreground">Duplicate Warnings</span>
-            <span className="text-3xl font-black mt-1 text-orange-500">
+            <span className="text-3xl font-black mt-1 text-primary">
               {statsLoading ? "..." : stats?.duplicateCount || 0}
             </span>
           </div>
@@ -174,7 +174,7 @@ export default function Dashboard() {
                             </span>
                           )}
                           {event.duplicateWarning && (
-                            <span className="bg-orange-500/20 text-orange-500 border border-orange-500/30 text-xs font-bold px-2 py-0.5 rounded uppercase flex items-center gap-1">
+                            <span className="bg-primary/20 text-primary border border-primary/30 text-xs font-bold px-2 py-0.5 rounded uppercase flex items-center gap-1">
                               <AlertTriangle className="w-3 h-3" /> Potential Duplicate
                             </span>
                           )}
@@ -228,7 +228,7 @@ export default function Dashboard() {
                       <div className="flex-1" />
                       
                       {event.duplicateWarning && (
-                        <button className="bg-orange-500/10 text-orange-500 hover:bg-orange-500/20 border border-orange-500/20 px-3 py-1.5 rounded text-sm font-medium flex items-center gap-2 transition-colors">
+                        <button className="bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 px-3 py-1.5 rounded text-sm font-medium flex items-center gap-2 transition-colors">
                           <GitMerge className="w-4 h-4" />
                           View Duplicates ({event.duplicateCount})
                         </button>

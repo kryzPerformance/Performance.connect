@@ -60,7 +60,7 @@ export default function Home() {
             <span>Canada's Premier Automotive Event Source</span>
           </div>
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 text-foreground max-w-4xl uppercase italic">
-            Find Your Next <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">Adrenaline</span> Fix
+            Find Your Next <span className="text-primary pc-glow-text">Adrenaline</span> Fix
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mb-10">
             The command center for Canadian car culture. Track days, drag races, burnout contests, and car meets. Community powered.

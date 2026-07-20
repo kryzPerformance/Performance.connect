@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
@@ -57,7 +57,9 @@
   --color-sidebar-accent-border: var(--sidebar-accent-border);
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
-  --font-sans: 'Outfit', sans-serif;
+  /* Performance Connect brand fonts */
+  --font-sans: 'Inter', sans-serif;
+  --font-heading: 'Rajdhani', sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: 'JetBrains Mono', monospace;
 
@@ -67,80 +69,106 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* Base Theme - Forced Dark for automotive vibe */
+/* =====================================================================
+   Performance Connect Brand Palette — Dark Theme
+   Primary:    #3DC9F0  → 193 86% 59%
+   Background: #070808  → 180 7% 3%
+   Card:       #111415  → 195 10% 7%
+   Border:     #23292B  → 195 9% 15%
+   Muted fg:   #8FA0A6  → 195 10% 61%
+   Foreground: #F2F6F7  → 195 20% 96%
+   ===================================================================== */
 :root {
-  --button-outline: rgba(255, 255, 255, 0.1);
-  --badge-outline: rgba(255, 255, 255, 0.05);
+  --button-outline: rgba(61, 201, 240, 0.15);
+  --badge-outline: rgba(61, 201, 240, 0.08);
 
   --opaque-button-border-intensity: 9;
 
-  --elevate-1: rgba(255, 255, 255, 0.03);
-  --elevate-2: rgba(255, 255, 255, 0.08);
+  --elevate-1: rgba(61, 201, 240, 0.04);
+  --elevate-2: rgba(61, 201, 240, 0.09);
 
-  --background: 220 10% 4%;
-  --foreground: 0 0% 95%;
-  --border: 220 10% 12%;
-  
-  --card: 220 10% 6%;
-  --card-foreground: 0 0% 95%;
-  --card-border: 220 10% 14%;
+  /* Backgrounds */
+  --background: 180 7% 3%;
+  --foreground: 195 20% 96%;
+  --border: 195 9% 14%;
 
-  --sidebar: 220 10% 6%;
-  --sidebar-foreground: 0 0% 95%;
-  --sidebar-border: 220 10% 14%;
-  --sidebar-primary: 0 84% 50%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 220 10% 12%;
-  --sidebar-accent-foreground: 0 0% 95%;
-  --sidebar-ring: 0 84% 50%;
+  /* Cards */
+  --card: 195 10% 7%;
+  --card-foreground: 195 20% 96%;
+  --card-border: 195 9% 14%;
 
-  --popover: 220 10% 6%;
-  --popover-foreground: 0 0% 95%;
-  --popover-border: 220 10% 14%;
+  /* Sidebar */
+  --sidebar: 195 10% 5%;
+  --sidebar-foreground: 195 20% 96%;
+  --sidebar-border: 195 9% 14%;
+  --sidebar-primary: 193 86% 59%;
+  --sidebar-primary-foreground: 196 90% 6%;
+  --sidebar-accent: 195 9% 12%;
+  --sidebar-accent-foreground: 195 20% 96%;
+  --sidebar-ring: 193 86% 59%;
 
-  --primary: 0 84% 50%;
-  --primary-foreground: 0 0% 100%;
+  /* Popover */
+  --popover: 195 10% 7%;
+  --popover-foreground: 195 20% 96%;
+  --popover-border: 195 9% 16%;
 
-  --secondary: 220 10% 12%;
-  --secondary-foreground: 0 0% 95%;
+  /* Brand cyan — the Performance Connect signature color */
+  --primary: 193 86% 59%;
+  --primary-foreground: 196 90% 6%;
 
-  --muted: 220 10% 12%;
-  --muted-foreground: 220 10% 60%;
+  /* Secondary surfaces */
+  --secondary: 195 9% 12%;
+  --secondary-foreground: 195 20% 96%;
 
-  --accent: 220 10% 12%;
-  --accent-foreground: 0 0% 95%;
+  /* Muted */
+  --muted: 195 9% 12%;
+  --muted-foreground: 195 10% 61%;
 
-  --destructive: 0 84% 40%;
+  /* Accent */
+  --accent: 195 9% 12%;
+  --accent-foreground: 195 20% 96%;
+
+  /* Destructive */
+  --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
 
-  --input: 220 10% 14%;
-  --ring: 0 84% 50%;
-  --chart-1: 0 84% 50%;
-  --chart-2: 25 80% 55%;
-  --chart-3: 200 80% 50%;
-  --chart-4: 280 80% 60%;
-  --chart-5: 140 80% 50%;
+  /* Input / ring */
+  --input: 195 9% 14%;
+  --ring: 193 86% 59%;
 
-  --radius: 0.25rem;
-  --shadow-2xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.5);
-  --shadow-xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.5);
+  /* Charts — cyan family + complementary */
+  --chart-1: 193 86% 59%;
+  --chart-2: 193 86% 45%;
+  --chart-3: 193 86% 35%;
+  --chart-4: 220 70% 55%;
+  --chart-5: 160 60% 50%;
+
+  /* 6px radius — matches PC site */
+  --radius: 0.375rem;
+
+  --shadow-2xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.6);
+  --shadow-xs:  0px 2px 0px 0px hsl(0 0% 0% / 0.6);
   --shadow-sm:
-    0px 2px 0px 0px hsl(0 0% 0% / 0.5),
-    0px 1px 2px -1px hsl(0 0% 0% / 0.5);
+    0px 2px 0px 0px hsl(0 0% 0% / 0.6),
+    0px 1px 2px -1px hsl(0 0% 0% / 0.6);
   --shadow:
-    0px 2px 0px 0px hsl(0 0% 0% / 0.5),
-    0px 1px 2px -1px hsl(0 0% 0% / 0.5);
+    0px 2px 0px 0px hsl(0 0% 0% / 0.6),
+    0px 1px 2px -1px hsl(0 0% 0% / 0.6);
   --shadow-md:
-    0px 2px 0px 0px hsl(0 0% 0% / 0.5),
-    0px 2px 4px -1px hsl(0 0% 0% / 0.5);
+    0px 2px 0px 0px hsl(0 0% 0% / 0.6),
+    0px 2px 4px -1px hsl(0 0% 0% / 0.6);
   --shadow-lg:
-    0px 2px 0px 0px hsl(0 0% 0% / 0.5),
-    0px 4px 6px -1px hsl(0 0% 0% / 0.5);
+    0px 2px 0px 0px hsl(0 0% 0% / 0.6),
+    0px 4px 6px -1px hsl(0 0% 0% / 0.6);
   --shadow-xl:
-    0px 2px 0px 0px hsl(0 0% 0% / 0.5),
-    0px 8px 10px -1px hsl(0 0% 0% / 0.5);
-  --shadow-2xl: 0px 2px 0px 0px hsl(0 0% 0% / 0.5);
+    0px 2px 0px 0px hsl(0 0% 0% / 0.6),
+    0px 8px 10px -1px hsl(0 0% 0% / 0.6);
+  --shadow-2xl: 0px 2px 0px 0px hsl(0 0% 0% / 0.6);
 
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+
+  /* Computed borders */
   --sidebar-primary-border: hsl(
     from hsl(var(--sidebar-primary)) h s
       calc(l + var(--opaque-button-border-intensity)) / alpha
@@ -171,8 +199,42 @@
   );
 }
 
+/* Single theme — always dark, matching PC.ca */
 .dark {
-  /* same as above */
+  --background: 180 7% 3%;
+  --foreground: 195 20% 96%;
+  --border: 195 9% 14%;
+  --card: 195 10% 7%;
+  --card-foreground: 195 20% 96%;
+  --card-border: 195 9% 14%;
+  --sidebar: 195 10% 5%;
+  --sidebar-foreground: 195 20% 96%;
+  --sidebar-border: 195 9% 14%;
+  --sidebar-primary: 193 86% 59%;
+  --sidebar-primary-foreground: 196 90% 6%;
+  --sidebar-accent: 195 9% 12%;
+  --sidebar-accent-foreground: 195 20% 96%;
+  --sidebar-ring: 193 86% 59%;
+  --popover: 195 10% 7%;
+  --popover-foreground: 195 20% 96%;
+  --popover-border: 195 9% 16%;
+  --primary: 193 86% 59%;
+  --primary-foreground: 196 90% 6%;
+  --secondary: 195 9% 12%;
+  --secondary-foreground: 195 20% 96%;
+  --muted: 195 9% 12%;
+  --muted-foreground: 195 10% 61%;
+  --accent: 195 9% 12%;
+  --accent-foreground: 195 20% 96%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --input: 195 9% 14%;
+  --ring: 193 86% 59%;
+  --chart-1: 193 86% 59%;
+  --chart-2: 193 86% 45%;
+  --chart-3: 193 86% 35%;
+  --chart-4: 220 70% 55%;
+  --chart-5: 160 60% 50%;
 }
 
 @layer base {
@@ -180,81 +242,80 @@
     @apply border-border;
   }
 
+  html {
+    /* Force dark — PC.ca is always dark */
+    color-scheme: dark;
+  }
+
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    background-color: hsl(var(--background));
+  }
+
+  /* Rajdhani for all heading levels */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.02em;
   }
 }
 
-/**
- * Using the elevate system.
- * Automatic contrast adjustment.
- *
- * <element className="hover-elevate" />
- * <element className="active-elevate-2" />
- *
- * // Using the tailwind utility when a data attribute is "on"
- * <element className="toggle-elevate data-[state=on]:toggle-elevated" />
- * // Or manually controlling the toggle state
- * <element className="toggle-elevate toggle-elevated" />
- *
- * Elevation systems have to handle many states.
- * - not-hovered, vs. hovered vs. active  (three mutually exclusive states)
- * - toggled or not
- * - focused or not (this is not handled with these utilities)
- *
- * Even without handling focused or not, this is six possible combinations that
- * need to be distinguished from eachother visually.
- */
+/* ===================================================================
+   Utility classes
+   =================================================================== */
 @layer utilities {
-  /* Hide ugly search cancel button in Chrome until we can style it properly */
+  .font-heading {
+    font-family: 'Rajdhani', sans-serif;
+  }
+
   input[type='search']::-webkit-search-cancel-button {
     @apply hidden;
   }
 
-  /* Placeholder styling for contentEditable div */
   [contenteditable][data-placeholder]:empty::before {
     content: attr(data-placeholder);
     color: hsl(var(--muted-foreground));
     pointer-events: none;
   }
 
-  /* .no-default-hover-elevate/no-default-active-elevate is an escape hatch so consumers of
-   * buttons/badges can remove the automatic brightness adjustment on interactions
-   * and program their own. */
-  .no-default-hover-elevate {
+  /* PC cyan glow effect for primary elements */
+  .pc-glow {
+    box-shadow: 0 0 20px rgba(61, 201, 240, 0.15), 0 0 40px rgba(61, 201, 240, 0.05);
   }
 
-  .no-default-active-elevate {
+  .pc-glow-text {
+    text-shadow: 0 0 20px rgba(61, 201, 240, 0.4);
   }
 
-  /**
-   * Toggleable backgrounds go behind the content. Hoverable/active goes on top.
-   * This way they can stack/compound. Both will overlap the parent's borders!
-   * So borders will be automatically adjusted both on toggle, and hover/active,
-   * and they will be compounded.
-   */
+  /* Subtle teal scanline background pattern matching PC.ca */
+  .pc-grid-bg {
+    background-image:
+      linear-gradient(rgba(61, 201, 240, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(61, 201, 240, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .no-default-hover-elevate {}
+  .no-default-active-elevate {}
+
   .toggle-elevate::before,
   .toggle-elevate-2::before {
     content: '';
     pointer-events: none;
     position: absolute;
     inset: 0px;
-    /*border-radius: inherit;   match rounded corners */
     border-radius: inherit;
     z-index: -1;
-    /* sits behind content but above backdrop */
   }
 
   .toggle-elevate.toggle-elevated::before {
     background-color: var(--elevate-2);
   }
 
-  /* If there's a 1px border, adjust the inset so that it covers that parent's border */
   .border.toggle-elevate::before {
     inset: -1px;
   }
 
-  /* Does not work on elements with overflow:hidden! */
   .hover-elevate:not(.no-default-hover-elevate),
   .active-elevate:not(.no-default-active-elevate),
   .hover-elevate-2:not(.no-default-hover-elevate),
@@ -271,10 +332,8 @@
     pointer-events: none;
     position: absolute;
     inset: 0px;
-    /*border-radius: inherit;   match rounded corners */
     border-radius: inherit;
     z-index: 999;
-    /* sits in front of content */
   }
 
   .hover-elevate:hover:not(.no-default-hover-elevate)::after,
@@ -287,12 +346,10 @@
     background-color: var(--elevate-2);
   }
 
-  /* If there's a 1px border, adjust the inset so that it covers that parent's border */
-  .border.hover-elevate:not(.no-hover-interaction-elevate)::after,
-  .border.active-elevate:not(.no-active-interaction-elevate)::after,
-  .border.hover-elevate-2:not(.no-hover-interaction-elevate)::after,
-  .border.active-elevate-2:not(.no-active-interaction-elevate)::after,
-  .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
+  .border.hover-elevate:not(.no-default-hover-elevate)::after,
+  .border.active-elevate:not(.no-default-active-elevate)::after,
+  .border.hover-elevate-2:not(.no-default-hover-elevate)::after,
+  .border.active-elevate-2:not(.no-default-active-elevate)::after {
     inset: -1px;
   }
 }
