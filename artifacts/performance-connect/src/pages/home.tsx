@@ -1,291 +1,519 @@
 import React from "react";
-import { Link } from "wouter";
-import { useListEvents, useListUpcomingEvents } from "@workspace/api-client-react";
-import { MapPin, Calendar, Users, Zap, ShieldCheck, Flame, List, Map as MapIcon, Search, SearchX, CalendarPlus, Gauge } from "lucide-react";
-import { format } from "date-fns";
+import { Link, useLocation } from "wouter";
+import { useListEvents } from "@workspace/api-client-react";
 import L from "leaflet";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
-// Fix Leaflet marker icons
+// ── Leaflet icon fix ────────────────────────────────────────────────────────
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({ iconUrl: markerIcon, iconRetinaUrl: markerIcon2x, shadowUrl: markerShadow });
 
-// Custom Red Icon for automotive theme
-const redIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
+// ── Brand tokens (match the HTML exactly) ───────────────────────────────────
+const T = {
+  black:   "#070808",
+  panel:   "#111415",
+  panel2:  "#161B1C",
+  line:    "#23292b",
+  cyan:    "#1FA9CF",
+  cyanBrt: "#3DC9F0",
+  steel:   "#8FA0A6",
+  steelDm: "#5C6A6E",
+  white:   "#F2F6F7",
+  green:   "#3DF08A",
+  red:     "#E84545",
+  amber:   "#F0B83D",
+};
 
-export default function Home() {
-  const [viewMode, setViewMode] = React.useState<"list" | "map">("list");
-  const [search, setSearch] = React.useState("");
-  const [province, setProvince] = React.useState("");
-  const [category, setCategory] = React.useState("");
+// ── Event type metadata ──────────────────────────────────────────────────────
+const TYPE_META: Record<string, { label: string; color: string }> = {
+  meet:   { label: "Meet",          color: "#3DC9F0" },
+  track:  { label: "Track Day",     color: "#FF4DA6" },
+  show:   { label: "Car Show",      color: "#FFD600" },
+  coffee: { label: "Cars & Coffee", color: "#FF8C42" },
+  other:  { label: "Event",         color: "#B34DFF" },
+};
 
-  // Debounce search
-  const [debouncedSearch, setDebouncedSearch] = React.useState("");
-  React.useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(search), 500);
-    return () => clearTimeout(timer);
-  }, [search]);
+const MONTHS      = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+const MONTHS_FULL = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-  const { data: eventsData, isLoading } = useListEvents({
-    search: debouncedSearch || undefined,
-    province: province || undefined,
-    category: category || undefined,
-    limit: 50
-  });
+type EventTypeKey = "meet" | "track" | "show" | "coffee" | "other";
+type ViewMode     = "list" | "calendar" | "map";
 
-  const events = eventsData?.events || [];
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function getTypeKey(categories: string[] | null | undefined): EventTypeKey {
+  // Categories are an ordered list; the first entry is the event's primary category.
+  // Map each string with coffee checked before meet ("Cars and Coffee" must not match "meet").
+  const mapOne = (raw: string): EventTypeKey | null => {
+    const c = raw.toLowerCase();
+    if (c.includes("coffee")) return "coffee";
+    if (c.includes("track"))  return "track";
+    if (c.includes("show"))   return "show";
+    if (c.includes("meet"))   return "meet";
+    return null;
+  };
+  for (const raw of categories ?? []) {
+    const key = mapOne(raw ?? "");
+    if (key) return key;
+    break; // only the primary (first) category decides; others are secondary tags
+  }
+  return "other";
+}
+
+function fmtTime(t: string | null | undefined): string {
+  if (!t) return "";
+  const [hh, mm] = t.split(":");
+  const h = parseInt(hh, 10);
+  return `${h % 12 || 12}:${mm} ${h >= 12 ? "PM" : "AM"}`;
+}
+
+function makeEvIcon(typeKey: EventTypeKey) {
+  const { color } = TYPE_META[typeKey];
+  const html = `<div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:${color}22;border:2px solid ${color};box-shadow:0 2px 8px rgba(0,0,0,.6);">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="${color}" stroke-width="2.2">
+      <rect x="3" y="4" width="18" height="18" rx="2"/>
+      <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+    </svg></div>`;
+  return L.divIcon({ className: "", html, iconSize: [30, 30], iconAnchor: [15, 15], popupAnchor: [0, -16] });
+}
+
+// ── Sub-components ───────────────────────────────────────────────────────────
+
+function EventCard({ ev }: { ev: any }) {
+  const [hovered, setHovered] = React.useState(false);
+  const [, navigate] = useLocation();
+  const typeKey  = getTypeKey(ev.categories);
+  const meta     = TYPE_META[typeKey];
+  const d        = ev.startDate ? new Date(ev.startDate + "T00:00:00") : null;
+  const timeStr  = ev.startTime
+    ? fmtTime(ev.startTime) + (ev.endTime ? ` – ${fmtTime(ev.endTime)}` : "")
+    : "";
+  const loc      = ev.venueName || ev.city || "";
+  const hasPoster = !!ev.flyerUrl;
 
   return (
-    <div className="flex-1 flex flex-col">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-zinc-950 border-b border-border/40 py-16 md:py-24">
-        {/* Background texture/noise/gradient */}
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background"></div>
-        <div className="absolute inset-0 pointer-events-none opacity-[0.03] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
-        
-        <div className="container mx-auto px-4 relative z-10 flex flex-col items-center text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-sm font-medium mb-6">
-            <Flame className="w-4 h-4" />
-            <span>Canada's Premier Automotive Event Source</span>
-          </div>
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 text-foreground max-w-4xl uppercase italic">
-            Find Your Next <span className="text-primary pc-glow-text">Adrenaline</span> Fix
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mb-10">
-            The command center for Canadian car culture. Track days, drag races, burnout contests, and car meets. Community powered.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
-            <Link 
-              href="/submit" 
-              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 h-12 rounded-md font-semibold flex items-center justify-center gap-2 transition-all active:scale-95"
-              data-testid="link-hero-submit"
-            >
-              <CalendarPlus className="w-5 h-5" />
-              Submit Event
-            </Link>
-          </div>
+    <div
+      role="link"
+      tabIndex={0}
+      onClick={() => navigate(`/events/${ev.id}`)}
+      onKeyDown={e => e.key === "Enter" && navigate(`/events/${ev.id}`)}
+      style={{
+        display: "grid",
+        gridTemplateColumns: hasPoster ? "64px 1fr 120px" : "64px 1fr",
+        gap: 16,
+        background: T.panel,
+        border: `0.5px solid ${hovered ? "rgba(31,169,207,.4)" : T.line}`,
+        borderRadius: 14,
+        padding: 18,
+        color: "inherit",
+        cursor: "pointer",
+        transform: hovered ? "translateY(-2px)" : "none",
+        transition: "border-color .15s, transform .15s",
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Date badge */}
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+        background: T.panel2, borderRadius: 10, padding: "8px 4px", height: 64 }}>
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.cyanBrt }}>
+          {d ? MONTHS[d.getMonth()] : "TBA"}
+        </span>
+        <span style={{ fontFamily: "Rajdhani, sans-serif", fontWeight: 700, fontSize: 26, lineHeight: 1, color: T.white }}>
+          {d ? d.getDate() : "--"}
+        </span>
+      </div>
+
+      {/* Body */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
+        {/* Type tag */}
+        <span style={{
+          display: "inline-flex", alignItems: "center", gap: 5, alignSelf: "flex-start",
+          fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
+          padding: "3px 9px", borderRadius: 999,
+          background: meta.color + "18", color: meta.color,
+        }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: meta.color, flexShrink: 0 }} />
+          {meta.label}
+        </span>
+
+        {/* Title — a real link for semantics (open in new tab, copy address, a11y) */}
+        <Link
+          href={`/events/${ev.id}`}
+          onClick={(e: React.MouseEvent) => e.stopPropagation()}
+          style={{ fontFamily: "Rajdhani, sans-serif", fontWeight: 700, fontSize: 19, lineHeight: 1.15,
+            color: T.white, textDecoration: "none" }}
+        >
+          {ev.title}
+        </Link>
+
+        {/* Meta row */}
+        <div style={{ fontSize: 12.5, color: T.steel, display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
+          {timeStr && (
+            <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <svg viewBox="0 0 24 24" width={12} height={12} fill="none" stroke={T.steelDm} strokeWidth={2}>
+                <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+              </svg>
+              {timeStr}
+            </span>
+          )}
+          {loc && (
+            <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <svg viewBox="0 0 24 24" width={12} height={12} fill="none" stroke={T.steelDm} strokeWidth={2}>
+                <path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/>
+                <circle cx="12" cy="9" r="2.5"/>
+              </svg>
+              {loc}
+            </span>
+          )}
+          {ev.organizer && <span>by {ev.organizer}</span>}
         </div>
-      </section>
 
-      {/* Main Content */}
-      <div className="flex-1 container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
-        
-        {/* Sidebar Filters */}
-        <aside className="w-full lg:w-64 flex flex-col gap-6 shrink-0">
-          <div className="bg-card border border-border rounded-lg p-5 flex flex-col gap-5">
-            <h3 className="font-bold text-lg border-b border-border/50 pb-2">Filters</h3>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">Search</label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input 
-                  type="text" 
-                  placeholder="Event name or city..." 
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full bg-background border border-input rounded-md pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all"
-                  data-testid="input-search"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">Province</label>
-              <select 
-                value={province}
-                onChange={(e) => setProvince(e.target.value)}
-                className="w-full bg-background border border-input rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all appearance-none"
-                data-testid="select-province"
-              >
-                <option value="">All Provinces</option>
-                <option value="ON">Ontario</option>
-                <option value="QC">Quebec</option>
-                <option value="BC">Quebec</option>
-                <option value="AB">British Columbia</option>
-                <option value="MB">Alberta</option>
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">Category</label>
-              <select 
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full bg-background border border-input rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all appearance-none"
-                data-testid="select-category"
-              >
-                <option value="">All Categories</option>
-                <option value="Car Show">Car Show</option>
-                <option value="Car Meet">Car Meet</option>
-                <option value="Track Day">Track Day</option>
-                <option value="Drag Racing">Drag Racing</option>
-                <option value="Drifting">Drifting</option>
-              </select>
-            </div>
+        {/* Description */}
+        {ev.description && (
+          <div style={{
+            fontSize: 13, color: T.steel, lineHeight: 1.5, marginTop: 2,
+            display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+          }}>
+            {ev.description}
           </div>
-        </aside>
+        )}
 
-        {/* Results Area */}
-        <div className="flex-1 flex flex-col gap-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <h2 className="text-2xl font-bold">
-              {isLoading ? "Loading..." : `${events.length} Events Found`}
-            </h2>
-            
-            <div className="flex bg-secondary p-1 rounded-md border border-border/50">
-              <button 
-                onClick={() => setViewMode("list")}
-                className={`px-4 py-1.5 rounded text-sm font-medium flex items-center gap-2 transition-all ${viewMode === "list" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                data-testid="btn-view-list"
-              >
-                <List className="w-4 h-4" />
-                List
-              </button>
-              <button 
-                onClick={() => setViewMode("map")}
-                className={`px-4 py-1.5 rounded text-sm font-medium flex items-center gap-2 transition-all ${viewMode === "map" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                data-testid="btn-view-map"
-              >
-                <MapIcon className="w-4 h-4" />
-                Map
-              </button>
-            </div>
-          </div>
-
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="bg-card border border-border rounded-xl h-64 animate-pulse"></div>
-              ))}
-            </div>
-          ) : events.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-12 bg-card border border-border border-dashed rounded-xl text-center">
-              <SearchX className="w-12 h-12 text-muted-foreground mb-4 opacity-50" />
-              <h3 className="text-xl font-bold mb-2">No events found</h3>
-              <p className="text-muted-foreground max-w-md">
-                We couldn't find any events matching your filters. Try adjusting your search or check back later.
-              </p>
-              <button 
-                onClick={() => { setSearch(""); setProvince(""); setCategory(""); }}
-                className="mt-6 text-primary hover:underline text-sm font-medium"
-              >
-                Clear all filters
-              </button>
-            </div>
-          ) : viewMode === "list" ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {events.map((event) => (
-                <Link key={event.id} href={`/events/${event.id}`} className="group outline-none" data-testid={`event-card-${event.id}`}>
-                  <div className="bg-card border border-border rounded-xl overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-[0_0_15px_rgba(220,38,38,0.15)] flex flex-col h-full group-focus-visible:ring-2 ring-primary">
-                    {/* Image Area */}
-                    <div className="h-48 bg-secondary relative overflow-hidden flex-shrink-0">
-                      {event.flyerUrl ? (
-                        <img 
-                          src={event.flyerUrl} 
-                          alt={event.title} 
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-zinc-900">
-                          <Gauge className="w-16 h-16 text-zinc-800" />
-                        </div>
-                      )}
-                      
-                      {event.featured && (
-                        <div className="absolute top-3 right-3 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded shadow-lg uppercase tracking-wider flex items-center gap-1">
-                          <Flame className="w-3 h-3" /> Featured
-                        </div>
-                      )}
-                      
-                      <div className="absolute bottom-3 left-3 bg-background/90 backdrop-blur border border-border text-foreground text-sm font-bold px-3 py-1 rounded shadow-lg">
-                        {event.startDate ? format(new Date(event.startDate), 'MMM d, yyyy') : 'TBA'}
-                      </div>
-                    </div>
-                    
-                    {/* Content Area */}
-                    <div className="p-5 flex flex-col flex-1">
-                      <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors line-clamp-1">{event.title}</h3>
-                      
-                      <div className="flex flex-col gap-2 text-sm text-muted-foreground mb-4">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 shrink-0 text-primary/70" />
-                          <span className="truncate">{event.venueName || event.city || "Location TBA"} {event.province && `, ${event.province}`}</span>
-                        </div>
-                        {event.organizer && (
-                          <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4 shrink-0 text-primary/70" />
-                            <span className="truncate">{event.organizer}</span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="mt-auto pt-4 border-t border-border/50 flex flex-wrap gap-2">
-                        {event.categories?.slice(0, 2).map(cat => (
-                          <span key={cat} className="text-xs bg-secondary border border-border px-2 py-1 rounded-full text-secondary-foreground font-medium">
-                            {cat}
-                          </span>
-                        ))}
-                        {event.categories && event.categories.length > 2 && (
-                          <span className="text-xs bg-secondary border border-border px-2 py-1 rounded-full text-muted-foreground font-medium">
-                            +{event.categories.length - 2} more
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="h-[600px] rounded-xl overflow-hidden border border-border shadow-lg relative z-0">
-              <MapContainer 
-                center={[56.1304, -106.3468]} // Center of Canada roughly
-                zoom={4} 
-                style={{ height: '100%', width: '100%' }}
-                className="bg-zinc-900"
-              >
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-                  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                />
-                {events.filter(e => e.latitude && e.longitude).map(event => (
-                  <Marker 
-                    key={event.id} 
-                    position={[event.latitude!, event.longitude!]}
-                    icon={redIcon}
-                  >
-                    <Popup className="custom-popup">
-                      <div className="flex flex-col gap-2 p-1 min-w-[200px]">
-                        <h4 className="font-bold text-base leading-tight">{event.title}</h4>
-                        <p className="text-sm text-gray-500 m-0">
-                          {event.startDate ? format(new Date(event.startDate), 'MMM d, yyyy') : 'TBA'}
-                        </p>
-                        <p className="text-sm m-0">{event.city}{event.province ? `, ${event.province}` : ''}</p>
-                        <Link href={`/events/${event.id}`} className="mt-2 text-primary font-medium hover:underline text-sm inline-block">
-                          View Details &rarr;
-                        </Link>
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
-              </MapContainer>
-            </div>
+        {/* Links */}
+        <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+          {ev.sourceUrl && (
+            <a href={ev.sourceUrl} target="_blank" rel="noopener noreferrer"
+              onClick={e => e.stopPropagation()}
+              style={{ fontSize: 11.5, fontWeight: 600, padding: "6px 12px", borderRadius: 7, textDecoration: "none",
+                background: "rgba(31,169,207,.1)", border: "0.5px solid rgba(31,169,207,.3)", color: T.cyanBrt }}>
+              Event details
+            </a>
+          )}
+          {ev.latitude && ev.longitude && (
+            <a href={`https://maps.google.com/?q=${ev.latitude},${ev.longitude}`}
+              target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
+              style={{ fontSize: 11.5, fontWeight: 600, padding: "6px 12px", borderRadius: 7, textDecoration: "none",
+                border: `0.5px solid ${T.line}`, color: T.steel }}>
+              Directions
+            </a>
+          )}
+          {ev.entryFee && ev.entryFee !== "Free" && (
+            <span style={{ fontSize: 11.5, fontWeight: 600, padding: "6px 12px", borderRadius: 7,
+              border: `0.5px solid ${T.line}`, color: T.steelDm }}>
+              {ev.entryFee}
+            </span>
           )}
         </div>
       </div>
+
+      {/* Poster image */}
+      {hasPoster && (
+        <div style={{ width: 120, borderRadius: 10, overflow: "hidden", background: T.panel2, border: `0.5px solid ${T.line}`, alignSelf: "stretch" }}>
+          <img src={ev.flyerUrl} alt={ev.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EventList({ events, allEmpty }: { events: any[]; allEmpty: boolean }) {
+  if (allEmpty) {
+    return (
+      <div style={{ textAlign: "center", padding: "60px 20px", color: T.steelDm, maxWidth: 480, margin: "0 auto" }}>
+        <svg width={48} height={48} viewBox="0 0 24 24" fill="none" stroke={T.line} strokeWidth={1.5} style={{ margin: "0 auto 16px", display: "block" }}>
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <div style={{ fontFamily: "Rajdhani, sans-serif", fontWeight: 700, fontSize: 20, color: T.steel, marginBottom: 8, textTransform: "uppercase" }}>
+          No events yet
+        </div>
+        <p style={{ fontSize: 13.5, lineHeight: 1.6 }}>
+          Nothing on the calendar right now. Hosting a meet, track day, or show?{" "}
+          <Link href="/submit" style={{ color: T.cyan }}>Submit it here</Link>{" "}
+          and get it in front of the Canadian scene.
+        </p>
+      </div>
+    );
+  }
+  if (events.length === 0) {
+    return (
+      <div style={{ textAlign: "center", padding: "60px 20px", color: T.steelDm, maxWidth: 480, margin: "0 auto" }}>
+        <div style={{ fontFamily: "Rajdhani, sans-serif", fontWeight: 700, fontSize: 20, color: T.steel, marginBottom: 8, textTransform: "uppercase" }}>
+          No events match your filters
+        </div>
+        <p style={{ fontSize: 13.5 }}>Try enabling more event types above.</p>
+      </div>
+    );
+  }
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14, maxWidth: 820 }}>
+      {events.map(ev => <EventCard key={ev.id} ev={ev} />)}
+    </div>
+  );
+}
+
+// ── Calendar ─────────────────────────────────────────────────────────────────
+function CalendarView({ events }: { events: any[] }) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const first = events[0] ? new Date(events[0].startDate + "T00:00:00") : new Date();
+  const [year,  setYear]  = React.useState(first.getFullYear());
+  const [month, setMonth] = React.useState(first.getMonth());
+
+  const byDate: Record<string, any[]> = {};
+  events.forEach(ev => {
+    if (ev.startDate) (byDate[ev.startDate] = byDate[ev.startDate] || []).push(ev);
+  });
+
+  const startDow   = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const prev = () => month === 0  ? (setMonth(11), setYear(y => y - 1)) : setMonth(m => m - 1);
+  const next = () => month === 11 ? (setMonth(0),  setYear(y => y + 1)) : setMonth(m => m + 1);
+
+  return (
+    <div style={{ maxWidth: 820 }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+        <div style={{ fontFamily: "Rajdhani, sans-serif", fontWeight: 700, fontSize: 20, textTransform: "uppercase", letterSpacing: "0.03em", color: T.white }}>
+          {MONTHS_FULL[month]} {year}
+        </div>
+        <div style={{ display: "flex", gap: 6 }}>
+          {([["prev", prev, "M15 18l-6-6 6-6"], ["next", next, "M9 18l6-6-6-6"]] as const).map(([id, fn, path]) => (
+            <button key={id} onClick={fn} style={{ width: 34, height: 34, borderRadius: 8, background: T.panel, border: `0.5px solid ${T.line}`, color: T.steel, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round">
+                <path d={path} />
+              </svg>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+        {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d => (
+          <div key={d} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.steelDm, padding: "6px 0" }}>{d}</div>
+        ))}
+        {Array.from({ length: startDow }).map((_, i) => <div key={`e${i}`} />)}
+        {Array.from({ length: daysInMonth }).map((_, i) => {
+          const day     = i + 1;
+          const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+          const isToday = new Date(year, month, day).getTime() === today.getTime();
+          const dayEvs  = byDate[dateStr] || [];
+          return (
+            <div key={day} style={{
+              aspectRatio: "1", background: T.panel,
+              border: `0.5px solid ${isToday ? "rgba(31,169,207,.5)" : T.line}`,
+              borderRadius: 8, padding: 5, display: "flex", flexDirection: "column", gap: 3, overflow: "hidden", minHeight: 52,
+            }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: isToday ? T.cyanBrt : T.steel }}>{day}</span>
+              {dayEvs.slice(0, 2).map((ev: any) => {
+                const { color } = TYPE_META[getTypeKey(ev.categories)];
+                return (
+                  <div key={ev.id} style={{ fontSize: 9, fontWeight: 600, padding: "2px 4px", borderRadius: 4, lineHeight: 1.2,
+                    background: color + "22", color, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+                    title={ev.title}>{ev.title}</div>
+                );
+              })}
+              {dayEvs.length > 2 && (
+                <div style={{ fontSize: 9, color: T.steelDm, paddingLeft: 2 }}>+{dayEvs.length - 2} more</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Map ───────────────────────────────────────────────────────────────────────
+function FitBounds({ events }: { events: any[] }) {
+  const map = useMap();
+  React.useEffect(() => {
+    const pts = events.filter(ev => ev.latitude && ev.longitude).map(ev => [ev.latitude, ev.longitude] as [number, number]);
+    if (pts.length > 1) map.fitBounds(pts, { padding: [50, 50] });
+    else if (pts.length === 1) map.setView(pts[0], 12);
+  }, [events, map]);
+  return null;
+}
+
+function MapView({ events }: { events: any[] }) {
+  const GTA: [number, number] = [43.7184, -79.5181];
+  const withCoords = events.filter(ev => ev.latitude && ev.longitude);
+  return (
+    <MapContainer center={GTA} zoom={6} style={{ width: "100%", height: "100%", background: "#0a0f10" }}>
+      <TileLayer
+        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        subdomains="abcd"
+        maxZoom={19}
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+      />
+      {withCoords.map(ev => {
+        const typeKey = getTypeKey(ev.categories);
+        const meta    = TYPE_META[typeKey];
+        const d       = ev.startDate ? new Date(ev.startDate + "T00:00:00") : null;
+        const timeStr = ev.startTime ? fmtTime(ev.startTime) : "";
+        return (
+          <Marker key={ev.id} position={[ev.latitude, ev.longitude]} icon={makeEvIcon(typeKey)}>
+            <Popup>
+              <div style={{ fontFamily: "Inter, sans-serif", minWidth: 180 }}>
+                {ev.flyerUrl && (
+                  <img src={ev.flyerUrl} alt="" style={{ width: "100%", height: 90, objectFit: "cover", borderRadius: 6, marginBottom: 8 }} />
+                )}
+                <div style={{ fontFamily: "Rajdhani, sans-serif", fontWeight: 700, fontSize: 16, color: "#F2F6F7", marginBottom: 4 }}>{ev.title}</div>
+                <div style={{ fontSize: 12, color: meta.color, fontWeight: 600, marginBottom: 6 }}>
+                  {meta.label}{d ? ` · ${MONTHS[d.getMonth()]} ${d.getDate()}` : ""}{timeStr ? ` · ${timeStr}` : ""}
+                </div>
+                {ev.venueName && <div style={{ fontSize: 12, color: "#8FA0A6" }}>{ev.venueName}</div>}
+                {ev.sourceUrl && <a href={ev.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: "#3DC9F0" }}>Event details →</a>}
+              </div>
+            </Popup>
+          </Marker>
+        );
+      })}
+      <FitBounds events={withCoords} />
+    </MapContainer>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+export default function Home() {
+  const [view, setView] = React.useState<ViewMode>("list");
+  const [activeTypes, setActiveTypes] = React.useState<Record<EventTypeKey, boolean>>({
+    meet: true, track: true, show: true, coffee: true, other: true,
+  });
+
+  const { data, isLoading } = useListEvents({ limit: 200 });
+  const allEvents = (data?.events ?? []) as any[];
+  const visible   = allEvents.filter(ev => activeTypes[getTypeKey(ev.categories)]);
+  const allOn     = Object.values(activeTypes).every(Boolean);
+
+  const toggleType = (type: EventTypeKey | "all") => {
+    if (type === "all") {
+      const next = !allOn;
+      setActiveTypes({ meet: next, track: next, show: next, coffee: next, other: next });
+    } else {
+      setActiveTypes(prev => ({ ...prev, [type]: !prev[type] }));
+    }
+  };
+
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+
+      {/* ── Hero ── */}
+      <div style={{ padding: "32px clamp(16px,5vw,56px) 12px", display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: T.cyan }}>
+          Canadian Car Culture
+        </div>
+        <h1 style={{ fontFamily: "Rajdhani, sans-serif", fontWeight: 700, fontStyle: "italic",
+          fontSize: "clamp(28px,5vw,42px)", textTransform: "uppercase", letterSpacing: "0.01em", lineHeight: 1.05, color: T.white, margin: 0 }}>
+          Upcoming <span style={{ color: T.cyanBrt }}>Events</span>
+        </h1>
+        <p style={{ fontSize: 14.5, color: T.steel, maxWidth: 640, lineHeight: 1.6, margin: 0 }}>
+          Meets, track days, shows, and cars &amp; coffee across Canada. Find your next drive — or submit your own event to get it on the map.
+        </p>
+        <Link href="/submit" style={{
+          display: "inline-flex", alignItems: "center", gap: 7, alignSelf: "flex-start", marginTop: 4,
+          padding: "10px 18px", borderRadius: 999, background: T.cyanBrt, color: "#03171D",
+          fontFamily: "Rajdhani, sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: "0.06em",
+          textTransform: "uppercase", textDecoration: "none",
+        }}>
+          <svg viewBox="0 0 24 24" width={14} height={14} fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Submit an event
+        </Link>
+      </div>
+
+      {/* ── Controls ── */}
+      <div style={{ padding: "8px clamp(16px,5vw,56px) 4px" }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+
+          {/* Filter pills */}
+          {(["all", "meet", "track", "show", "coffee", "other"] as const).map(type => {
+            const isAll   = type === "all";
+            const active  = isAll ? allOn : activeTypes[type as EventTypeKey];
+            const color   = isAll ? T.steel : TYPE_META[type]?.color ?? T.steel;
+            const label   = isAll ? "All" : TYPE_META[type]?.label ?? type;
+            return (
+              <button key={type} onClick={() => toggleType(type)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 7,
+                  fontSize: 11.5, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase",
+                  padding: "7px 14px", borderRadius: 999, cursor: "pointer",
+                  background: active ? color + "1E" : "#0D1012",
+                  border:     `1px solid ${active ? color + "66" : "#1C2225"}`,
+                  color:      active ? color : T.steelDm,
+                  transition: "background .2s, border-color .2s, color .2s",
+                }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0, display: "inline-block" }} />
+                {label}
+              </button>
+            );
+          })}
+
+          {/* 3-way view toggle */}
+          <div style={{ display: "flex", gap: 4, background: T.panel, border: `0.5px solid ${T.line}`, borderRadius: 999, padding: 4, marginLeft: "auto" }}>
+            {(["list", "calendar", "map"] as const).map(v => (
+              <button key={v} onClick={() => setView(v)} style={{
+                padding: "6px 16px", borderRadius: 999, fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer",
+                background: view === v ? "rgba(31,169,207,.14)" : "none",
+                color:      view === v ? T.cyanBrt : T.steelDm,
+                transition: "all .15s",
+              }}>
+                {v.charAt(0).toUpperCase() + v.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Count line ── */}
+      <div style={{ fontSize: 13, color: T.steelDm, padding: "6px clamp(16px,5vw,56px)" }}>
+        {!isLoading && allEvents.length > 0 && (
+          <>Showing <span style={{ color: T.cyanBrt, fontWeight: 700 }}>{visible.length}</span> upcoming event{visible.length !== 1 ? "s" : ""}</>
+        )}
+        {!isLoading && allEvents.length === 0 && <span>&nbsp;</span>}
+      </div>
+
+      {/* ── Content ── */}
+      <div style={{ flex: 1, padding: "16px clamp(16px,5vw,56px) 60px" }}>
+
+        {/* Loading spinner */}
+        {isLoading && (
+          <div style={{ textAlign: "center", padding: "60px 20px", color: T.steelDm }}>
+            <div style={{ width: 28, height: 28, border: `2px solid ${T.line}`, borderTopColor: T.cyanBrt,
+              borderRadius: "50%", animation: "pc-spin 0.7s linear infinite", margin: "0 auto 14px" }} />
+            Loading events...
+          </div>
+        )}
+
+        {/* List */}
+        {!isLoading && view === "list" && (
+          <EventList events={visible} allEmpty={allEvents.length === 0} />
+        )}
+
+        {/* Calendar */}
+        {!isLoading && view === "calendar" && (
+          <CalendarView events={visible} />
+        )}
+
+        {/* Map — keep mounted but hidden so Leaflet doesn't re-init */}
+        {!isLoading && (
+          <div style={{
+            display: view === "map" ? "block" : "none",
+            borderRadius: 14, overflow: "hidden", border: `0.5px solid ${T.line}`, height: 560,
+          }}>
+            <MapView events={visible} />
+          </div>
+        )}
+      </div>
+
+      <style>{`@keyframes pc-spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

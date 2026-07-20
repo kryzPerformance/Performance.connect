@@ -1,0 +1,1 @@
+- [Event category mapping](event-category-mapping.md) — first entry of the ordered categories array is the primary type; coffee matches before meet.
