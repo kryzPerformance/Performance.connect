@@ -1,45 +1,87 @@
-# [Project name]
+# Performance Connect – Event Intelligence Engine
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Canada's premier automotive event discovery platform. Community submissions, organizer events, and auto-discovered events flow through an AI-powered moderation pipeline before being published to the public events board.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
+- `pnpm --filter @workspace/performance-connect run dev` — frontend (port auto-assigned, preview at `/`)
+- `pnpm --filter @workspace/api-server run dev` — API server (port auto-assigned, preview at `/api`)
+- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm run typecheck` — full typecheck across all packages
+- After any `lib/*` change: run `pnpm run typecheck:libs` before leaf checks
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Frontend: React + Vite, Wouter routing, TanStack Query, Tailwind CSS v4, shadcn/ui
+- Maps: Leaflet + react-leaflet with OpenStreetMap tiles (no API key required)
+- Backend: Express 5, Drizzle ORM, PostgreSQL
+- AI Flyer Parser: OpenAI gpt-4o Vision (`OPENAI_API_KEY` env var)
+- Geocoding: OpenStreetMap Nominatim (abstracted behind `GeocodingProvider` interface)
+- API codegen: Orval (OpenAPI → React Query hooks + Zod schemas)
 
-## Where things live
+## Where Things Live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `lib/api-spec/openapi.yaml` — single source of truth for all API contracts
+- `lib/db/src/schema/events.ts` — events table (all fields, JSONB arrays for categories/vehicleTypes/sponsors)
+- `lib/db/src/schema/event_sources.ts` — discovery sources table
+- `artifacts/api-server/src/routes/events.ts` — events CRUD + moderation endpoints
+- `artifacts/api-server/src/routes/flyer.ts` — AI flyer parsing endpoint
+- `artifacts/api-server/src/routes/sources.ts` — discovery sources CRUD
+- `artifacts/api-server/src/routes/geocode.ts` — geocoding endpoint
+- `artifacts/api-server/src/services/geocoding.ts` — Nominatim provider (swap here for Google Maps/Mapbox)
+- `artifacts/api-server/src/services/flyer-parser.ts` — OpenAI Vision flyer extraction
+- `artifacts/api-server/src/services/duplicate-detection.ts` — multi-signal duplicate scoring
+- `artifacts/performance-connect/src/` — React frontend (pages + components)
 
-## Architecture decisions
+## Frontend Pages
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+| Route | Description |
+|-------|-------------|
+| `/` | Public event browser — list/map toggle, Leaflet map, province/category/search filters |
+| `/events/:id` | Event detail with full info and location map |
+| `/submit` | Community submission — flyer upload (AI parse) or manual form |
+| `/admin` | Moderator dashboard — pending queue, approve/reject/merge/edit |
+| `/admin/sources` | Discovery sources management |
+| `/admin/stats` | Platform statistics with recharts charts |
 
-## Product
+## Architecture Decisions
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- **API-first**: OpenAPI spec gates all frontend work via codegen — never hand-write API types
+- **Geocoding abstracted**: `GeocodingProvider` interface in `geocoding.ts` — swap Nominatim → Google Maps → Mapbox by changing one file
+- **Leaflet only**: No Google Maps JS API required; consistent with the existing Affiliates map
+- **JSONB for arrays**: `categories`, `vehicleTypes`, `sponsors` stored as Postgres JSONB — flexible for future schema evolution
+- **Duplicate detection**: Multi-signal scoring (title similarity, date, coordinates, organizer, time, source URL) — never auto-publishes duplicates
+- **Modular connectors**: `event_sources` table + discovery framework designed so new connectors (Instagram, Facebook, websites) can be plugged in without changing core architecture
+- **Status pipeline**: `pending → approved | rejected | duplicate` — all submissions land in `pending` and require moderator action
 
-## User preferences
+## Required Environment Variables
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- `DATABASE_URL` — PostgreSQL connection string (auto-provisioned by Replit)
+- `OPENAI_API_KEY` — For AI flyer parsing (Vision API)
+- `SESSION_SECRET` — Express session secret
+
+## Future Ready
+
+The architecture is designed to add without refactoring:
+- Push notifications / email alerts
+- Organizer dashboard with analytics
+- Paid featured events
+- RSVP + check-in system
+- Weather integration, calendar sync (Apple/Google)
+- Country expansion + multi-language
+- AI popularity score, attendance prediction
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Always run `pnpm run typecheck:libs` after changing anything in `lib/*` — leaf packages see stale declarations otherwise
+- Nominatim has a 1 req/sec rate limit — do not batch geocoding calls rapidly
+- Leaflet marker icons need the `_getIconUrl` delete hack — already done in map components
+- OpenAPI body schema names must be entity-shaped (e.g. `EventInput`) not operation-shaped (e.g. `CreateEventBody`) — Orval collision rule
 
-## Pointers
+## User Preferences
 
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- Use Leaflet + OpenStreetMap/Nominatim for all maps (no Google Maps JS API)
+- Geocoding interface must be swappable (Google Maps / Mapbox in future) without changing callers
+- Do not tightly couple event engine to any single platform/source
