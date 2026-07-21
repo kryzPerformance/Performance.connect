@@ -8,6 +8,7 @@ import {
   DeleteSourceParams,
 } from "@workspace/api-zod";
 import { checkSource } from "../services/source-scraper";
+import { flyerParseRateLimit } from "../middleware/rate-limit";
 
 const router = Router();
 
@@ -65,7 +66,7 @@ router.patch("/sources/:id", async (req, res) => {
 });
 
 // POST /sources/:id/check — scrape the source now
-router.post("/sources/:id/check", async (req, res) => {
+router.post("/sources/:id/check", flyerParseRateLimit, async (req, res) => {
   const idParsed = UpdateSourceParams.safeParse({ id: Number(req.params["id"]) });
   if (!idParsed.success) {
     res.status(400).json({ error: "Invalid source id" });

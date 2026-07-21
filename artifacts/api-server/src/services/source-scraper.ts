@@ -13,6 +13,8 @@
  */
 
 import OpenAI from "openai";
+import { lookup } from "node:dns/promises";
+import { isIP } from "node:net";
 import { db, eventsTable, eventSourcesTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 import type { EventSource } from "@workspace/db";
@@ -48,17 +50,80 @@ function isBlockedDomain(url: URL): boolean {
 }
 
 /**
+ * SSRF guard: resolve the hostname and reject private, loopback,
+ * link-local, and cloud-metadata addresses (IPv4 + IPv6).
+ */
+function isPrivateIp(addr: string): boolean {
+  // Normalize IPv4-mapped IPv6 (::ffff:1.2.3.4)
+  const v4 = addr.replace(/^::ffff:/i, "");
+  if (isIP(v4) === 4) {
+    const [a, b] = v4.split(".").map(Number);
+    return (
+      a === 0 || a === 10 || a === 127 ||
+      (a === 100 && b >= 64 && b <= 127) || // CGNAT
+      (a === 169 && b === 254) || // link-local + AWS/GCP metadata
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168) ||
+      a >= 224 // multicast/reserved
+    );
+  }
+  const lower = addr.toLowerCase();
+  return (
+    lower === "::" || lower === "::1" ||
+    lower.startsWith("fe80:") || // link-local
+    lower.startsWith("fc") || lower.startsWith("fd") || // ULA
+    lower.startsWith("ff") // multicast
+  );
+}
+
+async function isSafePublicHost(hostname: string): Promise<boolean> {
+  try {
+    if (isIP(hostname)) return !isPrivateIp(hostname);
+    const results = await lookup(hostname, { all: true });
+    if (results.length === 0) return false;
+    return results.every((r) => !isPrivateIp(r.address));
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Fetch with manual redirect handling: every hop is re-validated
+ * against the SSRF guard before it is followed.
+ */
+async function safeFetch(target: URL, timeoutMs: number): Promise<globalThis.Response> {
+  let current = target;
+  for (let hop = 0; hop < 4; hop++) {
+    if (current.protocol !== "http:" && current.protocol !== "https:") {
+      throw new Error("Unsupported protocol in redirect chain");
+    }
+    if (isBlockedDomain(current) || !(await isSafePublicHost(current.hostname))) {
+      throw new Error("Blocked or non-public address");
+    }
+    const res = await fetch(current, {
+      headers: { "User-Agent": USER_AGENT, Accept: "text/html,application/json;q=0.9,*/*;q=0.5" },
+      signal: AbortSignal.timeout(timeoutMs),
+      redirect: "manual",
+    });
+    if (res.status >= 300 && res.status < 400) {
+      const loc = res.headers.get("location");
+      if (!loc) return res;
+      current = new URL(loc, current);
+      continue;
+    }
+    return res;
+  }
+  throw new Error("Too many redirects");
+}
+
+/**
  * Fetch and check robots.txt: returns true if we're allowed to fetch the path.
  * Fails open only when robots.txt itself doesn't exist (404) — fails closed
  * on parse-able Disallow rules for "*".
  */
 async function robotsAllows(url: URL): Promise<boolean> {
   try {
-    const robotsUrl = `${url.protocol}//${url.host}/robots.txt`;
-    const res = await fetch(robotsUrl, {
-      headers: { "User-Agent": USER_AGENT },
-      signal: AbortSignal.timeout(8_000),
-    });
+    const res = await safeFetch(new URL(`${url.protocol}//${url.host}/robots.txt`), 8_000);
     if (!res.ok) return true; // no robots.txt → allowed
     const text = (await res.text()).slice(0, 100_000);
 
@@ -182,7 +247,22 @@ async function extractEventsFromText(pageText: string): Promise<ExtractedEvent[]
  * Check a single discovery source: fetch its page, extract events with AI,
  * and add new ones to the moderation queue.
  */
+// Only one scan at a time process-wide (prevents overlap/quota abuse)
+let scanInProgress = false;
+
 export async function checkSource(source: EventSource): Promise<ScrapeResult> {
+  if (scanInProgress) {
+    return { ok: false, message: "Another scan is already running — try again in a moment.", eventsFound: 0, duplicatesFound: 0 };
+  }
+  scanInProgress = true;
+  try {
+    return await doCheckSource(source);
+  } finally {
+    scanInProgress = false;
+  }
+}
+
+async function doCheckSource(source: EventSource): Promise<ScrapeResult> {
   if (!source.url) {
     return { ok: false, message: "This source has no URL to check.", eventsFound: 0, duplicatesFound: 0 };
   }
@@ -208,6 +288,15 @@ export async function checkSource(source: EventSource): Promise<ScrapeResult> {
     };
   }
 
+  if (!(await isSafePublicHost(url.hostname))) {
+    return {
+      ok: false,
+      message: "That URL points to a private or internal address and can't be scanned.",
+      eventsFound: 0,
+      duplicatesFound: 0,
+    };
+  }
+
   if (!(await robotsAllows(url))) {
     return {
       ok: false,
@@ -220,11 +309,7 @@ export async function checkSource(source: EventSource): Promise<ScrapeResult> {
   // Fetch the page
   let html: string;
   try {
-    const res = await fetch(url, {
-      headers: { "User-Agent": USER_AGENT, Accept: "text/html,application/json;q=0.9,*/*;q=0.5" },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      redirect: "follow",
-    });
+    const res = await safeFetch(url, FETCH_TIMEOUT_MS);
     if (!res.ok) {
       return { ok: false, message: `The website responded with an error (${res.status}).`, eventsFound: 0, duplicatesFound: 0 };
     }
