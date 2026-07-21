@@ -1494,6 +1494,10 @@
             <img src="fluids_icon.png" alt="">
             <span>Fluids &amp; Products</span>
           </button>
+          <button class="cat-btn cat-btn-partout" data-cat="partout">
+            <img src="vehicles_icon.png" alt="">
+            <span>Vehicle Part Out</span>
+          </button>
         </div>
         <div class="lmodal-actions">
           <button class="btn-next" id="step1-next" disabled>Continue</button>
@@ -1735,6 +1739,44 @@
           <div class="fgroup"><label>Description</label><textarea id="fl-desc" placeholder="Spec, viscosity, what it's for, expiry if applicable..."></textarea></div>
         </div>
 
+        <!-- VEHICLE PART OUT -->
+        <div id="form-partout" class="cat-form" style="display:none;">
+          <p style="font-size:12.5px;color:var(--steel);line-height:1.6;margin-bottom:16px;padding:11px 13px;background:rgba(31,169,207,0.06);border:0.5px solid rgba(31,169,207,0.2);border-radius:9px;">
+            List the vehicle once. After it's posted, you'll add individual parts from your Manage page — each one becomes searchable in the marketplace.
+          </p>
+          <div class="frow frow-3">
+            <div class="fgroup"><label>Make</label><input type="text" id="po-make" placeholder="Subaru"></div>
+            <div class="fgroup"><label>Model</label><input type="text" id="po-model" placeholder="WRX"></div>
+            <div class="fgroup"><label>Year</label><input type="number" id="po-year" placeholder="2016" min="1960" max="2027"></div>
+          </div>
+          <div class="frow frow-2">
+            <div class="fgroup"><label>Trim (optional)</label><input type="text" id="po-trim" placeholder="STI, Premium..."></div>
+            <div class="fgroup"><label>Mileage (km, optional)</label><input type="number" id="po-mileage" placeholder="120000"></div>
+          </div>
+          <div class="frow frow-2">
+            <div class="fgroup"><label>Engine (optional)</label><input type="text" id="po-engine" placeholder="EJ25 2.5L Turbo"></div>
+            <div class="fgroup">
+              <label>Transmission (optional)</label>
+              <select id="po-trans">
+                <option value="">Select</option>
+                <option>Manual</option>
+                <option>Automatic</option>
+                <option>CVT</option>
+                <option>Dual-Clutch</option>
+              </select>
+            </div>
+          </div>
+          <div class="frow frow-2">
+            <div class="fgroup"><label>Exterior color (optional)</label><input type="text" id="po-ext" placeholder="World Rally Blue"></div>
+            <div class="fgroup"><label>Interior color (optional)</label><input type="text" id="po-int" placeholder="Black"></div>
+          </div>
+          <div class="frow frow-2">
+            <div class="fgroup"><label>VIN (optional)</label><input type="text" id="po-vin" placeholder="Last 6 or full VIN"></div>
+            <div class="fgroup"><label>Location (city)</label><input type="text" id="po-location" placeholder="Toronto, ON"></div>
+          </div>
+          <div class="fgroup"><label>Overview / description</label><textarea id="po-desc" placeholder="Why it's being parted out, overall condition, what's already gone, shipping notes..."></textarea></div>
+        </div>
+
         <div class="lmodal-actions">
           <button class="btn-back" id="step2-back">Back</button>
           <button class="btn-next" id="step2-next">Continue to photos</button>
@@ -1759,7 +1801,7 @@
           <div id="perf-key-status" style="display:none;font-size:12px;margin-top:6px;padding:7px 10px;border-radius:6px;"></div>
         </div>
 
-        <div class="fgroup" style="margin-bottom:18px;">
+        <div class="fgroup" style="margin-bottom:18px;" id="title-field-group">
           <label>Listing title <span style="color:var(--steel-dim);font-weight:400;">(required)</span></label>
           <input type="text" id="listing-title" placeholder="e.g. 2009 Honda Civic Si — clean build">
         </div>
@@ -1812,8 +1854,8 @@
         <div class="success-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
-        <h3>Listing posted!</h3>
-        <p class="success-sub">Your listing is now live on the marketplace,<br>attached to your Performance Key.</p>
+        <h3 id="success-heading">Listing posted!</h3>
+        <p class="success-sub" id="success-sub">Your listing is now live on the marketplace,<br>attached to your Performance Key.</p>
         <div class="success-key" id="success-key-display">PC-XXXX-XXXX</div>
         <div class="success-actions">
           <a href="marketplace.html" class="btn-view-listing" id="success-view-btn">View marketplace</a>
@@ -2032,6 +2074,11 @@
       if(el){ el.className = 'progress-step done'; }
     });
     document.getElementById('lmodal-title').textContent = 'Listing posted!';
+    // Reset heading/sub in case a part-out submission customized them earlier
+    var h = document.getElementById('success-heading');
+    if(h){ h.textContent = 'Listing posted!'; }
+    var sub = document.getElementById('success-sub');
+    if(sub){ sub.innerHTML = 'Your listing is now live on the marketplace,<br>attached to your Performance Key.'; }
   }
 
   document.getElementById('success-list-another').addEventListener('click', function(){
@@ -2113,14 +2160,19 @@
     document.querySelectorAll('.cat-form').forEach(function(f){ f.style.display = 'none'; });
     document.getElementById('form-' + selectedCat).style.display = 'block';
     // update heading
-    var headings = { vehicles:'Vehicle details', wheels:'Wheel &amp; tire details', parts:'Part details', tools:'Tool details', fluids:'Fluids &amp; product details' };
+    var headings = { vehicles:'Vehicle details', wheels:'Wheel &amp; tire details', parts:'Part details', tools:'Tool details', fluids:'Fluids &amp; product details', partout:'Part out vehicle' };
     document.getElementById('step2-heading').innerHTML = headings[selectedCat];
     goStep(2);
   });
 
   // Step 2 — back + continue
   document.getElementById('step2-back').addEventListener('click', function(){ goStep(1); });
-  document.getElementById('step2-next').addEventListener('click', function(){ goStep(3); });
+  document.getElementById('step2-next').addEventListener('click', function(){
+    // Part-out builds its title from the vehicle; hide the manual title field.
+    var titleGroup = document.getElementById('title-field-group');
+    if(titleGroup){ titleGroup.style.display = (selectedCat === 'partout') ? 'none' : 'block'; }
+    goStep(3);
+  });
 
   // ── Supabase client ──
   var SUPABASE_URL = 'https://myapluhgfpnyjsfrflhd.supabase.co';
@@ -2458,10 +2510,141 @@
   });
 
   // ── Submit handler ──
+  // ── Part-out submit: inserts a partout_vehicles row, reusing the same
+  //    seller-key resolution and photo upload as listings. ──
+  async function submitPartout(btn, errEl){
+    function poError(msg){
+      errEl.textContent = msg;
+      errEl.style.display = 'block';
+      btn.textContent = 'Post listing';
+      btn.disabled = false;
+    }
+
+    var make  = document.getElementById('po-make').value.trim();
+    var model = document.getElementById('po-model').value.trim();
+    var year  = document.getElementById('po-year').value.trim();
+    var contactVal = document.getElementById('contact-method').value;
+    var igVal      = document.getElementById('listing-instagram').value.trim().replace(/^@/,'');
+    var emailVal   = document.getElementById('listing-email').value.trim();
+    var keyRaw     = document.getElementById('perf-key-input').value.trim();
+
+    if(!make || !model || !year){ poError('Please enter at least the vehicle make, model, and year.'); return; }
+    if((contactVal === 'instagram' || contactVal === 'both') && !igVal){ poError('Please enter your Instagram handle.'); return; }
+    if((contactVal === 'email' || contactVal === 'both') && !emailVal){ poError('Please enter your email address.'); return; }
+    if(emailVal && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)){ poError('Please enter a valid email address.'); return; }
+
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+
+    try {
+      var isNewSeller = false;
+      var perfKey, seller;
+
+      // 1. Resolve or create the seller by Performance Key (same as listings)
+      if(keyRaw){
+        var normKey = normaliseKey(keyRaw);
+        if(!normKey){ poError('Invalid Performance Key format. Expected format: XXXX-XXXX'); return; }
+        perfKey = normKey;
+        btn.textContent = 'Verifying key...';
+        seller = await lookupSeller(perfKey);
+        if(!seller){ poError('Performance Key not found. Check the key and try again, or leave it blank to generate a new one.'); return; }
+        if(seller.instagram !== igVal || (seller.email || '') !== emailVal){
+          await updateSellerContact(seller.seller_id, igVal, emailVal);
+          seller.instagram = igVal; seller.email = emailVal;
+        }
+      } else {
+        btn.textContent = 'Generating key...';
+        perfKey = generatePerformanceKey();
+        var collision = await lookupSeller(perfKey);
+        if(collision){ perfKey = generatePerformanceKey(); }
+        seller = await createSeller(perfKey, igVal, emailVal);
+        isNewSeller = true;
+      }
+
+      // 2. Insert the part-out vehicle row
+      btn.textContent = 'Saving part out...';
+      var vehiclePayload = {
+        seller_id:      seller.seller_id,
+        year:           parseInt(year, 10),
+        make:           make,
+        model:          model,
+        trim:           document.getElementById('po-trim').value.trim() || null,
+        engine:         document.getElementById('po-engine').value.trim() || null,
+        transmission:   document.getElementById('po-trans').value || null,
+        vin:            document.getElementById('po-vin').value.trim() || null,
+        mileage:        parseInt(document.getElementById('po-mileage').value, 10) || null,
+        exterior_color: document.getElementById('po-ext').value.trim() || null,
+        interior_color: document.getElementById('po-int').value.trim() || null,
+        location:       document.getElementById('po-location').value.trim() || null,
+        description:    document.getElementById('po-desc').value.trim() || null,
+        instagram:      igVal || null,
+        email:          emailVal || null,
+        photos:         [],
+        status:         'active'
+      };
+
+      var insertRes = await sb.from('partout_vehicles').insert([vehiclePayload]).select().single();
+      if(insertRes.error || !insertRes.data){
+        throw new Error('Could not save your part out. Please try again.');
+      }
+      var vehicle = insertRes.data;
+
+      // 3. Upload photos (reuses the listings uploader + bucket)
+      var photoInput = document.getElementById('photo-input');
+      var photoFiles = Array.from(photoInput.files).slice(0,10);
+      if(photoFiles.length > 0){
+        btn.textContent = 'Uploading photos...';
+        var photoUrls = await uploadPhotos(photoFiles, 'po-' + vehicle.id);
+        if(photoUrls.length > 0){
+          await sb.from('partout_vehicles').update({ photos: photoUrls }).eq('id', vehicle.id);
+        }
+      }
+
+      // 4. Success
+      closeModal();
+      resetForm();
+      if(isNewSeller){
+        showPerfKeySuccess(perfKey);
+      } else {
+        showPartoutSuccess(perfKey, vehicle);
+      }
+
+    } catch(err){
+      var msg = (DEBUG && err && err.message) ? 'Error: ' + err.message
+        : 'Something went wrong while posting your part out. Please try again.';
+      poError(msg);
+    }
+  }
+
+  // Returning-seller success for a part-out — nudges them to add parts.
+  function showPartoutSuccess(perfKey, vehicle){
+    var title = [vehicle.year, vehicle.make, vehicle.model, vehicle.trim].filter(Boolean).join(' ');
+    document.getElementById('success-key-display').textContent = perfKey;
+    document.querySelectorAll('.lstep').forEach(function(s){ s.classList.remove('active'); });
+    document.getElementById('lstep-success').classList.add('active');
+    ['prog-1','prog-2','prog-3'].forEach(function(id){
+      var el = document.getElementById(id); if(el){ el.className = 'progress-step done'; }
+    });
+    document.getElementById('lmodal-title').textContent = 'Part out posted!';
+    var h = document.getElementById('success-heading');
+    if(h){ h.textContent = 'Part out posted!'; }
+    // Swap the success sub-message + add a manage link, if the success step supports it
+    var sub = document.getElementById('success-sub');
+    if(sub){
+      sub.innerHTML = '"' + escHtml(title) + '" is live. Now add your parts so buyers can find them — ' +
+        '<a href="manage.html?key=' + encodeURIComponent(perfKey) + '" style="color:var(--cyan-bright);font-weight:600;">open Manage &amp; add parts →</a>';
+    }
+    if(typeof loadListings === 'function'){ loadListings(); }
+  }
+
   document.getElementById('step3-submit').addEventListener('click', async function(){
     var btn    = document.getElementById('step3-submit');
     var errEl  = document.getElementById('submit-error');
     errEl.style.display = 'none';
+
+    // Part-outs take a separate path: different table, no single price,
+    // title auto-built from the vehicle. Reuses key resolution + photos.
+    if(selectedCat === 'partout'){ await submitPartout(btn, errEl); return; }
 
     var titleVal   = document.getElementById('listing-title').value.trim();
     var contactVal = document.getElementById('contact-method').value;
@@ -2629,14 +2812,16 @@
     ['v-make','v-model','v-year','v-mileage','v-location','v-desc',
      'w-diam','w-width','w-offset','w-bolt','w-tiresize','w-brand','w-location','w-desc',
      'p-title','p-make','p-model','p-year-from','p-year-to','p-location','p-desc',
-     't-title','t-brand','t-location','t-desc'].forEach(function(id){
+     't-title','t-brand','t-location','t-desc',
+     'po-make','po-model','po-year','po-trim','po-mileage','po-engine',
+     'po-ext','po-int','po-vin','po-location','po-desc'].forEach(function(id){
       var el = document.getElementById(id);
       if(el) el.value = '';
     });
     ['v-scene','v-trans','v-drive','v-cond','v-price',
      'w-included','w-cond','w-price',
      'p-subcat','p-cond','p-price','p-scene',
-     't-subcat','t-cond','t-price'].forEach(function(id){
+     't-subcat','t-cond','t-price','po-trans'].forEach(function(id){
       var el = document.getElementById(id);
       if(el) el.selectedIndex = 0;
     });

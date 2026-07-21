@@ -226,10 +226,138 @@
   .confirm-ok{flex:1;padding:11px;border-radius:8px;background:var(--red);border:none;color:var(--white);font-size:13px;font-weight:700;cursor:pointer;transition:background 0.15s;}
   .confirm-ok:hover{background:#c73838;}
 
+  /* ══ PART-OUT CARD (in the mixed grid) ══ */
+  .manage-status.status-partout{background:rgba(31,169,207,0.14);color:var(--cyan-bright);}
+  .po-card-stats{
+    font-size:11.5px;color:var(--steel);margin-top:5px;display:flex;gap:10px;flex-wrap:wrap;
+  }
+  .po-card-stats b{color:var(--cyan-bright);font-weight:700;}
+  .po-card-stats .sold-n{color:var(--steel-dim);}
+  .act-btn.parts-btn{color:var(--cyan);border-color:rgba(31,169,207,0.35);background:rgba(31,169,207,0.05);}
+  .act-btn.parts-btn:hover{color:var(--cyan-bright);border-color:var(--cyan);}
+
+  /* ══ PARTS MANAGER VIEW (swaps in over the dashboard) ══ */
+  .parts-manager{display:none;}
+  .pm-back{
+    display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;
+    color:var(--steel);margin-bottom:20px;transition:color 0.15s;cursor:pointer;
+  }
+  .pm-back:hover{color:var(--cyan-bright);}
+  .pm-back svg{width:16px;height:16px;}
+  .pm-vehicle-head{margin-bottom:22px;}
+  .pm-vehicle-title{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;
+    font-size:clamp(22px,4vw,30px);text-transform:uppercase;line-height:1.05;margin-bottom:8px;
+  }
+  .pm-counts{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;}
+  .pm-count{display:flex;align-items:baseline;gap:5px;font-size:12px;color:var(--steel-dim);text-transform:uppercase;letter-spacing:0.05em;}
+  .pm-count b{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:18px;}
+  .pm-count.avail b{color:var(--cyan-bright);}
+  .pm-count.pend b{color:var(--amber);}
+  .pm-count.resv b{color:#9B7BE8;}
+  .pm-count.sold b{color:var(--steel);}
+
+  /* Add parts panel */
+  .pm-add{
+    background:var(--panel);border:0.5px solid var(--line);border-radius:12px;
+    padding:16px;margin-bottom:22px;
+  }
+  .pm-add-tabs{display:flex;gap:8px;margin-bottom:14px;}
+  .pm-tab{
+    font-size:12px;font-weight:600;padding:7px 14px;border-radius:7px;
+    border:0.5px solid var(--line);color:var(--steel);background:transparent;transition:all 0.15s;
+  }
+  .pm-tab.active{color:var(--cyan-bright);border-color:var(--cyan);background:rgba(31,169,207,0.06);}
+  .pm-pane{display:none;}
+  .pm-pane.active{display:block;}
+  .pm-field{margin-bottom:10px;}
+  .pm-field label{display:block;font-size:11px;font-weight:600;color:var(--steel);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:5px;}
+  .pm-field input,.pm-field select,.pm-field textarea{
+    width:100%;padding:10px 12px;border-radius:8px;background:var(--panel-2);
+    border:1px solid var(--line);color:var(--white);font-family:'Inter',sans-serif;
+    font-size:13.5px;outline:none;transition:border-color 0.15s;resize:vertical;
+  }
+  .pm-field input:focus,.pm-field select:focus,.pm-field textarea:focus{border-color:var(--cyan);}
+  .pm-field input::placeholder,.pm-field textarea::placeholder{color:var(--steel-dim);}
+  .pm-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .pm-hint{font-size:11.5px;color:var(--steel-dim);margin-top:6px;line-height:1.5;}
+  .pm-add-btn{
+    width:100%;padding:11px;border-radius:9px;margin-top:6px;
+    background:var(--cyan-bright);color:#03171D;
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;
+    letter-spacing:0.05em;text-transform:uppercase;transition:background 0.15s;
+  }
+  .pm-add-btn:hover{background:#62D6F5;}
+  .pm-add-btn:disabled{opacity:0.6;cursor:default;}
+
+  /* Bulk toolbar */
+  .pm-toolbar{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;
+  }
+  .pm-select-toggle{
+    font-size:12px;font-weight:600;padding:7px 13px;border-radius:7px;
+    border:0.5px solid var(--line);color:var(--steel);background:transparent;transition:all 0.15s;
+  }
+  .pm-select-toggle:hover{color:var(--white);border-color:var(--steel);}
+  .pm-select-toggle.active{color:var(--cyan-bright);border-color:var(--cyan);background:rgba(31,169,207,0.06);}
+  .pm-bulk-actions{display:none;align-items:center;gap:8px;flex-wrap:wrap;}
+  .pm-bulk-actions.show{display:flex;}
+  .pm-sel-count{font-size:12px;color:var(--steel-dim);}
+  .pm-bulk-btn{
+    font-size:11.5px;font-weight:600;padding:7px 12px;border-radius:7px;
+    border:0.5px solid var(--line);color:var(--steel);background:transparent;transition:all 0.15s;white-space:nowrap;
+  }
+  .pm-bulk-btn:hover{color:var(--white);border-color:var(--steel);}
+  .pm-bulk-btn.danger:hover{color:var(--red);border-color:var(--red);}
+
+  /* Part group + rows */
+  .pm-group{margin-bottom:20px;}
+  .pm-group-label{
+    display:flex;align-items:center;gap:10px;
+    font-size:11px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;
+    color:var(--cyan);margin-bottom:9px;
+  }
+  .pm-group-label::after{content:'';flex:1;height:0.5px;background:var(--line);}
+  .pm-part{
+    display:flex;align-items:center;gap:12px;
+    background:var(--panel);border:0.5px solid var(--line);border-radius:10px;
+    padding:11px 14px;margin-bottom:7px;transition:border-color 0.15s;
+  }
+  .pm-part:hover{border-color:rgba(31,169,207,0.25);}
+  .pm-part.is-sold{opacity:0.5;}
+  .pm-part-check{
+    width:18px;height:18px;flex-shrink:0;accent-color:var(--cyan-bright);cursor:pointer;display:none;
+  }
+  .parts-manager.selecting .pm-part-check{display:block;}
+  .pm-part-info{flex:1;min-width:0;}
+  .pm-part-name{font-size:13.5px;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pm-part-sub{font-size:11.5px;color:var(--steel-dim);margin-top:2px;}
+  .pm-part-price{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;color:var(--cyan-bright);flex-shrink:0;}
+  .pm-part-price.offer{font-family:'Inter',sans-serif;font-weight:500;font-size:12px;color:var(--steel);}
+  .pm-status-select{
+    flex-shrink:0;font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;
+    padding:6px 8px;border-radius:6px;background:var(--panel-2);
+    border:0.5px solid var(--line);color:var(--steel);cursor:pointer;outline:none;transition:all 0.15s;
+  }
+  .pm-status-select:focus{border-color:var(--cyan);}
+  .pm-status-select.st-available{color:var(--cyan-bright);}
+  .pm-status-select.st-pending{color:var(--amber);}
+  .pm-status-select.st-reserved{color:#9B7BE8;}
+  .pm-status-select.st-sold{color:var(--steel);}
+  .pm-del-part{
+    flex-shrink:0;width:30px;height:30px;border-radius:6px;
+    border:0.5px solid var(--line);color:var(--steel-dim);
+    display:flex;align-items:center;justify-content:center;transition:all 0.15s;
+  }
+  .pm-del-part:hover{color:var(--red);border-color:var(--red);}
+  .pm-del-part svg{width:14px;height:14px;}
+
   @media(max-width:600px){
     .manage-card{grid-template-columns:72px 1fr;grid-template-rows:auto auto;}
     .manage-thumb{width:72px;height:54px;}
     .manage-actions{flex-direction:row;flex-wrap:wrap;grid-column:1/-1;}
+    .pm-row-2{grid-template-columns:1fr;}
+    .pm-part{flex-wrap:wrap;}
   }
 </style>
 </head>
@@ -318,6 +446,81 @@
       </div>
     </div>
 
+    <!-- PARTS MANAGER STATE (swaps in over dashboard) -->
+    <div class="parts-manager" id="parts-manager">
+      <div class="pm-back" id="pm-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        All listings
+      </div>
+
+      <div class="pm-vehicle-head">
+        <div class="pm-vehicle-title" id="pm-title">Vehicle Part Out</div>
+        <a class="act-btn view-btn" id="pm-view-public" href="#" target="_blank" style="display:inline-block;">View public page</a>
+        <div class="pm-counts" id="pm-counts"></div>
+      </div>
+
+      <!-- Add parts -->
+      <div class="pm-add">
+        <div class="pm-add-tabs">
+          <button class="pm-tab active" data-pane="manual">Add one part</button>
+          <button class="pm-tab" data-pane="bulk">Paste a list</button>
+        </div>
+
+        <div class="pm-pane active" id="pane-manual">
+          <div class="pm-field">
+            <label>Part name</label>
+            <input type="text" id="man-name" placeholder="e.g. Turbocharger" autocomplete="off">
+          </div>
+          <div class="pm-row-2">
+            <div class="pm-field">
+              <label>Category</label>
+              <input type="text" id="man-cat" list="cat-suggestions" placeholder="Engine" autocomplete="off">
+              <datalist id="cat-suggestions">
+                <option>Engine</option><option>Transmission</option><option>Drivetrain</option>
+                <option>Suspension</option><option>Brakes</option><option>Exterior</option>
+                <option>Interior</option><option>Electrical</option><option>Wheels &amp; Tires</option>
+                <option>Fuel</option><option>Cooling</option>
+              </datalist>
+            </div>
+            <div class="pm-field">
+              <label>Price (optional)</label>
+              <input type="number" id="man-price" placeholder="0" min="0" step="1">
+            </div>
+          </div>
+          <button class="pm-add-btn" id="man-add-btn">Add part</button>
+        </div>
+
+        <div class="pm-pane" id="pane-bulk">
+          <div class="pm-field">
+            <label>Category for all pasted parts</label>
+            <input type="text" id="bulk-cat" list="cat-suggestions" placeholder="Engine" autocomplete="off">
+          </div>
+          <div class="pm-field">
+            <label>One part per line</label>
+            <textarea id="bulk-names" rows="6" placeholder="Turbo&#10;Alternator&#10;Starter&#10;Intake manifold&#10;Downpipe"></textarea>
+          </div>
+          <p class="pm-hint">Each line becomes its own part (Available, price unset). You can set prices and statuses after.</p>
+          <button class="pm-add-btn" id="bulk-add-btn">Create parts</button>
+        </div>
+      </div>
+
+      <!-- Bulk toolbar -->
+      <div class="pm-toolbar">
+        <button class="pm-select-toggle" id="pm-select-toggle">Select</button>
+        <div class="pm-bulk-actions" id="pm-bulk-actions">
+          <span class="pm-sel-count" id="pm-sel-count">0 selected</span>
+          <button class="pm-bulk-btn" data-bulk="available">Mark Available</button>
+          <button class="pm-bulk-btn" data-bulk="sold">Mark Sold</button>
+          <button class="pm-bulk-btn" data-bulk="price">Change Price</button>
+          <button class="pm-bulk-btn danger" data-bulk="delete">Delete</button>
+        </div>
+      </div>
+
+      <div id="pm-parts-list">
+        <div class="state-msg">Loading parts...</div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -368,8 +571,15 @@
   }
 
   // ── state ──
-  var currentSeller = null;
-  var allListings   = [];
+  var currentSeller  = null;
+  var allListings    = [];
+  var allPartouts    = [];
+  var partoutSummary = {};
+  // Parts manager working state
+  var pmVehicle   = null;   // the part-out vehicle being managed
+  var pmParts     = [];     // its parts
+  var pmSelecting = false;  // multi-select mode
+  var pmSelected  = {};     // part id -> true
 
   // ── confirm modal ──
   var pendingAction = null;
@@ -431,36 +641,121 @@
     // Update URL without reload
     history.replaceState(null,'','manage.html?key='+encodeURIComponent(perfKey));
 
-    var res = await sb.from('listings')
-      .select('*')
-      .eq('seller_id', seller.seller_id)
-      .order('created_at',{ascending:false});
+    // Load listings, part-out vehicles, and part-out counts in parallel
+    var loads = await Promise.all([
+      sb.from('listings').select('*').eq('seller_id', seller.seller_id).order('created_at',{ascending:false}),
+      sb.from('partout_vehicles').select('*').eq('seller_id', seller.seller_id).order('created_at',{ascending:false}),
+      sb.from('partout_summary').select('*').eq('seller_id', seller.seller_id)
+    ]);
+    var lRes = loads[0], vRes = loads[1], sRes = loads[2];
 
-    if(res.error || !res.data){
+    if(lRes.error || !lRes.data){
       document.getElementById('manage-grid').innerHTML = '<div class="state-msg">Could not load listings.</div>';
       return;
     }
 
-    allListings = res.data;
+    allListings  = lRes.data;
+    allPartouts  = (vRes && vRes.data) ? vRes.data : [];
+    // Index summary counts by vehicle_id for quick card lookup
+    partoutSummary = {};
+    if(sRes && sRes.data){
+      sRes.data.forEach(function(row){ partoutSummary[row.vehicle_id] = row; });
+    }
 
-    // Stats
-    var active   = allListings.filter(function(l){ return l.status === 'active'; }).length;
-    var sold     = allListings.filter(function(l){ return l.status === 'sold'; }).length;
-    document.getElementById('stat-active').textContent = active;
-    document.getElementById('stat-sold').textContent   = sold;
-    document.getElementById('stat-total').textContent  = allListings.length;
-
+    renderStats();
     renderListings();
+  }
+
+  function renderStats(){
+    // Listing-level active/sold; part-outs count as one item each (active unless archived)
+    var active = allListings.filter(function(l){ return l.status === 'active'; }).length
+               + allPartouts.filter(function(v){ return v.status === 'active'; }).length;
+    var sold   = allListings.filter(function(l){ return l.status === 'sold'; }).length;
+    var total  = allListings.length + allPartouts.length;
+
+    // Sum of individual parts across all part-outs, for the note
+    var partTotal = 0, partSold = 0;
+    Object.keys(partoutSummary).forEach(function(k){
+      partTotal += Number(partoutSummary[k].total_count) || 0;
+      partSold  += Number(partoutSummary[k].sold_count)  || 0;
+    });
+
+    document.getElementById('stat-active').textContent = active;
+    document.getElementById('stat-sold').textContent   = sold + partSold;
+    document.getElementById('stat-total').textContent  = total;
+
+    // Show a parts note under the section label if any part-outs exist
+    var note = document.getElementById('parts-note');
+    if(partTotal > 0){
+      if(!note){
+        note = document.createElement('span');
+        note.id = 'parts-note';
+        note.style.cssText = 'font-weight:400;color:var(--cyan);text-transform:none;letter-spacing:0;margin-left:8px;';
+        var lbl = document.querySelector('.dashboard .section-label');
+        if(lbl) lbl.appendChild(note);
+      }
+      note.textContent = '· incl. ' + partTotal + ' individual parts';
+    }
   }
 
   function renderListings(){
     var grid = document.getElementById('manage-grid');
-    if(!allListings.length){
+    // Merge listings + part-outs, sort by created_at desc
+    var merged = allListings.map(function(l){ return {kind:'listing', created_at:l.created_at, data:l}; })
+      .concat(allPartouts.map(function(v){ return {kind:'partout', created_at:v.created_at, data:v}; }));
+    merged.sort(function(a,b){ return new Date(b.created_at) - new Date(a.created_at); });
+
+    if(!merged.length){
       grid.innerHTML = '<div class="state-msg">No listings found for this Performance Key.</div>';
       return;
     }
     grid.innerHTML = '';
-    allListings.forEach(function(l){ grid.appendChild(buildManageCard(l)); });
+    merged.forEach(function(item){
+      grid.appendChild(item.kind === 'partout' ? buildPartoutCard(item.data) : buildManageCard(item.data));
+    });
+  }
+
+  function buildPartoutCard(v){
+    var title = [v.year, v.make, v.model, v.trim].filter(Boolean).join(' ');
+    var thumb = v.photos && v.photos.length
+      ? '<img src="'+esc(v.photos[0])+'" alt="'+esc(title)+'" loading="lazy">'
+      : '<div class="no-img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
+
+    var s = partoutSummary[v.id] || {available_count:0,sold_count:0,total_count:0};
+    var statsLine = '<div class="po-card-stats">' +
+      '<span><b>'+ (s.available_count||0) +'</b> available</span>' +
+      '<span class="sold-n">'+ (s.sold_count||0) +' sold · '+ (s.total_count||0) +' total</span>' +
+    '</div>';
+
+    var card = document.createElement('div');
+    card.className = 'manage-card' + (v.status === 'archived' ? ' is-archived' : '');
+    card.dataset.vid = v.id;
+
+    card.innerHTML =
+      '<div class="manage-thumb">'+thumb+'</div>' +
+      '<div class="manage-info">' +
+        '<span class="manage-status status-partout">Part Out</span>' +
+        '<div class="manage-title">'+esc(title)+'</div>' +
+        '<div class="manage-meta">'+esc(fmtDate(v.created_at))+'</div>' +
+        statsLine +
+      '</div>' +
+      '<div class="manage-actions">' +
+        '<button class="act-btn parts-btn" data-po-action="manage" data-vid="'+v.id+'">Manage parts</button>' +
+        '<a class="act-btn view-btn" href="partout.html?id='+v.id+'" target="_blank">View</a>' +
+        (v.status === 'active'
+          ? '<button class="act-btn" data-po-action="complete" data-vid="'+v.id+'">Mark Complete</button>'
+          : '<button class="act-btn" data-po-action="reactivate" data-vid="'+v.id+'">Reactivate</button>') +
+        '<button class="act-btn del-btn" data-po-action="delete" data-vid="'+v.id+'">Delete</button>' +
+      '</div>';
+
+    card.querySelectorAll('[data-po-action]').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.preventDefault();
+        handlePartoutAction(this.dataset.poAction, this.dataset.vid, title);
+      });
+    });
+
+    return card;
   }
 
   function buildManageCard(l){
@@ -561,6 +856,333 @@
     var active = allListings.filter(function(l){ return l.status === 'active'; }).length;
     document.getElementById('stat-active').textContent = active;
     renderListings();
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  PART-OUT: vehicle-level actions (from the mixed grid card)
+  // ════════════════════════════════════════════════════════════
+  function handlePartoutAction(action, vehicleId, title){
+    if(action === 'manage'){
+      openPartsManager(vehicleId);
+    } else if(action === 'complete'){
+      openConfirm('Mark Part Out Complete',
+        '"'+title+'" will be marked complete. Its parts stay visible but the vehicle shows as finished.',
+        'Mark Complete','',
+        async function(){ await updatePartoutStatus(vehicleId, 'completed'); });
+    } else if(action === 'reactivate'){
+      updatePartoutStatus(vehicleId, 'active');
+    } else if(action === 'delete'){
+      openConfirm('Delete Part Out',
+        'Permanently delete "'+title+'" and ALL of its parts? This cannot be undone.',
+        'Delete','del-confirm',
+        async function(){ await deletePartout(vehicleId); });
+    }
+  }
+
+  async function updatePartoutStatus(vehicleId, status){
+    var res = await sb.from('partout_vehicles').update({status:status}).eq('id', vehicleId).select();
+    if(res.error){ alert('Could not update part out. Please try again.'); return; }
+    allPartouts = allPartouts.map(function(v){
+      if(String(v.id) === String(vehicleId)) v.status = status;
+      return v;
+    });
+    renderStats();
+    renderListings();
+  }
+
+  async function deletePartout(vehicleId){
+    // Parts cascade-delete via FK, so deleting the vehicle is enough
+    var res = await sb.from('partout_vehicles').delete().eq('id', vehicleId);
+    if(res.error){ alert('Could not delete part out. Please try again.'); return; }
+    allPartouts = allPartouts.filter(function(v){ return String(v.id) !== String(vehicleId); });
+    delete partoutSummary[vehicleId];
+    renderStats();
+    renderListings();
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  PART-OUT: parts manager view
+  // ════════════════════════════════════════════════════════════
+  var STATUS_ORDER = ['available','pending','reserved','sold'];
+  var STATUS_LABEL = {available:'Available',pending:'Pending',reserved:'Reserved',sold:'Sold'};
+  var COND_LABEL = {new:'New',used_excellent:'Used — Excellent',used_good:'Used — Good',used_fair:'Used — Fair',for_parts:'For Parts'};
+  var CAT_ORDER = ['Engine','Transmission','Drivetrain','Suspension','Brakes','Exterior','Interior','Electrical','Wheels & Tires','Fuel','Cooling','Uncategorized'];
+  function catRank(c){ var i = CAT_ORDER.indexOf(c); return i === -1 ? 900 : i; }
+
+  async function openPartsManager(vehicleId){
+    pmVehicle = allPartouts.filter(function(v){ return String(v.id) === String(vehicleId); })[0];
+    if(!pmVehicle) return;
+
+    pmSelecting = false; pmSelected = {};
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('parts-manager').style.display = 'block';
+    document.getElementById('parts-manager').classList.remove('selecting');
+    document.getElementById('pm-select-toggle').classList.remove('active');
+    document.getElementById('pm-select-toggle').textContent = 'Select';
+    document.getElementById('pm-bulk-actions').classList.remove('show');
+    window.scrollTo(0,0);
+
+    var title = [pmVehicle.year,pmVehicle.make,pmVehicle.model,pmVehicle.trim].filter(Boolean).join(' ');
+    document.getElementById('pm-title').textContent = title + ' Part Out';
+    document.getElementById('pm-view-public').href = 'partout.html?id=' + pmVehicle.id;
+
+    document.getElementById('pm-parts-list').innerHTML = '<div class="state-msg">Loading parts...</div>';
+
+    var res = await sb.from('partout_parts').select('*').eq('vehicle_id', vehicleId);
+    if(res.error){
+      document.getElementById('pm-parts-list').innerHTML = '<div class="state-msg">Could not load parts.</div>';
+      return;
+    }
+    pmParts = res.data || [];
+    renderPmCounts();
+    renderPmParts();
+  }
+
+  function closePartsManager(){
+    document.getElementById('parts-manager').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    pmVehicle = null; pmParts = [];
+    // Refresh the card's summary counts from what we changed
+    renderStats();
+    renderListings();
+  }
+  document.getElementById('pm-back').addEventListener('click', closePartsManager);
+
+  function computePmCounts(){
+    var c = {available:0,pending:0,reserved:0,sold:0,total:pmParts.length};
+    pmParts.forEach(function(p){ if(c[p.status]!==undefined) c[p.status]++; });
+    return c;
+  }
+
+  function renderPmCounts(){
+    var c = computePmCounts();
+    document.getElementById('pm-counts').innerHTML =
+      '<span class="pm-count avail"><b>'+c.available+'</b> Available</span>' +
+      '<span class="pm-count pend"><b>'+c.pending+'</b> Pending</span>' +
+      '<span class="pm-count resv"><b>'+c.reserved+'</b> Reserved</span>' +
+      '<span class="pm-count sold"><b>'+c.sold+'</b> Sold</span>';
+    // Keep the in-memory summary in sync so the grid card is right on return
+    if(pmVehicle){
+      partoutSummary[pmVehicle.id] = {
+        vehicle_id: pmVehicle.id,
+        available_count: c.available, pending_count: c.pending,
+        reserved_count: c.reserved, sold_count: c.sold, total_count: c.total
+      };
+    }
+  }
+
+  function partSub(p){
+    var bits = [];
+    if(p.condition) bits.push(COND_LABEL[p.condition] || p.condition);
+    if(p.quantity && p.quantity > 1) bits.push('Qty '+p.quantity);
+    if(p.oem_part_number) bits.push('OEM '+p.oem_part_number);
+    return bits.join(' · ');
+  }
+
+  function renderPmParts(){
+    var wrap = document.getElementById('pm-parts-list');
+    if(!pmParts.length){
+      wrap.innerHTML = '<div class="state-msg">No parts yet. Add some above.</div>';
+      return;
+    }
+    // Group by category
+    var byCat = {};
+    pmParts.forEach(function(p){ var c = p.category || 'Uncategorized'; (byCat[c] = byCat[c] || []).push(p); });
+
+    wrap.innerHTML = '';
+    Object.keys(byCat)
+      .sort(function(a,b){ return (catRank(a)-catRank(b)) || a.localeCompare(b); })
+      .forEach(function(cat){
+        var g = document.createElement('div');
+        g.className = 'pm-group';
+        var lbl = document.createElement('div');
+        lbl.className = 'pm-group-label';
+        lbl.textContent = cat;
+        g.appendChild(lbl);
+        byCat[cat]
+          .sort(function(a,b){ return a.name.localeCompare(b.name); })
+          .forEach(function(p){ g.appendChild(buildPmPart(p)); });
+        wrap.appendChild(g);
+      });
+  }
+
+  function buildPmPart(p){
+    var row = document.createElement('div');
+    row.className = 'pm-part' + (p.status === 'sold' ? ' is-sold' : '');
+    row.dataset.pid = p.id;
+
+    var priceHtml = (p.price !== null && p.price !== undefined)
+      ? '<div class="pm-part-price">$'+Number(p.price).toLocaleString()+'</div>'
+      : '<div class="pm-part-price offer">No price</div>';
+
+    var sub = partSub(p);
+    var opts = STATUS_ORDER.map(function(s){
+      return '<option value="'+s+'"'+(p.status===s?' selected':'')+'>'+STATUS_LABEL[s]+'</option>';
+    }).join('');
+
+    row.innerHTML =
+      '<input type="checkbox" class="pm-part-check"'+(pmSelected[p.id]?' checked':'')+'>' +
+      '<div class="pm-part-info">' +
+        '<div class="pm-part-name">'+esc(p.name)+'</div>' +
+        (sub ? '<div class="pm-part-sub">'+esc(sub)+'</div>' : '') +
+      '</div>' +
+      priceHtml +
+      '<select class="pm-status-select st-'+esc(p.status)+'">'+opts+'</select>' +
+      '<button class="pm-del-part" title="Delete part"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>';
+
+    // Checkbox (multi-select)
+    row.querySelector('.pm-part-check').addEventListener('change', function(){
+      if(this.checked) pmSelected[p.id] = true; else delete pmSelected[p.id];
+      updateSelCount();
+    });
+
+    // One-click status change
+    row.querySelector('.pm-status-select').addEventListener('change', function(){
+      setPmPartStatus(p.id, this.value);
+    });
+
+    // Delete single
+    row.querySelector('.pm-del-part').addEventListener('click', function(){
+      openConfirm('Delete Part',
+        'Delete "'+p.name+'"? This cannot be undone.',
+        'Delete','del-confirm',
+        async function(){ await deletePmParts([p.id]); });
+    });
+
+    return row;
+  }
+
+  async function setPmPartStatus(partId, status){
+    var res = await sb.from('partout_parts').update({status:status}).eq('id', partId).select().single();
+    if(res.error || !res.data){ alert('Could not update part. Please try again.'); return; }
+    for(var i=0;i<pmParts.length;i++){ if(pmParts[i].id === partId){ pmParts[i] = res.data; break; } }
+    renderPmCounts();
+    renderPmParts();
+  }
+
+  // ── Add: manual ──
+  document.getElementById('man-add-btn').addEventListener('click', async function(){
+    var name = document.getElementById('man-name').value.trim();
+    var cat  = document.getElementById('man-cat').value.trim() || 'Uncategorized';
+    var priceRaw = document.getElementById('man-price').value.trim();
+    if(!name){ document.getElementById('man-name').focus(); return; }
+
+    this.disabled = true; this.textContent = 'Adding...';
+    var payload = { vehicle_id: pmVehicle.id, name: name, category: cat };
+    if(priceRaw !== '') payload.price = Number(priceRaw);
+
+    var res = await sb.from('partout_parts').insert([payload]).select().single();
+    this.disabled = false; this.textContent = 'Add part';
+    if(res.error || !res.data){ alert('Could not add part. Please try again.'); return; }
+
+    pmParts.push(res.data);
+    document.getElementById('man-name').value = '';
+    document.getElementById('man-price').value = '';
+    renderPmCounts();
+    renderPmParts();
+  });
+
+  // ── Add: bulk paste (uses bulk_create_parts RPC) ──
+  document.getElementById('bulk-add-btn').addEventListener('click', async function(){
+    var cat = document.getElementById('bulk-cat').value.trim() || 'Uncategorized';
+    var lines = document.getElementById('bulk-names').value.split('\n')
+      .map(function(s){ return s.trim(); }).filter(Boolean);
+    if(!lines.length){ document.getElementById('bulk-names').focus(); return; }
+
+    this.disabled = true; this.textContent = 'Creating...';
+    var res = await sb.rpc('bulk_create_parts', { p_vehicle_id: pmVehicle.id, p_names: lines, p_category: cat });
+    this.disabled = false; this.textContent = 'Create parts';
+    if(res.error){ alert('Could not create parts. Please try again.'); return; }
+
+    if(res.data && res.data.length) pmParts = pmParts.concat(res.data);
+    document.getElementById('bulk-names').value = '';
+    renderPmCounts();
+    renderPmParts();
+  });
+
+  // ── Add tabs ──
+  document.querySelectorAll('.pm-tab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      document.querySelectorAll('.pm-tab').forEach(function(t){ t.classList.remove('active'); });
+      document.querySelectorAll('.pm-pane').forEach(function(p){ p.classList.remove('active'); });
+      this.classList.add('active');
+      document.getElementById('pane-' + this.dataset.pane).classList.add('active');
+    });
+  });
+
+  // ── Multi-select toggle ──
+  document.getElementById('pm-select-toggle').addEventListener('click', function(){
+    pmSelecting = !pmSelecting;
+    pmSelected = {};
+    document.getElementById('parts-manager').classList.toggle('selecting', pmSelecting);
+    this.classList.toggle('active', pmSelecting);
+    this.textContent = pmSelecting ? 'Done' : 'Select';
+    document.getElementById('pm-bulk-actions').classList.toggle('show', pmSelecting);
+    updateSelCount();
+    renderPmParts(); // reset checkboxes
+  });
+
+  function updateSelCount(){
+    var n = Object.keys(pmSelected).length;
+    document.getElementById('pm-sel-count').textContent = n + ' selected';
+  }
+
+  // ── Bulk actions ──
+  document.querySelectorAll('.pm-bulk-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var ids = Object.keys(pmSelected);
+      if(!ids.length){ return; }
+      var action = this.dataset.bulk;
+
+      if(action === 'available' || action === 'sold'){
+        bulkSetStatus(ids, action);
+      } else if(action === 'price'){
+        var raw = prompt('Set price for ' + ids.length + ' part(s). Enter a number, or leave blank to clear price.');
+        if(raw === null) return;
+        var val = raw.trim() === '' ? null : Number(raw.trim());
+        if(val !== null && (isNaN(val) || val < 0)){ alert('Enter a valid non-negative number.'); return; }
+        bulkSetPrice(ids, val);
+      } else if(action === 'delete'){
+        openConfirm('Delete '+ids.length+' Part(s)',
+          'Permanently delete the selected part(s)? This cannot be undone.',
+          'Delete','del-confirm',
+          async function(){ await deletePmParts(ids); });
+      }
+    });
+  });
+
+  async function bulkSetStatus(ids, status){
+    var res = await sb.from('partout_parts').update({status:status}).in('id', ids).select();
+    if(res.error){ alert('Could not update parts. Please try again.'); return; }
+    var map = {}; (res.data||[]).forEach(function(r){ map[r.id] = r; });
+    pmParts = pmParts.map(function(p){ return map[p.id] || p; });
+    exitSelect();
+  }
+
+  async function bulkSetPrice(ids, price){
+    var res = await sb.from('partout_parts').update({price:price}).in('id', ids).select();
+    if(res.error){ alert('Could not update prices. Please try again.'); return; }
+    var map = {}; (res.data||[]).forEach(function(r){ map[r.id] = r; });
+    pmParts = pmParts.map(function(p){ return map[p.id] || p; });
+    exitSelect();
+  }
+
+  async function deletePmParts(ids){
+    var res = await sb.from('partout_parts').delete().in('id', ids);
+    if(res.error){ alert('Could not delete part(s). Please try again.'); return; }
+    var gone = {}; ids.forEach(function(id){ gone[id] = true; });
+    pmParts = pmParts.filter(function(p){ return !gone[p.id]; });
+    exitSelect();
+  }
+
+  function exitSelect(){
+    pmSelecting = false; pmSelected = {};
+    document.getElementById('parts-manager').classList.remove('selecting');
+    document.getElementById('pm-select-toggle').classList.remove('active');
+    document.getElementById('pm-select-toggle').textContent = 'Select';
+    document.getElementById('pm-bulk-actions').classList.remove('show');
+    renderPmCounts();
+    renderPmParts();
   }
 
   // ── auto-load from URL key ──
