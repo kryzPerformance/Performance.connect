@@ -42,7 +42,8 @@ import type {
   ListPendingEventsParams,
   ListUpcomingEventsParams,
   MergeInput,
-  RejectInput
+  RejectInput,
+  SourceCheckResult
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -1505,6 +1506,77 @@ export const useDeleteSource = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getDeleteSourceMutationOptions(options));
+    }
+
+export const getCheckSourceUrl = (id: number,) => {
+
+
+
+
+  return `/api/sources/${id}/check`
+}
+
+/**
+ * @summary Scrape a discovery source now and queue any events found
+ */
+export const checkSource = async (id: number, options?: RequestInit): Promise<SourceCheckResult> => {
+
+  return customFetch<SourceCheckResult>(getCheckSourceUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getCheckSourceMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkSource>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof checkSource>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['checkSource'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof checkSource>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  checkSource(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CheckSourceMutationResult = NonNullable<Awaited<ReturnType<typeof checkSource>>>
+
+    export type CheckSourceMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Scrape a discovery source now and queue any events found
+ */
+export const useCheckSource = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkSource>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof checkSource>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getCheckSourceMutationOptions(options));
     }
 
 export const getGeocodeAddressUrl = () => {

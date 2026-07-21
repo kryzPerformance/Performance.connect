@@ -776,6 +776,21 @@ export const DeleteSourceResponse = zod.void()
 
 
 /**
+ * @summary Scrape a discovery source now and queue any events found
+ */
+export const CheckSourceParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const CheckSourceResponse = zod.object({
+  "ok": zod.boolean(),
+  "message": zod.string(),
+  "eventsFound": zod.number(),
+  "duplicatesFound": zod.number()
+})
+
+
+/**
  * @summary Geocode an address to coordinates
  */
 export const GeocodeAddressBody = zod.object({

@@ -427,6 +427,28 @@ paths:
         "204":
           description: Deleted
 
+  /sources/{id}/check:
+    post:
+      operationId: checkSource
+      tags: [sources]
+      summary: Scrape a discovery source now and queue any events found
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Check result
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SourceCheckResult" }
+        "404":
+          description: Source not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
   /geocode:
     post:
       operationId: geocodeAddress
@@ -858,6 +880,19 @@ components:
           type: integer
         createdAt:
           type: string
+
+    SourceCheckResult:
+      type: object
+      required: [ok, message, eventsFound, duplicatesFound]
+      properties:
+        ok:
+          type: boolean
+        message:
+          type: string
+        eventsFound:
+          type: integer
+        duplicatesFound:
+          type: integer
 
     EventSourceInput:
       type: object

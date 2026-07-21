@@ -301,6 +301,13 @@ export interface EventSource {
   createdAt: string;
 }
 
+export interface SourceCheckResult {
+  ok: boolean;
+  message: string;
+  eventsFound: number;
+  duplicatesFound: number;
+}
+
 export type EventSourceInputType = typeof EventSourceInputType[keyof typeof EventSourceInputType];
 
 

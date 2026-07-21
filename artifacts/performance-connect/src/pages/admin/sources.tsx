@@ -4,6 +4,7 @@ import {
   useCreateSource, 
   useUpdateSource, 
   useDeleteSource,
+  useCheckSource,
   getListSourcesQueryKey,
   EventSourceInputType
 } from "@workspace/api-client-react";
@@ -12,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { 
   Database, Plus, Trash2, Edit2, PlayCircle, 
-  CheckCircle2, XCircle, Loader2, Globe, Instagram, Facebook, Box
+  CheckCircle2, XCircle, Loader2, Globe, Instagram, Facebook, Box, RadarIcon
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,6 +37,25 @@ export default function Sources() {
   const createMutation = useCreateSource();
   const updateMutation = useUpdateSource();
   const deleteMutation = useDeleteSource();
+  const checkMutation = useCheckSource();
+  const [checkingId, setCheckingId] = React.useState<number | null>(null);
+
+  const handleCheck = async (id: number) => {
+    setCheckingId(id);
+    try {
+      const result = await checkMutation.mutateAsync({ id });
+      queryClient.invalidateQueries({ queryKey: getListSourcesQueryKey() });
+      toast({
+        title: result.ok ? "Scan Complete" : "Scan Skipped",
+        description: result.message,
+        variant: result.ok ? "default" : "destructive",
+      });
+    } catch (err) {
+      toast({ title: "Error", description: "The scan failed. Please try again.", variant: "destructive" });
+    } finally {
+      setCheckingId(null);
+    }
+  };
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -238,8 +258,20 @@ export default function Sources() {
                       {source.eventsFound || 0}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors" title="Edit">
+                      <div className="flex items-center justify-end gap-2">
+                        {source.url && source.type !== "instagram" && source.type !== "facebook" && source.type !== "manual" && (
+                          <button
+                            onClick={() => handleCheck(source.id)}
+                            disabled={checkingId !== null}
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-bold uppercase tracking-wide bg-primary/10 text-primary border border-primary/30 hover:bg-primary/20 transition-colors disabled:opacity-50"
+                            title="Scan this source for events now"
+                            data-testid={`btn-check-source-${source.id}`}
+                          >
+                            {checkingId === source.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RadarIcon className="w-3.5 h-3.5" />}
+                            {checkingId === source.id ? "Scanning..." : "Scan Now"}
+                          </button>
+                        )}
+                        <button className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors opacity-0 group-hover:opacity-100" title="Edit">
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button 

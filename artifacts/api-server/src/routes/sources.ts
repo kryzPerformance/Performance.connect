@@ -7,6 +7,7 @@ import {
   UpdateSourceBody,
   DeleteSourceParams,
 } from "@workspace/api-zod";
+import { checkSource } from "../services/source-scraper";
 
 const router = Router();
 
@@ -61,6 +62,33 @@ router.patch("/sources/:id", async (req, res) => {
   }
 
   res.json(updated);
+});
+
+// POST /sources/:id/check — scrape the source now
+router.post("/sources/:id/check", async (req, res) => {
+  const idParsed = UpdateSourceParams.safeParse({ id: Number(req.params["id"]) });
+  if (!idParsed.success) {
+    res.status(400).json({ error: "Invalid source id" });
+    return;
+  }
+
+  const [source] = await db
+    .select()
+    .from(eventSourcesTable)
+    .where(eq(eventSourcesTable.id, idParsed.data.id));
+
+  if (!source) {
+    res.status(404).json({ error: "Source not found" });
+    return;
+  }
+
+  try {
+    const result = await checkSource(source);
+    res.json(result);
+  } catch (err) {
+    req.log.error({ err }, "Source check failed");
+    res.status(500).json({ error: "Source check failed" });
+  }
 });
 
 // DELETE /sources/:id
