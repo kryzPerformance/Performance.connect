@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Part Out — Performance Connect</title>
+<meta name="description" content="Vehicle part out on Performance Connect.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#070808;--panel:#111415;--panel-2:#161B1C;--line:#23292b;
+    --cyan:#1FA9CF;--cyan-bright:#3DC9F0;
+    --steel:#8FA0A6;--steel-dim:#5C6A6E;--white:#F2F6F7;--red:#E84545;
+    --amber:#E8A845;--violet:#9B7BE8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{background:var(--black);scroll-behavior:smooth;}
+  body{background:var(--black);color:var(--white);font-family:'Inter',sans-serif;min-height:100vh;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:'Inter',sans-serif;cursor:pointer;border:none;background:none;}
+
+  .bg-grid{
+    position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      linear-gradient(to right,rgba(255,255,255,0.015) 1px,transparent 1px),
+      linear-gradient(to bottom,rgba(255,255,255,0.015) 1px,transparent 1px);
+    background-size:64px 64px;
+  }
+
+  /* HEADER */
+  .site-header{
+    position:sticky;top:0;z-index:100;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px clamp(16px,5vw,48px);
+    background:rgba(7,8,8,0.88);backdrop-filter:blur(12px);
+    border-bottom:0.5px solid var(--line);gap:12px;
+  }
+  .back-btn{
+    display:flex;align-items:center;gap:8px;
+    font-size:13px;font-weight:500;color:var(--steel);
+    transition:color 0.15s;padding:6px 0;cursor:pointer;
+  }
+  .back-btn:hover{color:var(--cyan-bright);}
+  .back-btn svg{width:16px;height:16px;flex-shrink:0;}
+  .wordmark{
+    display:flex;align-items:center;gap:10px;
+    font-family:'Rajdhani',sans-serif;font-weight:700;
+    font-size:13px;letter-spacing:0.18em;color:var(--white);
+  }
+  .wordmark img{height:26px;width:auto;}
+  .wordmark .accent{color:var(--cyan-bright);}
+  .header-actions{display:flex;align-items:center;gap:10px;}
+  .icon-btn{
+    display:flex;align-items:center;justify-content:center;
+    width:36px;height:36px;border-radius:8px;
+    border:0.5px solid var(--line);background:var(--panel);
+    color:var(--steel);transition:all 0.15s;cursor:pointer;
+  }
+  .icon-btn:hover{color:var(--cyan-bright);border-color:var(--cyan);}
+  .icon-btn svg{width:16px;height:16px;}
+
+  /* STATE SCREENS */
+  .state-screen{
+    position:relative;z-index:1;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-height:60vh;gap:16px;text-align:center;padding:40px 20px;
+  }
+  .spinner{
+    width:36px;height:36px;border:2px solid var(--line);
+    border-top-color:var(--cyan-bright);border-radius:50%;
+    animation:spin 0.8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .state-screen p{color:var(--steel);font-size:14.5px;max-width:320px;line-height:1.6;}
+  .state-screen a{color:var(--cyan);font-size:13px;}
+
+  /* MAIN LAYOUT */
+  .listing-page{
+    position:relative;z-index:1;
+    max-width:1280px;margin:0 auto;
+    padding:32px clamp(16px,5vw,48px) 80px;
+    display:grid;
+    grid-template-columns:1fr 440px;
+    grid-template-areas:"gallery details" "parts parts";
+    gap:40px 48px;align-items:start;
+  }
+
+  /* GALLERY */
+  .gallery{grid-area:gallery;position:sticky;top:72px;display:flex;flex-direction:column;gap:12px;}
+  .gallery-main{
+    position:relative;width:100%;aspect-ratio:4/3;
+    background:var(--panel);border-radius:14px;overflow:hidden;border:0.5px solid var(--line);
+  }
+  .gallery-main img{
+    width:100%;height:100%;object-fit:cover;object-position:center;
+    display:block;transition:opacity 0.2s ease;
+  }
+  .no-photo{
+    width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+    color:var(--steel-dim);flex-direction:column;gap:10px;font-size:13px;
+  }
+  .no-photo svg{width:40px;height:40px;opacity:0.35;}
+  .gallery-nav{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;
+    padding:0 12px;pointer-events:none;
+  }
+  .gallery-arrow{
+    pointer-events:all;width:36px;height:36px;border-radius:50%;
+    background:rgba(7,8,8,0.65);backdrop-filter:blur(4px);
+    border:0.5px solid rgba(255,255,255,0.1);color:var(--white);
+    display:flex;align-items:center;justify-content:center;
+    transition:background 0.15s,opacity 0.15s;opacity:0.8;cursor:pointer;
+  }
+  .gallery-arrow:hover{background:rgba(31,169,207,0.3);opacity:1;}
+  .gallery-arrow svg{width:16px;height:16px;}
+  .gallery-arrow.hidden{opacity:0;pointer-events:none;}
+  .gallery-dots{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;}
+  .gallery-dot{
+    width:6px;height:6px;border-radius:50%;
+    background:rgba(255,255,255,0.35);transition:all 0.2s;cursor:pointer;
+  }
+  .gallery-dot.active{background:var(--cyan-bright);width:18px;border-radius:3px;}
+  .gallery-thumbs{
+    display:flex;gap:8px;overflow-x:auto;
+    scrollbar-width:none;-ms-overflow-style:none;padding-bottom:2px;
+  }
+  .gallery-thumbs::-webkit-scrollbar{display:none;}
+  .gallery-thumb{
+    flex-shrink:0;width:68px;height:54px;border-radius:7px;overflow:hidden;
+    border:2px solid transparent;cursor:pointer;transition:border-color 0.15s;
+  }
+  .gallery-thumb.active{border-color:var(--cyan-bright);}
+  .gallery-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+
+  /* DETAILS */
+  .details{grid-area:details;}
+  .listing-category-tag{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+    color:var(--cyan-bright);margin-bottom:12px;
+  }
+  .listing-category-tag::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--cyan-bright);flex-shrink:0;}
+  .listing-title{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;
+    font-size:clamp(26px,4vw,36px);text-transform:uppercase;
+    line-height:1.05;letter-spacing:0.01em;color:var(--white);margin-bottom:16px;
+  }
+
+  /* SELL-THROUGH PROGRESS */
+  .po-progress{margin-bottom:24px;}
+  .po-progress-nums{
+    display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:10px;
+  }
+  .po-stat{display:flex;align-items:baseline;gap:6px;}
+  .po-stat b{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-size:24px;line-height:1;
+  }
+  .po-stat span{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--steel-dim);}
+  .po-stat.avail b{color:var(--cyan-bright);}
+  .po-stat.pend b{color:var(--amber);}
+  .po-stat.resv b{color:var(--violet);}
+  .po-stat.sold b{color:var(--steel);}
+  .po-bar{
+    height:5px;border-radius:3px;background:var(--panel-2);
+    border:0.5px solid var(--line);overflow:hidden;
+  }
+  .po-bar-fill{
+    height:100%;background:linear-gradient(90deg,var(--cyan),var(--cyan-bright));
+    border-radius:3px;width:0%;transition:width 0.6s ease;
+  }
+  .po-bar-label{font-size:11.5px;color:var(--steel-dim);margin-top:7px;}
+
+  .po-status-banner{
+    display:none;align-items:center;gap:9px;padding:11px 14px;border-radius:10px;
+    font-size:13px;font-weight:600;margin-bottom:22px;
+    background:rgba(143,160,166,0.08);border:0.5px solid var(--line);color:var(--steel);
+  }
+  .po-status-banner svg{width:15px;height:15px;flex-shrink:0;}
+
+  /* CTAs */
+  .cta-row{display:flex;flex-direction:column;gap:10px;margin-bottom:28px;}
+  .btn-ig{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    padding:14px 20px;border-radius:10px;
+    background:var(--cyan-bright);color:#03171D;
+    font-size:14px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+    transition:background 0.15s;
+  }
+  .btn-ig:hover{background:#62D6F5;}
+  .btn-ig svg{width:18px;height:18px;flex-shrink:0;}
+  .btn-row-2{display:flex;gap:8px;}
+  .btn-secondary{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
+    padding:11px 14px;border-radius:10px;
+    border:0.5px solid var(--line);background:var(--panel);
+    color:var(--steel);font-size:13px;font-weight:500;transition:all 0.15s;
+  }
+  .btn-secondary:hover{color:var(--cyan-bright);border-color:var(--cyan);}
+  .btn-secondary svg{width:15px;height:15px;flex-shrink:0;}
+
+  /* SPECS */
+  .specs-section{margin-bottom:24px;}
+  .section-label{
+    font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--steel-dim);margin-bottom:14px;padding-bottom:10px;border-bottom:0.5px solid var(--line);
+  }
+  .spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+  .spec-item{padding:12px 0;border-bottom:0.5px solid rgba(35,41,43,0.6);}
+  .spec-k{font-size:11px;color:var(--steel-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;}
+  .spec-v{font-size:14.5px;color:var(--white);font-weight:500;}
+
+  /* DESCRIPTION */
+  .desc-section{margin-bottom:24px;}
+  .desc-body{font-size:14.5px;color:#C0CDD0;line-height:1.75;white-space:pre-wrap;word-break:break-word;}
+
+  /* SELLER */
+  .seller-strip{
+    display:flex;align-items:center;gap:14px;padding:16px;border-radius:12px;
+    background:var(--panel-2);border:0.5px solid var(--line);margin-bottom:24px;
+  }
+  .seller-avatar{
+    width:44px;height:44px;border-radius:50%;
+    background:var(--panel);border:0.5px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-size:18px;
+    color:var(--cyan-bright);flex-shrink:0;text-transform:uppercase;
+  }
+  .seller-info{flex:1;min-width:0;}
+  .seller-handle{font-size:14px;font-weight:600;color:var(--white);margin-bottom:2px;}
+  .seller-sub{font-size:12px;color:var(--steel-dim);}
+
+  /* FOOTER META */
+  .listing-footer-meta{
+    display:flex;align-items:center;justify-content:space-between;
+    padding-top:18px;border-top:0.5px solid var(--line);
+  }
+  .posted-date{font-size:12px;color:var(--steel-dim);}
+  .report-btn{
+    font-size:12px;color:var(--steel-dim);
+    display:flex;align-items:center;gap:5px;transition:color 0.15s;
+  }
+  .report-btn:hover{color:var(--red);}
+  .report-btn svg{width:13px;height:13px;}
+
+  /* ══ PARTS SECTION ══ */
+  .parts{grid-area:parts;padding-top:40px;border-top:0.5px solid var(--line);}
+  .parts-head{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:16px;flex-wrap:wrap;margin-bottom:20px;
+  }
+  .parts-head h2{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;
+    font-size:22px;text-transform:uppercase;
+  }
+  .parts-filter{
+    display:flex;align-items:center;gap:8px;flex:1;max-width:340px;min-width:200px;
+    padding:9px 13px;border-radius:9px;
+    background:var(--panel);border:0.5px solid var(--line);
+    transition:border-color 0.15s;
+  }
+  .parts-filter:focus-within{border-color:var(--cyan);}
+  .parts-filter svg{width:14px;height:14px;color:var(--steel-dim);flex-shrink:0;}
+  .parts-filter input{
+    flex:1;background:none;border:none;outline:none;
+    color:var(--white);font-family:'Inter',sans-serif;font-size:13.5px;min-width:0;
+  }
+  .parts-filter input::placeholder{color:var(--steel-dim);}
+
+  .part-group{margin-bottom:26px;}
+  .part-group-label{
+    display:flex;align-items:center;gap:10px;
+    font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--cyan);margin-bottom:10px;
+  }
+  .part-group-label::after{content:'';flex:1;height:0.5px;background:var(--line);}
+  .part-group-label .count{color:var(--steel-dim);font-weight:600;letter-spacing:0.04em;}
+
+  .part-row{
+    background:var(--panel);border:0.5px solid var(--line);border-radius:11px;
+    margin-bottom:8px;overflow:hidden;transition:border-color 0.15s;
+  }
+  .part-row:hover{border-color:rgba(31,169,207,0.35);}
+  .part-row.sold-row{opacity:0.55;}
+  .part-row-main{
+    display:flex;align-items:center;gap:12px;
+    padding:13px 15px;cursor:pointer;user-select:none;
+  }
+  .part-name{
+    flex:1;min-width:0;font-size:14px;font-weight:600;color:var(--white);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .part-sub{
+    font-size:11.5px;color:var(--steel-dim);font-weight:400;margin-top:2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .part-price{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-size:17px;
+    color:var(--cyan-bright);flex-shrink:0;
+  }
+  .part-price.offer{color:var(--steel);font-size:13px;font-family:'Inter',sans-serif;font-weight:500;}
+  .status-chip{
+    flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;
+    padding:4px 9px;border-radius:5px;
+  }
+  .status-chip.available{background:rgba(61,201,240,0.12);color:var(--cyan-bright);}
+  .status-chip.pending{background:rgba(232,168,69,0.12);color:var(--amber);}
+  .status-chip.reserved{background:rgba(155,123,232,0.12);color:var(--violet);}
+  .status-chip.sold{background:rgba(143,160,166,0.12);color:var(--steel);}
+  .part-chevron{flex-shrink:0;color:var(--steel-dim);transition:transform 0.2s;}
+  .part-chevron svg{width:15px;height:15px;display:block;}
+  .part-row.open .part-chevron{transform:rotate(180deg);}
+
+  .part-detail{
+    display:none;padding:2px 15px 15px;border-top:0.5px solid rgba(35,41,43,0.6);
+  }
+  .part-row.open .part-detail{display:block;}
+  .part-detail-desc{font-size:13.5px;color:#C0CDD0;line-height:1.65;white-space:pre-wrap;margin:12px 0;}
+  .part-detail-meta{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0;}
+  .meta-pill{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:11.5px;font-weight:500;color:var(--steel);
+    padding:5px 10px;border-radius:6px;
+    background:var(--panel-2);border:0.5px solid var(--line);
+  }
+  .meta-pill svg{width:12px;height:12px;flex-shrink:0;color:var(--steel-dim);}
+  .part-photos{display:flex;gap:8px;overflow-x:auto;margin:12px 0;scrollbar-width:none;}
+  .part-photos::-webkit-scrollbar{display:none;}
+  .part-photo{
+    flex-shrink:0;width:92px;height:70px;border-radius:8px;overflow:hidden;
+    border:0.5px solid var(--line);cursor:pointer;
+  }
+  .part-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .part-contact-btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:10px 16px;border-radius:9px;margin-top:4px;
+    background:var(--cyan-bright);color:#03171D;
+    font-size:12.5px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;
+    transition:background 0.15s;
+  }
+  .part-contact-btn:hover{background:#62D6F5;}
+  .part-contact-btn svg{width:14px;height:14px;}
+
+  /* SOLD GROUP */
+  .sold-toggle{
+    width:100%;display:flex;align-items:center;justify-content:center;gap:9px;
+    padding:13px;border-radius:11px;margin-top:8px;
+    border:0.5px dashed var(--line);color:var(--steel-dim);
+    font-size:12.5px;font-weight:600;transition:all 0.15s;
+  }
+  .sold-toggle:hover{color:var(--steel);border-color:var(--steel-dim);}
+  .sold-toggle svg{width:14px;height:14px;transition:transform 0.2s;}
+  .sold-toggle.open svg{transform:rotate(180deg);}
+  .sold-wrap{display:none;margin-top:14px;}
+  .sold-wrap.open{display:block;}
+
+  .parts-empty{
+    color:var(--steel-dim);font-size:13.5px;text-align:center;
+    padding:36px 20px;border:0.5px dashed var(--line);border-radius:12px;
+  }
+
+  /* MOBILE */
+  @media(max-width:900px){
+    .listing-page{
+      grid-template-columns:1fr;
+      grid-template-areas:"gallery" "details" "parts";
+      gap:24px;padding:20px clamp(12px,4vw,24px) 60px;
+    }
+    .gallery{position:static;top:auto;}
+    .wordmark{display:none;}
+  }
+  @media(max-width:480px){
+    .spec-grid{grid-template-columns:1fr;}
+    .po-stat b{font-size:20px;}
+  }
+
+  /* ── CONTACT SELLER MODAL ── */
+  .contact-modal-overlay{
+    position:fixed;inset:0;z-index:200;
+    background:rgba(4,5,5,0.85);backdrop-filter:blur(8px);
+    display:none;align-items:center;justify-content:center;
+    padding:20px;overflow-y:auto;
+  }
+  .contact-modal-overlay.open{ display:flex; }
+  .contact-modal{
+    background:#0E1112;border:1px solid var(--line);border-radius:16px;
+    max-width:420px;width:100%;padding:28px 26px 24px;
+    box-shadow:0 24px 64px rgba(0,0,0,0.6);
+  }
+  .contact-modal-head{
+    display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;
+  }
+  .contact-modal-title{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;
+    font-size:21px;text-transform:uppercase;color:var(--white);
+  }
+  .contact-modal-close{
+    width:30px;height:30px;border-radius:8px;
+    border:0.5px solid var(--line);background:var(--panel);
+    color:var(--steel);display:flex;align-items:center;justify-content:center;
+    cursor:pointer;transition:all 0.15s;
+  }
+  .contact-modal-close:hover{ color:var(--cyan-bright);border-color:var(--cyan); }
+  .contact-modal-close svg{ width:14px;height:14px; }
+  .contact-modal-sub{ font-size:12.5px;color:var(--steel);margin-bottom:20px;line-height:1.5; }
+
+  .contact-modal .fgroup{ margin-bottom:14px; }
+  .contact-modal .fgroup label{
+    display:block;font-size:11.5px;font-weight:600;color:var(--steel);
+    text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;
+  }
+  .contact-modal input[type="text"],
+  .contact-modal input[type="email"],
+  .contact-modal textarea{
+    width:100%;padding:11px 13px;border-radius:8px;
+    background:var(--panel);border:1px solid var(--line);
+    color:var(--white);font-family:'Inter',sans-serif;font-size:14px;
+    outline:none;transition:border-color 0.15s;resize:vertical;
+  }
+  .contact-modal input:focus,
+  .contact-modal textarea:focus{ border-color:var(--cyan); }
+  .contact-modal input::placeholder,
+  .contact-modal textarea::placeholder{ color:var(--steel-dim); }
+
+  .contact-submit-btn{
+    width:100%;padding:13px;border-radius:10px;
+    background:var(--cyan-bright);color:#03171D;border:none;
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;
+    letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;
+    transition:background 0.15s;
+  }
+  .contact-submit-btn:hover{ background:#62D6F5; }
+  .contact-submit-btn:disabled{ opacity:0.6;cursor:default; }
+
+  .contact-success{ text-align:center;padding:10px 0; }
+  .contact-success p{ font-size:14px;color:var(--steel);margin-bottom:20px;line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="bg-grid" aria-hidden="true"></div>
+
+<header class="site-header">
+  <div class="back-btn" id="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Back
+  </div>
+  <a href="index.html" class="wordmark">
+    <img src="logo_transparent.png" alt="Performance Connect">
+    <span>PERFORMANCE<span class="accent">CONNECT</span></span>
+  </a>
+  <div class="header-actions">
+    <button class="icon-btn" id="share-btn-header" title="Share part out">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="state-screen" id="state-loading">
+  <div class="spinner"></div>
+  <p>Loading part out...</p>
+</div>
+
+<div class="state-screen" id="state-error" style="display:none;">
+  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#5C6A6E" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+  <p id="state-error-msg">This part out couldn't be found or may have been removed.</p>
+  <a href="marketplace.html">← Back to marketplace</a>
+</div>
+
+<div class="listing-page" id="listing-page" style="display:none;">
+
+  <div class="gallery" id="gallery">
+    <div class="gallery-main" id="gallery-main">
+      <div class="no-photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        No photos
+      </div>
+    </div>
+    <div class="gallery-thumbs" id="gallery-thumbs" style="display:none;"></div>
+  </div>
+
+  <div class="details" id="details">
+    <div class="listing-category-tag">Vehicle Part Out</div>
+    <h1 class="listing-title" id="det-title"></h1>
+
+    <div class="po-status-banner" id="po-status-banner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <span id="po-status-banner-text"></span>
+    </div>
+
+    <div class="po-progress">
+      <div class="po-progress-nums">
+        <div class="po-stat avail"><b id="stat-avail">0</b><span>Available</span></div>
+        <div class="po-stat pend"><b id="stat-pend">0</b><span>Pending</span></div>
+        <div class="po-stat resv"><b id="stat-resv">0</b><span>Reserved</span></div>
+        <div class="po-stat sold"><b id="stat-sold">0</b><span>Sold</span></div>
+      </div>
+      <div class="po-bar"><div class="po-bar-fill" id="po-bar-fill"></div></div>
+      <div class="po-bar-label" id="po-bar-label"></div>
+    </div>
+
+    <div class="cta-row">
+      <a class="btn-ig" id="cta-ig" href="#" target="_blank" rel="noopener" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        Contact Seller on Instagram
+      </a>
+      <div class="btn-row-2">
+        <button class="btn-secondary" id="share-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+          Share
+        </button>
+        <button class="btn-secondary" id="jump-parts-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+          View Parts
+        </button>
+      </div>
+    </div>
+
+    <div class="specs-section" id="specs-section">
+      <div class="section-label">Vehicle Details</div>
+      <div class="spec-grid" id="spec-grid"></div>
+    </div>
+
+    <div class="desc-section" id="desc-section" style="display:none;">
+      <div class="section-label">Description</div>
+      <div class="desc-body" id="det-desc"></div>
+    </div>
+
+    <div class="seller-strip">
+      <div class="seller-avatar" id="seller-avatar">?</div>
+      <div class="seller-info">
+        <div class="seller-handle" id="seller-handle">—</div>
+        <div class="seller-sub">Seller · Performance Connect</div>
+      </div>
+    </div>
+
+    <div class="listing-footer-meta">
+      <span class="posted-date" id="det-posted"></span>
+      <a class="report-btn" id="report-btn" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+        Report listing
+      </a>
+    </div>
+  </div>
+
+  <div class="parts" id="parts-section">
+    <div class="parts-head">
+      <h2>Available Parts</h2>
+      <div class="parts-filter">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="parts-filter-input" placeholder="Filter parts... (e.g. turbo, seats)">
+      </div>
+    </div>
+    <div id="parts-groups">
+      <div style="color:var(--steel-dim);font-size:13px;">Loading parts...</div>
+    </div>
+    <button class="sold-toggle" id="sold-toggle" style="display:none;">
+      <span id="sold-toggle-label">Show sold parts</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="sold-wrap" id="sold-wrap"></div>
+  </div>
+
+</div>
+
+<!-- CONTACT SELLER MODAL — same Web3Forms relay as listing.html;
+     seller email injected at modal-open time only, never in static HTML. -->
+<div class="contact-modal-overlay" id="contact-modal-overlay">
+  <div class="contact-modal">
+    <div class="contact-modal-head">
+      <div class="contact-modal-title">Message the Seller</div>
+      <button class="contact-modal-close" id="contact-modal-close" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <p class="contact-modal-sub" id="contact-modal-sub">Your message goes straight to the seller — their email stays private.</p>
+
+    <form id="contact-form">
+      <input type="hidden" name="access_key" value="cf7b7a3e-5ebe-49ca-8d2a-d1c74357929c">
+      <input type="hidden" name="to_email" id="contact-to-email" value="">
+      <input type="hidden" name="subject" id="contact-subject" value="">
+      <input type="hidden" name="from_name" value="Performance Connect Buyer">
+      <input type="checkbox" name="botcheck" style="display:none">
+
+      <div class="fgroup">
+        <label>Your name</label>
+        <input type="text" name="name" id="contact-name" placeholder="Your name" required>
+      </div>
+      <div class="fgroup">
+        <label>Your email <span style="color:var(--steel-dim);font-weight:400;">(so they can reply)</span></label>
+        <input type="email" name="reply_to" id="contact-reply-email" placeholder="you@email.com" required>
+      </div>
+      <div class="fgroup">
+        <label>Message</label>
+        <textarea name="message" id="contact-message" rows="4" placeholder="Hi, is this part still available?" required></textarea>
+      </div>
+
+      <div id="contact-form-error" style="display:none;color:#E46B6B;font-size:13px;margin-bottom:10px;padding:9px 12px;background:rgba(228,107,107,0.08);border:1px solid rgba(228,107,107,0.25);border-radius:6px;"></div>
+
+      <button type="submit" class="contact-submit-btn" id="contact-submit-btn">Send Message</button>
+    </form>
+
+    <div class="contact-success" id="contact-success" style="display:none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:36px;height:36px;color:var(--cyan-bright);margin-bottom:12px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <p>Message sent! The seller will reply to your email directly.</p>
+      <button type="button" class="contact-submit-btn" id="contact-close-success">Done</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  var SUPABASE_URL = 'https://myapluhgfpnyjsfrflhd.supabase.co';
+  var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15YXBsdWhnZnBueWpzZnJmbGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwODcxNDYsImV4cCI6MjA5NzY2MzE0Nn0.j_Xe_J1uvBA-w4Sag1tl3Yp7zqlaEmkQzt2eO6xz1vg';
+  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  function esc(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function fmtDate(iso){ return new Date(iso).toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'}); }
+  function fmtPrice(p){ return p!==null&&p!==undefined ? '$'+Number(p).toLocaleString() : null; }
+
+  /* Preferred display order for part categories; anything else follows alphabetically. */
+  var CAT_ORDER = ['Engine','Transmission','Drivetrain','Suspension','Brakes','Exterior','Interior','Electrical','Wheels & Tires','Fuel','Cooling','Uncategorized'];
+  function catRank(c){ var i = CAT_ORDER.indexOf(c); return i === -1 ? 900 : i; }
+
+  var STATUS_LABEL = {available:'Available', pending:'Pending', reserved:'Reserved', sold:'Sold'};
+
+  var vehicle = null;
+  var parts = [];
+  var openRows = {};   /* part id -> bool, survives re-renders */
+  var filterText = '';
+
+  /* ── GALLERY (same behaviour as listing.html) ── */
+  var photos = [], cur = 0, touchX = 0;
+
+  function buildGallery(urls){
+    var main = document.getElementById('gallery-main');
+    var thumbsEl = document.getElementById('gallery-thumbs');
+    if(!urls||!urls.length) return;
+    photos = urls;
+    var multi = urls.length > 1;
+    main.innerHTML =
+      '<img id="gal-img" src="'+esc(urls[0])+'" alt="Vehicle photo">' +
+      '<div class="gallery-nav">' +
+        '<button class="gallery-arrow hidden" id="gal-prev" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>' +
+        '<button class="gallery-arrow'+(multi?'':' hidden')+'" id="gal-next" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></button>' +
+      '</div>' +
+      (multi ? '<div class="gallery-dots" id="gal-dots"></div>' : '');
+
+    if(multi){
+      var dotsEl=document.getElementById('gal-dots');
+      urls.forEach(function(_,i){
+        var d=document.createElement('div');
+        d.className='gallery-dot'+(i===0?' active':'');
+        d.onclick=function(){goPhoto(i);};
+        dotsEl.appendChild(d);
+      });
+      thumbsEl.style.display='flex';
+      urls.forEach(function(u,i){
+        var t=document.createElement('div');
+        t.className='gallery-thumb'+(i===0?' active':'');
+        t.innerHTML='<img src="'+esc(u)+'" alt="Photo '+(i+1)+'" loading="lazy">';
+        t.onclick=function(){goPhoto(i);};
+        thumbsEl.appendChild(t);
+      });
+    }
+
+    document.getElementById('gal-prev').onclick=function(){goPhoto(cur-1);};
+    document.getElementById('gal-next').onclick=function(){goPhoto(cur+1);};
+    main.addEventListener('touchstart',function(e){touchX=e.touches[0].clientX;},{passive:true});
+    main.addEventListener('touchend',function(e){var dx=e.changedTouches[0].clientX-touchX;if(Math.abs(dx)>40)goPhoto(cur+(dx<0?1:-1));},{passive:true});
+  }
+
+  function goPhoto(n){
+    if(!photos.length) return;
+    cur=Math.max(0,Math.min(n,photos.length-1));
+    var img=document.getElementById('gal-img');
+    if(img){img.style.opacity='0';setTimeout(function(){img.src=photos[cur];img.style.opacity='1';},180);}
+    var p=document.getElementById('gal-prev'),nx=document.getElementById('gal-next');
+    if(p)p.classList.toggle('hidden',cur===0);
+    if(nx)nx.classList.toggle('hidden',cur===photos.length-1);
+    document.querySelectorAll('.gallery-dot').forEach(function(d,i){d.classList.toggle('active',i===cur);});
+    document.querySelectorAll('.gallery-thumb').forEach(function(t,i){t.classList.toggle('active',i===cur);});
+  }
+
+  /* ── SPECS ── */
+  function addSpec(grid,k,v){
+    if(v===null||v===undefined||v==='') return;
+    var el=document.createElement('div');
+    el.className='spec-item';
+    el.innerHTML='<div class="spec-k">'+esc(k)+'</div><div class="spec-v">'+esc(String(v))+'</div>';
+    grid.appendChild(el);
+  }
+
+  function buildSpecs(v){
+    var grid=document.getElementById('spec-grid');
+    grid.innerHTML='';
+    addSpec(grid,'Engine',v.engine);
+    addSpec(grid,'Transmission',v.transmission);
+    addSpec(grid,'Mileage',v.mileage?Number(v.mileage).toLocaleString()+' km':null);
+    addSpec(grid,'Exterior',v.exterior_color);
+    addSpec(grid,'Interior',v.interior_color);
+    addSpec(grid,'VIN',v.vin);
+    addSpec(grid,'Location',v.location);
+    if(!grid.children.length) document.getElementById('specs-section').style.display='none';
+  }
+
+  /* ── COUNTS + PROGRESS ── */
+  function renderCounts(){
+    var c={available:0,pending:0,reserved:0,sold:0};
+    parts.forEach(function(p){ if(c[p.status]!==undefined) c[p.status]++; });
+    document.getElementById('stat-avail').textContent=c.available;
+    document.getElementById('stat-pend').textContent=c.pending;
+    document.getElementById('stat-resv').textContent=c.reserved;
+    document.getElementById('stat-sold').textContent=c.sold;
+    var total=parts.length;
+    var pct=total?Math.round((c.sold/total)*100):0;
+    document.getElementById('po-bar-fill').style.width=pct+'%';
+    document.getElementById('po-bar-label').textContent=
+      total ? c.sold+' of '+total+' parts sold ('+pct+'%)' : 'No parts listed yet';
+  }
+
+  /* ── PART ROW RENDERING ── */
+  function partSubline(p){
+    var bits=[];
+    if(p.condition) bits.push({new:'New',used_excellent:'Used — Excellent',used_good:'Used — Good',used_fair:'Used — Fair',for_parts:'For Parts'}[p.condition]||p.condition);
+    if(p.quantity&&p.quantity>1) bits.push('Qty '+p.quantity);
+    if(p.oem_part_number) bits.push('OEM '+p.oem_part_number);
+    return bits.join(' · ');
+  }
+
+  function buildPartRow(p){
+    var row=document.createElement('div');
+    row.className='part-row'+(p.status==='sold'?' sold-row':'')+(openRows[p.id]?' open':'');
+    row.dataset.pid=p.id;
+
+    var priceHtml = fmtPrice(p.price)
+      ? '<div class="part-price">'+fmtPrice(p.price)+'</div>'
+      : '<div class="part-price offer">Make offer</div>';
+
+    var sub = partSubline(p);
+
+    row.innerHTML =
+      '<div class="part-row-main">' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="part-name">'+esc(p.name)+'</div>' +
+          (sub?'<div class="part-sub">'+esc(sub)+'</div>':'') +
+        '</div>' +
+        priceHtml +
+        '<span class="status-chip '+esc(p.status)+'">'+esc(STATUS_LABEL[p.status]||p.status)+'</span>' +
+        '<span class="part-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>' +
+      '</div>' +
+      '<div class="part-detail">'+buildPartDetail(p)+'</div>';
+
+    row.querySelector('.part-row-main').addEventListener('click',function(){
+      openRows[p.id]=!openRows[p.id];
+      row.classList.toggle('open',!!openRows[p.id]);
+    });
+
+    /* Contact button */
+    var cbtn=row.querySelector('.part-contact-btn');
+    if(cbtn){
+      cbtn.addEventListener('click',function(e){
+        e.stopPropagation();
+        openContactModal(vehicle.email, p.name+' — '+vehicleTitle(), vehicle.id, p.name);
+      });
+    }
+
+    /* Part photo tap-to-view */
+    row.querySelectorAll('.part-photo img').forEach(function(img){
+      img.addEventListener('click',function(e){
+        e.stopPropagation();
+        window.open(img.src,'_blank','noopener');
+      });
+    });
+
+    return row;
+  }
+
+  function buildPartDetail(p){
+    var html='';
+
+    if(p.description&&p.description.trim())
+      html+='<div class="part-detail-desc">'+esc(p.description)+'</div>';
+
+    var pills=[];
+    if(p.local_pickup) pills.push('<span class="meta-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Local pickup</span>');
+    if(p.shipping_available) pills.push('<span class="meta-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Shipping available</span>');
+    if(p.compatibility_notes) pills.push('<span class="meta-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>'+esc(p.compatibility_notes)+'</span>');
+    if(pills.length) html+='<div class="part-detail-meta">'+pills.join('')+'</div>';
+
+    if(p.photos&&p.photos.length){
+      html+='<div class="part-photos">';
+      p.photos.forEach(function(u,i){
+        html+='<div class="part-photo"><img src="'+esc(u)+'" alt="'+esc(p.name)+' photo '+(i+1)+'" loading="lazy"></div>';
+      });
+      html+='</div>';
+    }
+
+    if(vehicle&&vehicle.email&&p.status!=='sold'){
+      html+='<button type="button" class="part-contact-btn">'+
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>'+
+        'Ask about this part</button>';
+    }
+
+    return html;
+  }
+
+  function matchesFilter(p){
+    if(!filterText) return true;
+    var hay=(p.name+' '+(p.category||'')+' '+(p.subcategory||'')+' '+(p.oem_part_number||'')).toLowerCase();
+    return filterText.toLowerCase().split(/\s+/).every(function(w){ return hay.indexOf(w)!==-1; });
+  }
+
+  function renderParts(){
+    var groupsEl=document.getElementById('parts-groups');
+    var soldWrap=document.getElementById('sold-wrap');
+    var soldToggle=document.getElementById('sold-toggle');
+    groupsEl.innerHTML='';
+    soldWrap.innerHTML='';
+
+    var live = parts.filter(function(p){ return p.status!=='sold' && matchesFilter(p); });
+    var sold = parts.filter(function(p){ return p.status==='sold' && matchesFilter(p); });
+
+    if(!parts.length){
+      groupsEl.innerHTML='<div class="parts-empty">No parts have been listed for this vehicle yet. Check back soon.</div>';
+      soldToggle.style.display='none';
+      return;
+    }
+
+    if(!live.length){
+      groupsEl.innerHTML='<div class="parts-empty">'+
+        (filterText?'No available parts match your filter.':'No parts currently available — check the sold list below.')+
+        '</div>';
+    } else {
+      /* Group live parts by category */
+      var byCat={};
+      live.forEach(function(p){
+        var c=p.category||'Uncategorized';
+        (byCat[c]=byCat[c]||[]).push(p);
+      });
+      Object.keys(byCat)
+        .sort(function(a,b){ return (catRank(a)-catRank(b)) || a.localeCompare(b); })
+        .forEach(function(cat){
+          var g=document.createElement('div');
+          g.className='part-group';
+          var label=document.createElement('div');
+          label.className='part-group-label';
+          label.innerHTML=esc(cat)+' <span class="count">'+byCat[cat].length+'</span>';
+          g.appendChild(label);
+          byCat[cat]
+            .sort(function(a,b){ return a.name.localeCompare(b.name); })
+            .forEach(function(p){ g.appendChild(buildPartRow(p)); });
+          groupsEl.appendChild(g);
+        });
+    }
+
+    /* Sold parts — collapsed by default */
+    if(sold.length){
+      soldToggle.style.display='flex';
+      document.getElementById('sold-toggle-label').textContent=
+        (soldWrap.classList.contains('open')?'Hide':'Show')+' sold parts ('+sold.length+')';
+      sold
+        .sort(function(a,b){ return a.name.localeCompare(b.name); })
+        .forEach(function(p){ soldWrap.appendChild(buildPartRow(p)); });
+    } else {
+      soldToggle.style.display='none';
+      soldWrap.classList.remove('open');
+    }
+  }
+
+  /* ── SHARE ── */
+  function doShare(title){
+    if(navigator.share){ navigator.share({title:title,url:window.location.href}); }
+    else {
+      navigator.clipboard.writeText(window.location.href).then(function(){
+        var t=document.createElement('div');
+        t.style.cssText='position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#111415;color:#F2F6F7;font-size:13px;padding:10px 20px;border-radius:8px;z-index:9999;border:0.5px solid #23292b;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+        t.textContent='Link copied to clipboard';
+        document.body.appendChild(t);
+        setTimeout(function(){t.remove();},2500);
+      });
+    }
+  }
+
+  function vehicleTitle(){
+    if(!vehicle) return '';
+    return [vehicle.year,vehicle.make,vehicle.model,vehicle.trim].filter(Boolean).join(' ');
+  }
+
+  /* ── MAIN ── */
+  (async function(){
+    var params=new URLSearchParams(window.location.search);
+    var id=params.get('id');
+
+    function showError(msg){
+      document.getElementById('state-loading').style.display='none';
+      document.getElementById('state-error').style.display='flex';
+      if(msg) document.getElementById('state-error-msg').textContent=msg;
+    }
+
+    if(!id){ showError('No part out ID provided. Please go back and try again.'); return; }
+
+    /* Vehicle + parts in parallel */
+    var results=await Promise.all([
+      sb.from('partout_vehicles').select('*').eq('id',id).single(),
+      sb.from('partout_parts').select('*').eq('vehicle_id',id)
+    ]);
+    var vRes=results[0], pRes=results[1];
+
+    if(vRes.error||!vRes.data){ showError("This part out couldn't be found. It may have been removed."); return; }
+    vehicle=vRes.data;
+    parts=pRes.data||[];
+
+    var title=vehicleTitle();
+    document.title=title+' Part Out — Performance Connect';
+    document.getElementById('state-loading').style.display='none';
+    document.getElementById('listing-page').style.display='grid';
+
+    document.getElementById('det-title').textContent=title+' Part Out';
+
+    /* Vehicle status banner */
+    if(vehicle.status==='completed'){
+      document.getElementById('po-status-banner').style.display='flex';
+      document.getElementById('po-status-banner-text').textContent='This part out is complete — all remaining parts may no longer be available.';
+    }
+
+    if(vehicle.photos&&vehicle.photos.length) buildGallery(vehicle.photos);
+    buildSpecs(vehicle);
+    renderCounts();
+    renderParts();
+
+    /* Description */
+    if(vehicle.description&&vehicle.description.trim()){
+      document.getElementById('desc-section').style.display='block';
+      document.getElementById('det-desc').textContent=vehicle.description;
+    }
+
+    /* Seller strip */
+    var handle=vehicle.instagram||vehicle.email||'seller';
+    document.getElementById('seller-avatar').textContent=handle.charAt(0).toUpperCase();
+    document.getElementById('seller-handle').textContent=vehicle.instagram?'@'+vehicle.instagram:(vehicle.email||'Anonymous seller');
+
+    /* Instagram CTA */
+    var ig=document.getElementById('cta-ig');
+    if(vehicle.instagram){
+      ig.style.display='flex';
+      ig.href='https://instagram.com/'+encodeURIComponent(vehicle.instagram);
+      ig.innerHTML=ig.innerHTML.replace('Contact Seller on Instagram','Contact @'+esc(vehicle.instagram)+' on Instagram');
+    }
+
+    /* Posted date + report */
+    document.getElementById('det-posted').textContent='Posted '+fmtDate(vehicle.created_at);
+    document.getElementById('report-btn').href=
+      'mailto:info@performanceconnect.ca?subject='+encodeURIComponent('Report Part Out #'+vehicle.id)+
+      '&body='+encodeURIComponent('I am reporting part out #'+vehicle.id+' ("'+title+'") for the following reason:\n\n');
+
+    /* Share / jump / back */
+    document.getElementById('share-btn').onclick=function(){doShare(title+' Part Out');};
+    document.getElementById('share-btn-header').onclick=function(){doShare(title+' Part Out');};
+    document.getElementById('jump-parts-btn').onclick=function(){
+      document.getElementById('parts-section').scrollIntoView({behavior:'smooth'});
+    };
+    document.getElementById('back-btn').onclick=function(){
+      if(document.referrer&&document.referrer.includes(window.location.host)){history.back();}
+      else{window.location.href='marketplace.html';}
+    };
+
+    /* Filter input */
+    document.getElementById('parts-filter-input').addEventListener('input',function(){
+      filterText=this.value.trim();
+      renderParts();
+    });
+
+    /* Sold toggle */
+    document.getElementById('sold-toggle').addEventListener('click',function(){
+      var wrap=document.getElementById('sold-wrap');
+      wrap.classList.toggle('open');
+      this.classList.toggle('open',wrap.classList.contains('open'));
+      var soldCount=wrap.children.length;
+      document.getElementById('sold-toggle-label').textContent=
+        (wrap.classList.contains('open')?'Hide':'Show')+' sold parts ('+soldCount+')';
+    });
+  })();
+
+  /* ── CONTACT SELLER MODAL — email injected only at open time ── */
+  function openContactModal(sellerEmail, subjectTitle, vehicleId, partName){
+    document.getElementById('contact-to-email').value = sellerEmail;
+    document.getElementById('contact-subject').value = 'Re: ' + subjectTitle + ' (Part Out #' + vehicleId + ') on Performance Connect';
+    document.getElementById('contact-modal-sub').textContent =
+      'Asking about: ' + partName + '. Your message goes straight to the seller — their email stays private.';
+    document.getElementById('contact-form').style.display = 'block';
+    document.getElementById('contact-success').style.display = 'none';
+    document.getElementById('contact-form-error').style.display = 'none';
+    document.getElementById('contact-modal-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeContactModal(){
+    document.getElementById('contact-modal-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.getElementById('contact-modal-close').addEventListener('click', closeContactModal);
+  document.getElementById('contact-modal-overlay').addEventListener('click', function(e){
+    if(e.target === this) closeContactModal();
+  });
+  document.getElementById('contact-close-success').addEventListener('click', closeContactModal);
+
+  document.getElementById('contact-form').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var btn = document.getElementById('contact-submit-btn');
+    var errEl = document.getElementById('contact-form-error');
+    errEl.style.display = 'none';
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+
+    var formData = new FormData(this);
+
+    try{
+      var res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: formData
+      });
+      var json = await res.json();
+
+      if(json.success){
+        document.getElementById('contact-form').style.display = 'none';
+        document.getElementById('contact-success').style.display = 'block';
+        document.getElementById('contact-form').reset();
+      } else {
+        errEl.textContent = 'Could not send your message. Please try again.';
+        errEl.style.display = 'block';
+      }
+    } catch(err){
+      errEl.textContent = 'Network error — please check your connection and try again.';
+      errEl.style.display = 'block';
+    }
+
+    btn.textContent = 'Send Message';
+    btn.disabled = false;
+  });
+</script>
+</body>
+</html>
