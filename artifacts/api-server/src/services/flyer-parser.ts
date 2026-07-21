@@ -99,6 +99,7 @@ export async function parseFlyerImage(
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
+    console.error("parseFlyerImage: OPENAI_API_KEY is not set — returning empty result");
     return {
       confidenceScore: 0,
       extractedFields: EMPTY_FIELDS,
@@ -108,15 +109,14 @@ export async function parseFlyerImage(
 
   const client = new OpenAI({ apiKey });
 
-  const imageContent: OpenAI.Chat.Completions.ChatCompletionContentPartImage = isUrl
-    ? {
-        type: "image_url",
-        image_url: { url: imageData, detail: "high" },
-      }
-    : {
-        type: "image_url",
-        image_url: { url: `data:image/jpeg;base64,${imageData}`, detail: "high" },
-      };
+  // Frontend sends a full data URL (data:image/png;base64,...) — don't double-prefix it.
+  const url = isUrl || imageData.startsWith("data:")
+    ? imageData
+    : `data:image/jpeg;base64,${imageData}`;
+  const imageContent: OpenAI.Chat.Completions.ChatCompletionContentPartImage = {
+    type: "image_url",
+    image_url: { url, detail: "high" },
+  };
 
   try {
     const response = await client.chat.completions.create({
@@ -177,7 +177,8 @@ export async function parseFlyerImage(
     };
 
     return { confidenceScore, extractedFields, rawText };
-  } catch {
+  } catch (err) {
+    console.error("parseFlyerImage: extraction failed", err);
     return { confidenceScore: 0, extractedFields: EMPTY_FIELDS, rawText: null };
   }
 }
