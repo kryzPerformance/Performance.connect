@@ -706,6 +706,29 @@
     font-weight:500;
     pointer-events:none;
   }
+  /* Part-out cards in the feed */
+  .listing-cat-part{ color:var(--cyan-bright); }
+  .listing-cat-part::before{
+    content:'';
+    display:inline-block;
+    width:6px;height:6px;border-radius:50%;
+    background:var(--cyan-bright);
+    margin-right:6px;
+    vertical-align:middle;
+  }
+  .listing-part-vehicle{
+    color:var(--steel-dim);
+    font-size:11.5px;
+    margin-top:-4px;
+    margin-bottom:10px;
+  }
+  .listing-from-vehicle{
+    color:var(--cyan);
+    max-width:55%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
   /* "View →" affordance that appears on hover */
   .listing-card::after{
     content:'View →';
@@ -2878,12 +2901,14 @@
       // Search filter — title, description, location, category
       if(searchQuery){
         var haystack = [
-          l.title        || '',
-          l.description  || '',
-          l.location     || '',
-          l.category     || '',
-          l.instagram    || '',
-          l.email        || ''
+          l.title         || '',
+          l.description   || '',
+          l.location      || '',
+          l.category      || '',
+          l.instagram     || '',
+          l.email         || '',
+          l._vehicleName  || '',   // part-out: "2016 Subaru WRX" — makes "WRX Turbo" match
+          l._extraSearch  || ''    // part-out: OEM #, subcategory, compat notes
         ].join(' ').toLowerCase();
         if(!haystack.includes(searchQuery)) return false;
       }
@@ -2913,19 +2938,62 @@
     var grid = document.getElementById('listings-grid');
     grid.innerHTML = '<div class="listings-loading">Loading listings...</div>';
 
-    var res = await sb.from('listings').select('*').eq('status','active').order('created_at',{ascending:false});
-    if(res.error){
+    // Load regular listings and available part-out parts in parallel.
+    var results = await Promise.all([
+      sb.from('listings').select('*').eq('status','active').order('created_at',{ascending:false}),
+      sb.from('partout_parts').select('*').eq('status','available').order('created_at',{ascending:false})
+    ]);
+    var listRes = results[0], partRes = results[1];
+
+    if(listRes.error){
       grid.innerHTML = '<div class="listings-empty">Couldn\'t load listings right now.</div>';
       return;
     }
-    allListings = res.data || [];
+
+    var listings = listRes.data || [];
+    // Normalize each available part into a listing-shaped object so the
+    // existing search / filter / render pipeline treats it identically.
+    var parts = (partRes && partRes.data ? partRes.data : []).map(normalizePart);
+
+    // Merge and sort by created_at so parts interleave with listings by recency.
+    allListings = listings.concat(parts).sort(function(a,b){
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
     renderListings();
+  }
+
+  // Turn a partout_parts row into the shape buildCard/renderListings expect.
+  function normalizePart(p){
+    return {
+      _isPart:       true,
+      _vehicleId:    p.vehicle_id,
+      _vehicleName:  p.vehicle_display || '',
+      id:            p.id,
+      category:      'parts',            // caught by the existing "Parts" filter
+      title:         p.name,
+      description:   p.description || '',
+      location:      '',                 // parts inherit location from the vehicle page
+      condition:     partConditionLabel(p.condition),
+      price:         p.price,
+      photo_urls:    (p.photos && p.photos.length) ? p.photos : null,
+      instagram:     '',                 // contact happens on the parent page
+      email:         '',
+      created_at:    p.created_at,
+      // extra searchable text (OEM, subcategory) folded in for the haystack
+      _extraSearch:  [p.oem_part_number || '', p.subcategory || '', p.compatibility_notes || ''].join(' ')
+    };
+  }
+
+  function partConditionLabel(c){
+    return { new:'New', used_excellent:'Used — Excellent', used_good:'Used — Good',
+             used_fair:'Used — Fair', for_parts:'For Parts' }[c] || '';
   }
 
   function buildCard(l){
     var card = document.createElement('a');
-    card.className = 'listing-card';
-    card.href = 'listing.html?id=' + l.id;
+    card.className = 'listing-card' + (l._isPart ? ' listing-card-part' : '');
+    // Parts link to their parent part-out page; listings to the listing page.
+    card.href = l._isPart ? ('partout.html?id=' + l._vehicleId) : ('listing.html?id=' + l.id);
 
     var thumb = '';
     if(l.photo_urls && l.photo_urls.length > 0){
@@ -2935,27 +3003,37 @@
     }
 
     var catLabel = { vehicles:'Vehicle', wheels:'Wheels & Tires', parts:'Part', tools:'Tool', fluids:'Fluids & Products' }[l.category] || l.category;
+    if(l._isPart) catLabel = 'Part Out';
+
     var meta = [];
     if(l.location) meta.push(l.location);
     if(l.condition) meta.push(l.condition);
     var metaStr = meta.join(' · ');
 
     var price = l.price ? '$' + Number(l.price).toLocaleString() : 'Make offer';
-    var igLink = l.instagram
-      ? '<span class="listing-ig">@' + escHtml(l.instagram) + '</span>'
-      : l.email
-        ? '<span class="listing-ig">' + escHtml(l.email) + '</span>'
-        : '';
+
+    // Parts show "From Vehicle" as a body line; their footer carries just price.
+    var footerRight;
+    if(l._isPart){
+      footerRight = '';
+    } else {
+      footerRight = l.instagram
+        ? '<span class="listing-ig">@' + escHtml(l.instagram) + '</span>'
+        : l.email
+          ? '<span class="listing-ig">' + escHtml(l.email) + '</span>'
+          : '';
+    }
 
     card.innerHTML =
       thumb +
       '<div class="listing-body">' +
-        '<div class="listing-cat">' + catLabel + '</div>' +
+        '<div class="listing-cat' + (l._isPart ? ' listing-cat-part' : '') + '">' + catLabel + '</div>' +
         '<div class="listing-title">' + escHtml(l.title) + '</div>' +
         (metaStr ? '<div class="listing-meta">' + escHtml(metaStr) + '</div>' : '') +
+        (l._isPart && l._vehicleName ? '<div class="listing-meta listing-part-vehicle">From Vehicle: ' + escHtml(l._vehicleName) + '</div>' : '') +
         '<div class="listing-footer">' +
           '<span class="listing-price">' + price + '</span>' +
-          igLink +
+          footerRight +
         '</div>' +
       '</div>';
 
