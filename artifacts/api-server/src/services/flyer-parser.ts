@@ -96,10 +96,14 @@ export async function parseFlyerImage(
   imageData: string,
   isUrl: boolean = false,
 ): Promise<FlyerParseResult> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  // Uses Replit-managed AI Integrations (no personal OpenAI account needed).
+  const apiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  const baseURL = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
 
-  if (!apiKey) {
-    console.error("parseFlyerImage: OPENAI_API_KEY is not set — returning empty result");
+  if (!apiKey || !baseURL) {
+    console.error(
+      "parseFlyerImage: AI_INTEGRATIONS_OPENAI_API_KEY / AI_INTEGRATIONS_OPENAI_BASE_URL not set — returning empty result",
+    );
     return {
       confidenceScore: 0,
       extractedFields: EMPTY_FIELDS,
@@ -107,7 +111,7 @@ export async function parseFlyerImage(
     };
   }
 
-  const client = new OpenAI({ apiKey });
+  const client = new OpenAI({ apiKey, baseURL });
 
   // Frontend sends a full data URL (data:image/png;base64,...) — don't double-prefix it.
   const url = isUrl || imageData.startsWith("data:")
