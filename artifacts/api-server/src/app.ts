@@ -26,7 +26,8 @@ app.use(
   }),
 );
 app.use(cors());
-app.use(express.json());
+// 15mb: flyer uploads arrive as base64 JSON (5MB image ≈ 6.7MB encoded)
+app.use(express.json({ limit: "15mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
