@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Events — Performance Connect</title>
+<meta name="description" content="Car meets, track days, shows, and cars & coffee across the GTA — the Performance Connect events calendar.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root{
+    --black:#070808;--panel:#111415;--panel-2:#161B1C;--line:#23292b;
+    --cyan:#1FA9CF;--cyan-bright:#3DC9F0;
+    --steel:#8FA0A6;--steel-dim:#5C6A6E;--white:#F2F6F7;
+    --green:#3DF08A;--red:#E84545;--amber:#F0B83D;
+    --ev-meet:#3DC9F0;--ev-track:#FF4DA6;--ev-show:#FFD600;--ev-coffee:#FF8C42;--ev-other:#B34DFF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--black);color:var(--white);font-family:'Inter',sans-serif;min-height:100%;}
+  a{color:inherit;}
+
+  .bg-grid{
+    position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      linear-gradient(to right,rgba(255,255,255,0.02) 1px,transparent 1px),
+      linear-gradient(to bottom,rgba(255,255,255,0.02) 1px,transparent 1px);
+    background-size:64px 64px;
+  }
+  .page{position:relative;z-index:1;display:flex;flex-direction:column;min-height:100vh;}
+
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px clamp(16px,5vw,56px);border-bottom:0.5px solid var(--line);
+    flex-wrap:wrap;gap:12px;position:relative;z-index:10;
+    background:rgba(7,8,8,0.92);backdrop-filter:blur(8px);
+  }
+  .wordmark{display:flex;align-items:center;gap:12px;text-decoration:none;}
+  .wordmark img{height:30px;width:auto;}
+  .wordmark span{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.18em;color:var(--white);}
+  .wordmark span .accent{color:var(--cyan-bright);}
+  .site-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .nav-link{
+    font-family:'Inter',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.03em;
+    color:var(--steel);text-decoration:none;
+    padding:8px 16px;border-radius:999px;
+    border:0.5px solid var(--line);background:rgba(255,255,255,0.03);
+    transition:color 0.15s ease,border-color 0.15s ease,background 0.15s ease;
+  }
+  .nav-link:hover{color:var(--cyan-bright);border-color:rgba(31,169,207,0.45);background:rgba(31,169,207,0.07);}
+  .nav-link.is-current{color:var(--cyan-bright);border-color:rgba(31,169,207,0.35);background:rgba(31,169,207,0.06);}
+
+  .page-hero{padding:32px clamp(16px,5vw,56px) 12px;display:flex;flex-direction:column;gap:12px;}
+  .eyebrow{font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--cyan);}
+  .page-hero h1{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;
+    font-size:clamp(28px,5vw,42px);text-transform:uppercase;letter-spacing:0.01em;line-height:1.05;
+  }
+  .page-hero h1 .accent{color:var(--cyan-bright);}
+  .page-hero p{font-size:14.5px;color:var(--steel);max-width:640px;line-height:1.6;}
+
+  .submit-cta{
+    display:inline-flex;align-items:center;gap:7px;align-self:flex-start;margin-top:4px;
+    padding:10px 18px;border-radius:999px;background:var(--cyan-bright);color:#03171D;
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.06em;
+    text-transform:uppercase;text-decoration:none;transition:background 0.15s;
+  }
+  .submit-cta:hover{background:#62D6F5;}
+  .submit-cta svg{width:14px;height:14px;}
+
+  /* Filter + view toggle bar */
+  .controls{padding:8px clamp(16px,5vw,56px) 4px;display:flex;flex-direction:column;gap:12px;}
+  .filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .filter-pill{
+    display:flex;align-items:center;gap:7px;
+    font-size:11.5px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;
+    padding:7px 14px;border-radius:999px;cursor:pointer;border:1px solid transparent;
+    transition:background 0.2s ease, border-color 0.2s ease, color 0.2s ease;user-select:none;
+    background:var(--panel);color:var(--white);
+  }
+  .filter-pill .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .filter-pill[data-ev="all"] .dot{background:var(--steel);}
+  .filter-pill[data-ev="meet"] .dot{background:var(--ev-meet);}
+  .filter-pill[data-ev="track"] .dot{background:var(--ev-track);}
+  .filter-pill[data-ev="show"] .dot{background:var(--ev-show);}
+  .filter-pill[data-ev="coffee"] .dot{background:var(--ev-coffee);}
+  .filter-pill[data-ev="other"] .dot{background:var(--ev-other);}
+  .filter-pill:not(.active){background:#0D1012;border-color:#1C2225;color:#5C6A6E;}
+  .filter-pill:not(.active) .dot{opacity:1;}
+  .filter-pill.active[data-ev="all"]{background:rgba(143,160,166,0.12);border-color:rgba(143,160,166,0.4);}
+  .filter-pill.active[data-ev="meet"]{background:rgba(61,201,240,0.12);border-color:rgba(61,201,240,0.4);}
+  .filter-pill.active[data-ev="track"]{background:rgba(255,77,166,0.12);border-color:rgba(255,77,166,0.4);}
+  .filter-pill.active[data-ev="show"]{background:rgba(255,214,0,0.12);border-color:rgba(255,214,0,0.4);}
+  .filter-pill.active[data-ev="coffee"]{background:rgba(255,140,66,0.12);border-color:rgba(255,140,66,0.4);}
+  .filter-pill.active[data-ev="other"]{background:rgba(179,77,255,0.12);border-color:rgba(179,77,255,0.4);}
+
+  .view-toggle{display:flex;gap:4px;background:var(--panel);border:0.5px solid var(--line);border-radius:999px;padding:4px;margin-left:auto;}
+  .view-btn{padding:6px 16px;border-radius:999px;font-size:12px;font-weight:600;color:var(--steel-dim);background:none;border:none;cursor:pointer;transition:all 0.15s;}
+  .view-btn.active{background:rgba(31,169,207,0.14);color:var(--cyan-bright);}
+
+  .count-line{font-size:13px;color:var(--steel-dim);padding:0 clamp(16px,5vw,56px);}
+  .count-line span{color:var(--cyan-bright);font-weight:700;}
+
+  /* Content area */
+  .content{flex:1;padding:16px clamp(16px,5vw,56px) 60px;}
+
+  /* List view */
+  .events-list{display:flex;flex-direction:column;gap:14px;max-width:820px;}
+  .event-card{
+    display:grid;grid-template-columns:64px 1fr;gap:16px;
+    background:var(--panel);border:0.5px solid var(--line);border-radius:14px;
+    padding:18px;transition:border-color 0.15s,transform 0.15s;cursor:pointer;text-decoration:none;color:inherit;
+  }
+  .event-card:hover{border-color:rgba(31,169,207,0.4);transform:translateY(-2px);}
+  .event-date-badge{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:var(--panel-2);border-radius:10px;padding:8px 4px;height:64px;
+  }
+  .event-date-badge .month{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--cyan-bright);}
+  .event-date-badge .day{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:26px;line-height:1;color:var(--white);}
+  .event-body{display:flex;flex-direction:column;gap:6px;min-width:0;}
+  .event-type-tag{
+    display:inline-flex;align-items:center;gap:5px;align-self:flex-start;
+    font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+    padding:3px 9px;border-radius:999px;
+  }
+  .event-type-tag .dot{width:6px;height:6px;border-radius:50%;}
+  .event-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:19px;line-height:1.15;}
+  .event-meta{font-size:12.5px;color:var(--steel);display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+  .event-meta .m{display:flex;align-items:center;gap:4px;}
+  .event-meta svg{width:12px;height:12px;color:var(--steel-dim);}
+  .event-desc{font-size:13px;color:var(--steel);line-height:1.5;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .event-links{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+  .ev-link{
+    font-size:11.5px;font-weight:600;padding:6px 12px;border-radius:7px;text-decoration:none;
+    border:0.5px solid var(--line);color:var(--steel);transition:all 0.15s;
+  }
+  .ev-link:hover{color:var(--cyan-bright);border-color:var(--cyan);}
+  .ev-link.primary{background:rgba(31,169,207,0.1);border-color:rgba(31,169,207,0.3);color:var(--cyan-bright);}
+
+  /* Poster image on event card */
+  .event-card.has-poster{grid-template-columns:64px 1fr 120px;}
+  .event-poster{
+    width:120px;height:100%;min-height:90px;border-radius:10px;overflow:hidden;
+    background:var(--panel-2);border:0.5px solid var(--line);align-self:stretch;
+  }
+  .event-poster img{width:100%;height:100%;object-fit:cover;display:block;}
+  @media(max-width:560px){
+    .event-card.has-poster{grid-template-columns:56px 1fr;}
+    .event-card.has-poster .event-poster{
+      grid-column:1/-1;grid-row:auto;width:100%;height:150px;margin-top:10px;
+    }
+  }
+
+  /* Map view */
+  #map-wrap{display:none;border-radius:14px;overflow:hidden;border:0.5px solid var(--line);height:560px;position:relative;}
+  #map{width:100%;height:100%;background:#0a0f10;}
+  body.map-mode #map-wrap{display:block;}
+  body.map-mode .events-list{display:none;}
+
+  /* Calendar view */
+  #cal-wrap{display:none;max-width:820px;}
+  body.cal-mode #cal-wrap{display:block;}
+  body.cal-mode .events-list{display:none;}
+  .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .cal-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:0.03em;}
+  .cal-nav{display:flex;gap:6px;}
+  .cal-nav button{
+    width:34px;height:34px;border-radius:8px;background:var(--panel);border:0.5px solid var(--line);
+    color:var(--steel);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;
+  }
+  .cal-nav button:hover{color:var(--cyan-bright);border-color:var(--cyan);}
+  .cal-nav svg{width:16px;height:16px;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+  .cal-dow{
+    text-align:center;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+    color:var(--steel-dim);padding:6px 0;
+  }
+  .cal-cell{
+    aspect-ratio:1;background:var(--panel);border:0.5px solid var(--line);border-radius:8px;
+    padding:5px;display:flex;flex-direction:column;gap:3px;overflow:hidden;position:relative;min-height:52px;
+  }
+  .cal-cell.empty{background:transparent;border-color:transparent;}
+  .cal-cell.today{border-color:rgba(31,169,207,0.5);}
+  .cal-cell .cal-daynum{font-size:11px;font-weight:600;color:var(--steel);}
+  .cal-cell.today .cal-daynum{color:var(--cyan-bright);}
+  .cal-event{
+    font-size:9px;font-weight:600;padding:2px 4px;border-radius:4px;line-height:1.2;cursor:pointer;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .cal-more{font-size:9px;color:var(--steel-dim);padding-left:2px;}
+  @media(max-width:560px){
+    .cal-cell{min-height:42px;padding:3px;}
+    .cal-event{font-size:8px;padding:1px 3px;}
+    .cal-cell .cal-daynum{font-size:10px;}
+  }
+
+  .pc-ev-marker{
+    display:flex;align-items:center;justify-content:center;
+    width:30px;height:30px;border-radius:50%;border:2px solid;
+    box-shadow:0 2px 8px rgba(0,0,0,0.6);transition:transform .12s ease, box-shadow .12s ease;
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;
+  }
+
+  .empty-state{
+    text-align:center;padding:60px 20px;color:var(--steel-dim);max-width:480px;margin:0 auto;
+  }
+  .empty-state svg{width:48px;height:48px;color:var(--line);margin-bottom:16px;}
+  .empty-state h3{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:20px;color:var(--steel);margin-bottom:8px;text-transform:uppercase;}
+  .empty-state p{font-size:13.5px;line-height:1.6;}
+  .empty-state a{color:var(--cyan);}
+
+  .loading{text-align:center;padding:60px 20px;color:var(--steel-dim);font-size:14px;}
+  .spinner{width:28px;height:28px;border:2px solid var(--line);border-top-color:var(--cyan);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 14px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  footer{padding:24px clamp(16px,5vw,56px);border-top:0.5px solid var(--line);text-align:center;font-size:12px;color:var(--steel-dim);}
+  footer a{color:var(--cyan);}
+
+  @media(max-width:560px){
+    .view-toggle{margin-left:0;}
+    .filter-row{gap:6px;}
+  }
+</style>
+</head>
+<body>
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="page">
+
+  <header>
+    <a href="index.html" class="wordmark">
+      <img src="logo_transparent.png" alt="Performance Connect">
+      <span>PERFORMANCE<span class="accent">CONNECT</span></span>
+    </a>
+    <nav class="site-nav">
+      <a href="marketplace.html" class="nav-link">Marketplace</a>
+      <a href="affiliates.html" class="nav-link">Affiliates</a>
+      <a href="events.html" class="nav-link is-current">Events</a>
+      <a href="blog.html" class="nav-link">Blog</a>
+    </nav>
+  </header>
+
+  <div class="page-hero">
+    <div class="eyebrow">GTA Car Culture</div>
+    <h1>Upcoming <span class="accent">Events</span></h1>
+    <p>Meets, track days, shows, and cars &amp; coffee across the GTA. Find your next drive — or submit your own event to get it on the map.</p>
+    <a href="event-submit.html" class="submit-cta">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Submit an event
+    </a>
+  </div>
+
+  <div class="controls">
+    <div class="filter-row" id="filter-row">
+      <button class="filter-pill active" data-ev="all"><span class="dot"></span>All</button>
+      <button class="filter-pill active" data-ev="meet"><span class="dot"></span>Meets</button>
+      <button class="filter-pill active" data-ev="track"><span class="dot"></span>Track Days</button>
+      <button class="filter-pill active" data-ev="show"><span class="dot"></span>Shows</button>
+      <button class="filter-pill active" data-ev="coffee"><span class="dot"></span>Cars &amp; Coffee</button>
+      <button class="filter-pill active" data-ev="other"><span class="dot"></span>Other</button>
+      <div class="view-toggle">
+        <button class="view-btn active" id="btn-list">List</button>
+        <button class="view-btn" id="btn-cal">Calendar</button>
+        <button class="view-btn" id="btn-map">Map</button>
+      </div>
+    </div>
+  </div>
+  <div class="count-line" id="count-line">&nbsp;</div>
+
+  <div class="content">
+    <div class="loading" id="loading"><div class="spinner"></div>Loading events...</div>
+    <div class="events-list" id="events-list"></div>
+    <div id="cal-wrap"><div id="calendar"></div></div>
+    <div id="map-wrap"><div id="map"></div></div>
+  </div>
+
+  <footer>
+    Hosting something? <a href="event-submit.html">Submit your event</a> — free for the GTA scene.
+  </footer>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ── Supabase client (same project/pattern as marketplace.html) ──
+  var SUPABASE_URL = 'https://myapluhgfpnyjsfrflhd.supabase.co';
+  var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15YXBsdWhnZnBueWpzZnJmbGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwODcxNDYsImV4cCI6MjA5NzY2MzE0Nn0.j_Xe_J1uvBA-w4Sag1tl3Yp7zqlaEmkQzt2eO6xz1vg';
+  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  var GTA = [43.7184, -79.5181];
+  var MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  var MONTHS_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var TYPE_META = {
+    meet:  {label:'Meet',           color:'#3DC9F0'},
+    track: {label:'Track Day',      color:'#FF4DA6'},
+    show:  {label:'Car Show',       color:'#FFD600'},
+    coffee:{label:'Cars & Coffee',  color:'#FF8C42'},
+    other: {label:'Event',          color:'#B34DFF'}
+  };
+
+  var allEvents = [];
+  var activeTypes = { meet:true, track:true, show:true, coffee:true, other:true };
+  var map = null, markers = [];
+
+  // ── Fetch approved, upcoming events ──
+  function loadEvents(){
+    var today = new Date();
+    today.setHours(0,0,0,0);
+    var todayStr = today.toISOString().slice(0,10);
+
+    sb.from('events')
+      .select('*')
+      .eq('status','approved')
+      .gte('event_date', todayStr)
+      .order('event_date', { ascending:true })
+      .then(function(res){
+        document.getElementById('loading').style.display = 'none';
+        if(res.error){ showError(); return; }
+        allEvents = res.data || [];
+        render();
+      });
+  }
+
+  function showError(){
+    document.getElementById('events-list').innerHTML =
+      '<div class="empty-state"><h3>Could not load events</h3><p>Please refresh the page to try again.</p></div>';
+  }
+
+  function fmtTime(t){
+    if(!t) return '';
+    var parts = t.split(':');
+    var h = parseInt(parts[0],10);
+    var m = parts[1] || '00';
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    var h12 = h % 12; if(h12 === 0) h12 = 12;
+    return h12 + ':' + m + ' ' + ampm;
+  }
+
+  function eventTypeKey(t){ return TYPE_META[t] ? t : 'other'; }
+
+  function render(){
+    var list = document.getElementById('events-list');
+    var visible = allEvents.filter(function(ev){ return activeTypes[eventTypeKey(ev.event_type)]; });
+
+    // Count line
+    var cl = document.getElementById('count-line');
+    if(allEvents.length === 0){
+      cl.innerHTML = '&nbsp;';
+    } else {
+      cl.innerHTML = 'Showing <span>'+visible.length+'</span> upcoming event'+(visible.length===1?'':'s');
+    }
+
+    // Empty states
+    if(allEvents.length === 0){
+      list.innerHTML =
+        '<div class="empty-state">'+
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'+
+        '<h3>No events yet</h3>'+
+        '<p>Nothing on the calendar right now. Hosting a meet, track day, or show? <a href="event-submit.html">Submit it here</a> and get it in front of the GTA scene.</p>'+
+        '</div>';
+      renderMap(visible);
+      return;
+    }
+    if(visible.length === 0){
+      list.innerHTML = '<div class="empty-state"><h3>No events match your filters</h3><p>Try enabling more event types above.</p></div>';
+      renderMap(visible);
+      return;
+    }
+
+    // Build cards
+    list.innerHTML = visible.map(function(ev){
+      var d = new Date(ev.event_date + 'T00:00:00');
+      var tk = eventTypeKey(ev.event_type);
+      var meta = TYPE_META[tk];
+      var timeStr = ev.start_time ? fmtTime(ev.start_time) + (ev.end_time ? ' – ' + fmtTime(ev.end_time) : '') : '';
+      var loc = ev.venue_name || ev.address || '';
+
+      var webLink = ev.web ? '<a href="'+ev.web+'" target="_blank" rel="noopener" class="ev-link primary" onclick="event.stopPropagation()">Event details</a>' : '';
+      var igLink  = ev.instagram ? '<a href="https://instagram.com/'+ev.instagram.replace('@','')+'" target="_blank" rel="noopener" class="ev-link" onclick="event.stopPropagation()">@'+ev.instagram.replace('@','')+'</a>' : '';
+      var mapLink = (ev.lat && ev.lng) ? '<a href="https://maps.google.com/?q='+ev.lat+','+ev.lng+'" target="_blank" rel="noopener" class="ev-link" onclick="event.stopPropagation()">Directions</a>' : '';
+
+      var poster = ev.cover_photo ? '<div class="event-poster"><img src="'+ev.cover_photo+'" alt="'+(ev.title||'Event')+' poster" loading="lazy" onerror="this.parentNode.style.display=\'none\'"></div>' : '';
+
+      return '<div class="event-card'+(ev.cover_photo?' has-poster':'')+'">'+
+        '<div class="event-date-badge"><span class="month">'+MONTHS[d.getMonth()]+'</span><span class="day">'+d.getDate()+'</span></div>'+
+        '<div class="event-body">'+
+          '<span class="event-type-tag" style="background:'+meta.color+'18;color:'+meta.color+'"><span class="dot" style="background:'+meta.color+'"></span>'+meta.label+'</span>'+
+          '<div class="event-title">'+ev.title+'</div>'+
+          '<div class="event-meta">'+
+            (timeStr ? '<span class="m"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'+timeStr+'</span>' : '')+
+            (loc ? '<span class="m"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>'+loc+'</span>' : '')+
+            (ev.host ? '<span class="m">by '+ev.host+'</span>' : '')+
+          '</div>'+
+          (ev.description ? '<div class="event-desc">'+ev.description+'</div>' : '')+
+          '<div class="event-links">'+webLink+igLink+mapLink+'</div>'+
+        '</div>'+
+        poster+
+      '</div>';
+    }).join('');
+
+    renderMap(visible);
+    if(document.body.classList.contains('cal-mode')) renderCalendar();
+  }
+  function makeEvIcon(type){
+    var meta = TYPE_META[eventTypeKey(type)];
+    var html = '<div class="pc-ev-marker" style="background:'+meta.color+'22;border-color:'+meta.color+';color:'+meta.color+'">'+
+      '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'+
+      '</div>';
+    return L.divIcon({className:'',html:html,iconSize:[30,30],iconAnchor:[15,15],popupAnchor:[0,-16]});
+  }
+
+  function renderMap(visible){
+    if(!map){
+      map = L.map('map',{ zoomControl:true, attributionControl:true }).setView(GTA, 10);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+        subdomains:'abcd', maxZoom:19
+      }).addTo(map);
+    }
+    markers.forEach(function(m){ map.removeLayer(m); });
+    markers = [];
+
+    var pts = [];
+    visible.forEach(function(ev){
+      if(!ev.lat || !ev.lng) return;
+      var meta = TYPE_META[eventTypeKey(ev.event_type)];
+      var d = new Date(ev.event_date + 'T00:00:00');
+      var timeStr = ev.start_time ? fmtTime(ev.start_time) : '';
+      var popupHtml = '<div style="font-family:Inter,sans-serif;min-width:180px;">'+
+        (ev.cover_photo?'<img src="'+ev.cover_photo+'" alt="" style="width:100%;height:90px;object-fit:cover;border-radius:6px;margin-bottom:8px;" onerror="this.style.display=\'none\'">':'')+
+        '<div style="font-family:Rajdhani,sans-serif;font-weight:700;font-size:16px;color:#F2F6F7;margin-bottom:4px;">'+ev.title+'</div>'+
+        '<div style="font-size:12px;color:'+meta.color+';font-weight:600;margin-bottom:6px;">'+meta.label+' &middot; '+MONTHS[d.getMonth()]+' '+d.getDate()+(timeStr?' &middot; '+timeStr:'')+'</div>'+
+        (ev.venue_name?'<div style="font-size:12px;color:#8FA0A6;">'+ev.venue_name+'</div>':'')+
+        (ev.web?'<a href="'+ev.web+'" target="_blank" style="font-size:12px;color:#3DC9F0;">Event details →</a>':'')+
+        '</div>';
+      var m = L.marker([ev.lat, ev.lng], { icon: makeEvIcon(ev.event_type) })
+        .bindPopup(popupHtml)
+        .addTo(map);
+      markers.push(m);
+      pts.push([ev.lat, ev.lng]);
+    });
+
+    if(pts.length > 1) map.fitBounds(pts, { padding:[50,50] });
+    else if(pts.length === 1) map.setView(pts[0], 12);
+  }
+
+  // ── Filter pills ──
+  document.getElementById('filter-row').addEventListener('click', function(e){
+    var pill = e.target.closest('.filter-pill');
+    if(!pill) return;
+    var type = pill.dataset.ev;
+
+    if(type === 'all'){
+      // Toggle all on/off based on current 'all' state
+      var turningOn = !pill.classList.contains('active');
+      ['meet','track','show','coffee','other'].forEach(function(t){ activeTypes[t] = turningOn; });
+      document.querySelectorAll('.filter-pill').forEach(function(p){
+        if(p.dataset.ev !== undefined) p.classList.toggle('active', turningOn);
+      });
+      pill.classList.toggle('active', turningOn);
+    } else {
+      activeTypes[type] = !activeTypes[type];
+      pill.classList.toggle('active', activeTypes[type]);
+      // Sync 'all' pill
+      var allOn = ['meet','track','show','coffee','other'].every(function(t){ return activeTypes[t]; });
+      document.querySelector('.filter-pill[data-ev="all"]').classList.toggle('active', allOn);
+    }
+    render();
+  });
+
+  // ── View toggle (3-way: list / calendar / map) ──
+  var calYear, calMonth; // currently displayed calendar month
+
+  function setView(view){
+    document.body.classList.remove('map-mode','cal-mode');
+    document.getElementById('btn-list').classList.remove('active');
+    document.getElementById('btn-cal').classList.remove('active');
+    document.getElementById('btn-map').classList.remove('active');
+    if(view === 'map'){
+      document.body.classList.add('map-mode');
+      document.getElementById('btn-map').classList.add('active');
+      if(map) setTimeout(function(){ map.invalidateSize(); }, 100);
+    } else if(view === 'cal'){
+      document.body.classList.add('cal-mode');
+      document.getElementById('btn-cal').classList.add('active');
+      renderCalendar();
+    } else {
+      document.getElementById('btn-list').classList.add('active');
+    }
+  }
+
+  document.getElementById('btn-list').addEventListener('click', function(){ setView('list'); });
+  document.getElementById('btn-cal').addEventListener('click', function(){ setView('cal'); });
+  document.getElementById('btn-map').addEventListener('click', function(){ setView('map'); });
+
+  // ── Calendar render ──
+  function renderCalendar(){
+    var wrap = document.getElementById('calendar');
+    var visible = allEvents.filter(function(ev){ return activeTypes[eventTypeKey(ev.event_type)]; });
+
+    // Default to the month of the soonest upcoming event, or current month
+    if(calYear === undefined){
+      var first = visible[0] ? new Date(visible[0].event_date + 'T00:00:00') : new Date();
+      calYear = first.getFullYear();
+      calMonth = first.getMonth();
+    }
+
+    // Group events by date string
+    var byDate = {};
+    visible.forEach(function(ev){
+      (byDate[ev.event_date] = byDate[ev.event_date] || []).push(ev);
+    });
+
+    var firstOfMonth = new Date(calYear, calMonth, 1);
+    var startDow = firstOfMonth.getDay();
+    var daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    var today = new Date(); today.setHours(0,0,0,0);
+
+    var dows = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var html = '<div class="cal-header">'+
+      '<div class="cal-title">'+MONTHS_FULL[calMonth]+' '+calYear+'</div>'+
+      '<div class="cal-nav">'+
+        '<button id="cal-prev" aria-label="Previous month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>'+
+        '<button id="cal-next" aria-label="Next month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></button>'+
+      '</div>'+
+    '</div>';
+
+    html += '<div class="cal-grid">';
+    dows.forEach(function(d){ html += '<div class="cal-dow">'+d+'</div>'; });
+
+    // leading empty cells
+    for(var i=0;i<startDow;i++){ html += '<div class="cal-cell empty"></div>'; }
+
+    for(var day=1; day<=daysInMonth; day++){
+      var dateStr = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+      var cellDate = new Date(calYear, calMonth, day);
+      var isToday = cellDate.getTime() === today.getTime();
+      var dayEvents = byDate[dateStr] || [];
+
+      html += '<div class="cal-cell'+(isToday?' today':'')+'">';
+      html += '<span class="cal-daynum">'+day+'</span>';
+      dayEvents.slice(0,2).forEach(function(ev){
+        var meta = TYPE_META[eventTypeKey(ev.event_type)];
+        html += '<div class="cal-event" style="background:'+meta.color+'22;color:'+meta.color+'" '+
+                'data-evid="'+ev.id+'" title="'+ev.title+'">'+ev.title+'</div>';
+      });
+      if(dayEvents.length > 2){
+        html += '<div class="cal-more">+'+(dayEvents.length-2)+' more</div>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+
+    wrap.innerHTML = html;
+
+    document.getElementById('cal-prev').addEventListener('click', function(){
+      calMonth--; if(calMonth < 0){ calMonth = 11; calYear--; }
+      renderCalendar();
+    });
+    document.getElementById('cal-next').addEventListener('click', function(){
+      calMonth++; if(calMonth > 11){ calMonth = 0; calYear++; }
+      renderCalendar();
+    });
+
+    // Tapping an event chip switches to list view (simple + reliable)
+    wrap.querySelectorAll('.cal-event').forEach(function(chip){
+      chip.addEventListener('click', function(){
+        setView('list');
+        var id = chip.dataset.evid;
+        setTimeout(function(){
+          var cards = document.querySelectorAll('.event-card');
+          // Not strictly necessary to scroll to exact card; list is date-sorted
+        }, 50);
+      });
+    });
+  }
+
+  loadEvents();
+</script>
+</body>
+</html>
