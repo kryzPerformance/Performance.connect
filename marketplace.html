@@ -895,6 +895,26 @@
   .create-btn:active{ transform:scale(0.97); }
   .create-btn:focus-visible{ outline:2px solid var(--white); outline-offset:2px; }
 
+  .hero-actions{
+    display:flex;
+    gap:12px;
+    justify-content:center;
+    align-items:center;
+    flex-wrap:wrap;
+    margin-top:24px;
+  }
+  .hero-actions .create-btn{ margin:0; }
+  .create-btn--ghost{
+    text-decoration:none;
+    background:rgba(31,169,207,0.06);
+    color:var(--cyan-bright);
+    border:1px solid rgba(31,169,207,0.45);
+  }
+  .create-btn--ghost:hover{
+    background:rgba(31,169,207,0.12);
+    border-color:var(--cyan-bright);
+  }
+
   /* ---------- listing modal ---------- */
   .lmodal-overlay{
     position:fixed;
@@ -1132,6 +1152,98 @@
   .frow-3{ grid-template-columns:1fr 1fr 1fr; }
   .frow .fgroup{ margin-bottom:0; }
 
+  /* ── Part-out inline parts table ── */
+  .po-parts{ margin-top:4px; }
+  .po-parts-label{
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap:10px; flex-wrap:wrap; margin-bottom:6px;
+  }
+  .po-parts-label label{
+    margin:0; font-family:'Inter',sans-serif; font-size:12.5px; font-weight:600;
+    color:var(--steel); letter-spacing:0.04em; text-transform:uppercase;
+  }
+  .po-parts-hint{ font-size:11.5px; color:var(--steel-dim); }
+  .po-parts-sub{ font-size:11.5px; color:var(--steel-dim); margin-bottom:12px; line-height:1.5; }
+
+  /* each part = its own card so photos are unambiguously tied to it */
+  .po-part{
+    background:#0b0d0d; border:0.5px solid #23292b; border-radius:10px;
+    padding:11px 11px 10px; margin-bottom:10px;
+  }
+  .po-part-row{
+    display:grid; grid-template-columns:1fr 108px auto 26px; gap:9px; align-items:center;
+  }
+  .po-part-row input[type="text"],
+  .po-part-row input[type="number"]{
+    width:100%; background:#070808; border:0.5px solid #23292b; border-radius:7px;
+    padding:11px 14px; font-family:'Inter',sans-serif; font-size:14.5px;
+    color:var(--white); outline:none; transition:border-color 0.15s, box-shadow 0.15s;
+    appearance:none; -webkit-appearance:none;
+  }
+  .po-part-row input:focus{
+    border-color:var(--cyan);
+    box-shadow:0 0 0 3px rgba(31,169,207,0.12), -3px 0 0 0 var(--cyan-bright);
+  }
+  .po-price-wrap{ position:relative; }
+  .po-price-wrap .po-price-prefix{
+    position:absolute; left:12px; top:50%; transform:translateY(-50%);
+    font-size:14px; color:var(--steel-dim); pointer-events:none;
+  }
+  .po-part-row .po-price-wrap input[type="number"]{ padding-left:26px; }
+
+  /* photo trigger — reflects how many photos this part has */
+  .po-part-photo-btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    height:42px; padding:0 12px; border-radius:7px;
+    border:0.5px dashed #33393b; background:#070808; color:var(--steel);
+    font-family:'Inter',sans-serif; font-size:12.5px; font-weight:600;
+    white-space:nowrap; cursor:pointer; transition:border-color 0.15s, color 0.15s;
+  }
+  .po-part-photo-btn:hover{ border-color:var(--cyan); color:var(--white); }
+  .po-part-photo-btn.has-photos{ border-style:solid; border-color:var(--cyan); color:var(--cyan-bright); }
+  .po-part-photo-btn svg{ width:16px; height:16px; flex-shrink:0; }
+
+  .po-part-remove{
+    width:26px; height:26px; border:none; background:none; cursor:pointer;
+    color:var(--steel-dim); font-size:19px; line-height:1; border-radius:6px;
+    transition:color 0.15s, background 0.15s;
+  }
+  .po-part-remove:hover{ color:#e2555f; background:rgba(226,85,95,0.08); }
+
+  /* per-part photo previews, clearly grouped + labelled under the part */
+  .po-part-photos{ margin-top:10px; padding-top:10px; border-top:0.5px solid rgba(35,41,43,0.7); }
+  .po-part-photos-label{
+    font-size:11px; font-weight:600; letter-spacing:0.03em; color:var(--steel-dim);
+    text-transform:uppercase; margin-bottom:8px;
+  }
+  .po-part-thumbs{ display:flex; flex-wrap:wrap; gap:8px; }
+  .po-part-thumb{
+    position:relative; width:54px; height:54px; border-radius:7px; overflow:hidden;
+    border:0.5px solid #23292b; background:#070808;
+  }
+  .po-part-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .po-part-thumb-x{
+    position:absolute; top:2px; right:2px; width:18px; height:18px; border:none;
+    border-radius:50%; background:rgba(4,5,5,0.72); color:#fff; font-size:13px; line-height:1;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .po-part-thumb-x:hover{ background:#e2555f; }
+
+  .po-add-part{
+    display:inline-flex; align-items:center; gap:7px; margin-top:4px;
+    font-family:'Rajdhani',sans-serif; font-weight:600; font-size:13.5px;
+    letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--cyan); background:rgba(31,169,207,0.06);
+    border:0.5px solid rgba(31,169,207,0.3); border-radius:8px;
+    padding:9px 16px; cursor:pointer; transition:background 0.15s, border-color 0.15s;
+  }
+  .po-add-part:hover{ background:rgba(31,169,207,0.12); border-color:var(--cyan); }
+  .po-add-part svg{ width:15px; height:15px; }
+  @media(max-width:640px){
+    .po-part-row{ grid-template-columns:1fr 84px auto 24px; gap:7px; }
+    .po-part-thumb{ width:48px; height:48px; }
+  }
+
   /* fitment toggle */
   .fitment-toggle{
     display:flex;
@@ -1268,9 +1380,9 @@
       </a>
       <nav class="site-nav">
         <a href="marketplace.html" class="nav-link is-current">Marketplace</a>
+        <a href="events.html" class="nav-link">Events</a>
         <a href="affiliates.html" class="nav-link">Affiliates</a>
         <a href="blog.html" class="nav-link">Blog</a>
-        <a href="manage.html" class="nav-link">Manage</a>
       </nav>
       <div class="locale-tag">PERFORMANCECONNECT.CA</div>
     </header>
@@ -1280,10 +1392,16 @@
         <p class="eyebrow">The Marketplace</p>
         <h1>Vehicles. Parts. Wheels. Tools. <span class="accent">Fluids.</span></h1>
         <p>One platform for everything performance — built for the build culture. List, browse, and connect with sellers across the GTA and beyond.</p>
-        <button class="create-btn" id="open-listing-modal">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-          List something
-        </button>
+        <div class="hero-actions">
+          <button class="create-btn" id="open-listing-modal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            List something
+          </button>
+          <a href="manage.html" class="create-btn create-btn--ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+            Manage Your Listings
+          </a>
+        </div>
       </div>
 
       <div class="pillar-grid">
@@ -1405,6 +1523,29 @@
               </div>
               <div class="back-listings" id="back-fluids"><div class="back-loading"><div class="spin"></div></div></div>
               <div class="card-back-footer"><button class="view-all-btn" data-filter="fluids">View all fluids →</button></div>
+            </div>
+        </div>
+
+        <div class="pillar-card pillar-card--partout" tabindex="0" data-cat="partout">
+            <div class="card-front">
+              <div class="card-video">
+                <video autoplay muted loop playsinline><source src="bg-partout.mp4" type="video/mp4"></video>
+              </div>
+              <div class="pillar-icon"><img src="vehicles_icon.png" alt=""></div>
+              <div class="pillar-name">Part Out</div>
+              <p class="pillar-desc">Dedicated listing features just for parting out vehicles.</p>
+              <div class="card-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                Tap to explore
+              </div>
+            </div>
+            <div class="card-back">
+              <div class="card-back-head">
+                <div class="card-back-title">Part Out</div>
+                <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
+              </div>
+              <div class="back-listings" id="back-partout"><div class="back-loading"><div class="spin"></div></div></div>
+              <div class="card-back-footer"><button class="view-all-btn" data-filter="parts">View all parts →</button></div>
             </div>
         </div>
 
@@ -1765,7 +1906,7 @@
         <!-- VEHICLE PART OUT -->
         <div id="form-partout" class="cat-form" style="display:none;">
           <p style="font-size:12.5px;color:var(--steel);line-height:1.6;margin-bottom:16px;padding:11px 13px;background:rgba(31,169,207,0.06);border:0.5px solid rgba(31,169,207,0.2);border-radius:9px;">
-            List the vehicle once. After it's posted, you'll add individual parts from your Manage page — each one becomes searchable in the marketplace.
+            List the vehicle, then add its parts below — each one becomes its own searchable listing. You can always add more later from your Manage page.
           </p>
           <div class="frow frow-3">
             <div class="fgroup"><label>Make</label><input type="text" id="po-make" placeholder="Subaru"></div>
@@ -1798,6 +1939,19 @@
             <div class="fgroup"><label>Location (city)</label><input type="text" id="po-location" placeholder="Toronto, ON"></div>
           </div>
           <div class="fgroup"><label>Overview / description</label><textarea id="po-desc" placeholder="Why it's being parted out, overall condition, what's already gone, shipping notes..."></textarea></div>
+
+          <div class="po-parts">
+            <div class="po-parts-label">
+              <label>Parts for sale</label>
+              <span class="po-parts-hint">Add them now, or later from your Manage page.</span>
+            </div>
+            <p class="po-parts-sub">Each part becomes its own listing. Add a name, price, and photos of that specific part.</p>
+            <div id="po-parts-rows"></div>
+            <button type="button" class="po-add-part" id="po-add-part">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              Add part
+            </button>
+          </div>
         </div>
 
         <div class="lmodal-actions">
@@ -1955,20 +2109,43 @@
     var container = document.getElementById('back-' + cat);
     if(!container) return;
 
-    var res = await sb.from('listings')
-      .select('id,title,price,photo_urls')
-      .eq('status','active')
-      .eq('category', cat)
-      .order('created_at',{ascending:false})
-      .limit(3);
+    var rows;
 
-    if(res.error || !res.data || !res.data.length){
-      container.innerHTML = '<div class="back-empty">No listings yet in this category.<br>Be the first to list!</div>';
-      return;
+    if(cat === 'partout'){
+      // Part-out inventory lives in its own table (partout_parts), not `listings`.
+      // Preview the newest available parts, each linking to its parent build page.
+      var pRes = await sb.from('partout_parts')
+        .select('id,name,price,photos,vehicle_id')
+        .eq('status','available')
+        .order('created_at',{ascending:false})
+        .limit(3);
+
+      if(pRes.error || !pRes.data || !pRes.data.length){
+        container.innerHTML = '<div class="back-empty">No parts listed yet.<br>Be the first to part out a build!</div>';
+        return;
+      }
+      rows = pRes.data.map(function(p){
+        return { title:p.name, price:p.price, photo_urls:p.photos, href:'partout.html?id=' + p.vehicle_id };
+      });
+    } else {
+      var res = await sb.from('listings')
+        .select('id,title,price,photo_urls')
+        .eq('status','active')
+        .eq('category', cat)
+        .order('created_at',{ascending:false})
+        .limit(3);
+
+      if(res.error || !res.data || !res.data.length){
+        container.innerHTML = '<div class="back-empty">No listings yet in this category.<br>Be the first to list!</div>';
+        return;
+      }
+      rows = res.data.map(function(l){
+        return { title:l.title, price:l.price, photo_urls:l.photo_urls, href:'listing.html?id=' + l.id };
+      });
     }
 
     container.innerHTML = '';
-    res.data.forEach(function(l){
+    rows.forEach(function(l){
       var thumbInner = l.photo_urls && l.photo_urls.length
         ? '<img src="'+escHtml(l.photo_urls[0])+'" alt="'+escHtml(l.title)+'" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:5px;">'
         : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.04);border-radius:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(140,160,166,0.4)" stroke-width="1.5" width="18" height="18"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
@@ -1977,7 +2154,7 @@
         : '<div class="back-listing-price offer">Make offer</div>';
       var item = document.createElement('a');
       item.className = 'back-listing';
-      item.href = 'listing.html?id='+l.id;
+      item.href = l.href;
       item.innerHTML =
         '<div class="back-thumb">'+thumbInner+'</div>'+
         '<div class="back-info">'+
@@ -2110,6 +2287,92 @@
   });
 
   document.getElementById('open-listing-modal').addEventListener('click', openModal);
+
+  // ── Part-out inline parts table ──────────────────────────────────────────
+  function poCreatePartRow(){
+    var part = document.createElement('div');
+    part.className = 'po-part';
+    part._photoFiles = []; // this part's photos live here, tied to this element
+
+    part.innerHTML =
+      '<div class="po-part-row">' +
+        '<input type="text" class="po-part-name" placeholder="e.g. Front bumper">' +
+        '<div class="po-price-wrap"><span class="po-price-prefix">$</span><input type="number" class="po-part-price" placeholder="0" min="0" step="1"></div>' +
+        '<label class="po-part-photo-btn" title="Add photos of this part">' +
+          '<input type="file" accept="image/*" multiple hidden>' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>' +
+          '<span class="po-part-photo-count">Add</span>' +
+        '</label>' +
+        '<button type="button" class="po-part-remove" aria-label="Remove part">&times;</button>' +
+      '</div>' +
+      '<div class="po-part-photos" hidden>' +
+        '<div class="po-part-photos-label">Photos for this part</div>' +
+        '<div class="po-part-thumbs"></div>' +
+      '</div>';
+
+    var fileEl   = part.querySelector('input[type="file"]');
+    var countEl  = part.querySelector('.po-part-photo-count');
+    var btnEl    = part.querySelector('.po-part-photo-btn');
+    var photosEl = part.querySelector('.po-part-photos');
+    var thumbsEl = part.querySelector('.po-part-thumbs');
+    var labelEl  = part.querySelector('.po-part-photos-label');
+    var nameEl   = part.querySelector('.po-part-name');
+
+    function partLabel(){
+      var nm = nameEl.value.trim();
+      return nm ? ('Photos for “' + nm + '”') : 'Photos for this part';
+    }
+    function render(){
+      var n = part._photoFiles.length;
+      thumbsEl.innerHTML = '';
+      part._photoFiles.forEach(function(file, i){
+        var t = document.createElement('div');
+        t.className = 'po-part-thumb';
+        t.innerHTML = '<img src="' + URL.createObjectURL(file) + '" alt="">' +
+          '<button type="button" class="po-part-thumb-x" aria-label="Remove photo">&times;</button>';
+        t.querySelector('.po-part-thumb-x').addEventListener('click', function(){
+          part._photoFiles.splice(i, 1);
+          render();
+        });
+        thumbsEl.appendChild(t);
+      });
+      countEl.textContent = n ? String(n) : 'Add';
+      btnEl.classList.toggle('has-photos', n > 0);
+      photosEl.hidden = n === 0;
+      labelEl.textContent = partLabel();
+    }
+
+    fileEl.addEventListener('change', function(){
+      if(fileEl.files && fileEl.files.length){
+        Array.prototype.forEach.call(fileEl.files, function(f){ part._photoFiles.push(f); });
+        fileEl.value = ''; // reset so the same file can be re-added and the picker reopens cleanly
+        render();
+      }
+    });
+    nameEl.addEventListener('input', function(){
+      if(part._photoFiles.length){ labelEl.textContent = partLabel(); }
+    });
+    part.querySelector('.po-part-remove').addEventListener('click', function(){
+      var rows = document.getElementById('po-parts-rows');
+      part.remove();
+      if(rows && rows.children.length === 0){ rows.appendChild(poCreatePartRow()); } // always keep one
+    });
+    return part;
+  }
+  function poSeedParts(){
+    var rows = document.getElementById('po-parts-rows');
+    if(!rows) return;
+    rows.innerHTML = '';
+    rows.appendChild(poCreatePartRow());
+  }
+  var poAddPartBtn = document.getElementById('po-add-part');
+  if(poAddPartBtn){
+    poAddPartBtn.addEventListener('click', function(){
+      var rows = document.getElementById('po-parts-rows');
+      if(rows) rows.appendChild(poCreatePartRow());
+    });
+  }
+  poSeedParts();
 
 
   // "View all [category]" buttons on card back — scroll + filter without reload
@@ -2623,6 +2886,41 @@
         }
       }
 
+      // 3b. Insert any inline parts the seller added — each with its own photo set.
+      //     Vehicle is already saved, so failures here never block the part-out;
+      //     more parts can still be added later from the Manage page.
+      var partEls = Array.prototype.slice.call(document.querySelectorAll('#po-parts-rows .po-part'));
+      var vehicleDisplay = [vehicle.year, vehicle.make, vehicle.model, vehicle.trim].filter(Boolean).join(' ');
+      var partsToInsert = [];
+      for(var pi=0; pi<partEls.length; pi++){
+        var pEl      = partEls[pi];
+        var pNameEl  = pEl.querySelector('.po-part-name');
+        var pPriceEl = pEl.querySelector('.po-part-price');
+        var pName    = pNameEl ? pNameEl.value.trim() : '';
+        if(!pName) continue; // skip blank rows
+        var pPrice   = (pPriceEl && pPriceEl.value !== '') ? parseFloat(pPriceEl.value) : null;
+        var pFiles   = (pEl._photoFiles || []).slice(0, 8);
+        var pPhotos  = [];
+        if(pFiles.length){
+          btn.textContent = 'Uploading part photos...';
+          try { pPhotos = await uploadPhotos(pFiles, 'po-' + vehicle.id + '-part-' + (pi+1)); }
+          catch(e){ pPhotos = []; }
+        }
+        partsToInsert.push({
+          vehicle_id:      vehicle.id,
+          name:            pName,
+          price:           pPrice,
+          photos:          pPhotos,
+          status:          'available',
+          vehicle_display: vehicleDisplay
+        });
+      }
+      if(partsToInsert.length){
+        btn.textContent = 'Saving parts...';
+        var partsRes = await sb.from('partout_parts').insert(partsToInsert);
+        if(partsRes && partsRes.error){ dbgError('[partout] parts insert failed: ' + partsRes.error.message); }
+      }
+
       // 4. Success
       closeModal();
       resetForm();
@@ -2852,6 +3150,7 @@
     if(universalCheck){ universalCheck.checked = false; }
     var fitmentFields = document.getElementById('fitment-fields');
     if(fitmentFields){ fitmentFields.style.display = 'block'; }
+    if(typeof poSeedParts === 'function'){ poSeedParts(); } // clear part-out rows back to one
   }
 
   // ── Load and display listings ──
