@@ -2743,6 +2743,52 @@
     }).eq('seller_id', sellerId);
   }
 
+  // Escape LIKE wildcards so handles/emails with _ or % match literally
+  function likeEscape(s){ return String(s).replace(/[\\%_]/g, '\\$&'); }
+
+  // Look up a seller by contact info — used to detect a returning seller who
+  // posted without their key. Email is checked first (more unique), then the
+  // Instagram handle. Both are matched case-insensitively. Returns which field
+  // matched so we can notify the user precisely (never reveals the key).
+  async function lookupSellerByContact(instagram, email){
+    var ig = (instagram || '').trim();
+    var em = (email || '').trim();
+    if(em){
+      var r1 = await sb.from('sellers').select('seller_id').ilike('email', likeEscape(em)).limit(1);
+      if(!r1.error && r1.data && r1.data.length) return { field: 'email' };
+    }
+    if(ig){
+      var r2 = await sb.from('sellers').select('seller_id').ilike('instagram', likeEscape(ig)).limit(1);
+      if(!r2.error && r2.data && r2.data.length) return { field: 'instagram' };
+    }
+    return null;
+  }
+
+  // Prefill the Step 3 contact fields from a seller record
+  function applySellerContact(seller){
+    var ig = seller.instagram || '';
+    var em = seller.email || '';
+    var method = (ig && em) ? 'both' : (em ? 'email' : 'instagram');
+    var cm = document.getElementById('contact-method');
+    if(cm) cm.value = method;
+    document.getElementById('contact-instagram').style.display = (method==='instagram'||method==='both') ? 'block' : 'none';
+    document.getElementById('contact-email').style.display     = (method==='email'||method==='both')     ? 'block' : 'none';
+    document.getElementById('listing-instagram').value = ig;
+    document.getElementById('listing-email').value = em;
+  }
+
+  // Status line under the Performance Key field
+  function setPerfKeyStatus(msg, kind){
+    var el = document.getElementById('perf-key-status');
+    if(!el) return;
+    if(!msg){ el.style.display = 'none'; return; }
+    el.textContent = msg;
+    el.style.display = 'block';
+    if(kind === 'ok'){ el.style.background = 'rgba(61,240,138,0.12)'; el.style.color = '#3df08a'; }
+    else if(kind === 'warn'){ el.style.background = 'rgba(248,168,61,0.12)'; el.style.color = '#f8a83d'; }
+    else { el.style.background = 'rgba(255,255,255,0.05)'; el.style.color = 'var(--steel)'; }
+  }
+
   // Show the Performance Key success screen
   function showPerfKeySuccess(perfKey){
     document.getElementById('pk-key-display').textContent = perfKey;
@@ -2787,12 +2833,30 @@
     document.getElementById('contact-email').style.display     = (val === 'email'     || val === 'both') ? 'block' : 'none';
   });
 
-  // Live format the key input as user types
+  // Live format the key input + recall a returning seller's saved contact info
+  var perfKeyLookupTimer = null;
   document.getElementById('perf-key-input').addEventListener('input', function(){
     var raw = this.value.replace(/[^A-Z0-9]/gi,'').toUpperCase();
     if(raw.length > 4) raw = raw.slice(0,4) + '-' + raw.slice(4,8);
     this.value = raw;
-    document.getElementById('perf-key-status').style.display = 'none';
+    setPerfKeyStatus('', null);
+
+    var clean = raw.replace('-','');
+    clearTimeout(perfKeyLookupTimer);
+    if(clean.length === 8){
+      var normKey = normaliseKey(raw);
+      if(!normKey) return;
+      perfKeyLookupTimer = setTimeout(async function(){
+        setPerfKeyStatus('Checking key…', null);
+        var seller = await lookupSeller(normKey);
+        if(seller){
+          applySellerContact(seller);
+          setPerfKeyStatus('✓ Welcome back — your saved contact info is loaded.', 'ok');
+        } else {
+          setPerfKeyStatus('No account found for that key. Double-check it, or leave it blank to get a new one.', 'warn');
+        }
+      }, 400);
+    }
   });
 
   // ── Submit handler ──
@@ -2839,6 +2903,14 @@
           seller.instagram = igVal; seller.email = emailVal;
         }
       } else {
+        // No key entered — if this contact already belongs to a seller, don't
+        // create a duplicate and never reveal their key. Ask them to use it.
+        btn.textContent = 'Checking account...';
+        var dup = await lookupSellerByContact(igVal, emailVal);
+        if(dup){
+          poError('That ' + (dup.field === 'email' ? 'email address' : 'Instagram handle') + ' is already registered to a seller. Enter your Performance Key above to post under your account.');
+          return;
+        }
         btn.textContent = 'Generating key...';
         perfKey = generatePerformanceKey();
         var collision = await lookupSeller(perfKey);
@@ -3021,17 +3093,18 @@
         dbg('[perf-key] Existing seller found:', seller.seller_id, perfKey);
 
       } else {
-        // No key entered — generate a new one
+        // No key entered — if this contact already belongs to a seller, don't
+        // create a duplicate and never reveal their key. Ask them to use it.
+        btn.textContent = 'Checking account...';
+        var dup = await lookupSellerByContact(igVal, emailVal);
+        if(dup){
+          showError('That ' + (dup.field === 'email' ? 'email address' : 'Instagram handle') + ' is already registered to a seller. Enter your Performance Key above to post under your account.');
+          return;
+        }
         btn.textContent = 'Generating key...';
         perfKey = generatePerformanceKey();
-
-        // Collision check (astronomically unlikely but correct to verify)
         var collision = await lookupSeller(perfKey);
-        if(collision){
-          // Regenerate once — collision probability is negligible
-          perfKey = generatePerformanceKey();
-        }
-
+        if(collision){ perfKey = generatePerformanceKey(); }
         seller = await createSeller(perfKey, igVal, emailVal);
         isNewSeller = true;
         dbg('[perf-key] New seller created:', seller.seller_id, perfKey);
