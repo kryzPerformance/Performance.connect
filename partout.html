@@ -79,16 +79,41 @@
   /* MAIN LAYOUT */
   .listing-page{
     position:relative;z-index:1;
-    max-width:1280px;margin:0 auto;
+    max-width:1200px;margin:0 auto;
     padding:32px clamp(16px,5vw,48px) 80px;
-    display:grid;
-    grid-template-columns:1fr 440px;
-    grid-template-areas:"gallery details" "parts parts";
-    gap:40px 48px;align-items:start;
+    grid-template-columns:1fr;
+    gap:28px;
   }
 
+  .po-titlebar{margin-bottom:2px;}
+
+  /* Sketch header: three blocks across the top */
+  .po-header{
+    display:grid;
+    grid-template-columns:1.3fr 1fr 1.05fr;
+    gap:20px;align-items:start;
+  }
+  .po-block{
+    background:var(--panel);border:0.5px solid var(--line);
+    border-radius:14px;padding:18px;min-width:0;
+  }
+  .po-block-photo{padding:14px;}
+  .po-block > *:last-child{margin-bottom:0;}
+  .po-block-label{
+    font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+    color:var(--steel-dim);margin-bottom:12px;
+  }
+
+  /* Status band under the header */
+  .po-status-band{
+    background:var(--panel);border:0.5px solid var(--line);
+    border-radius:14px;padding:18px 20px;
+    display:flex;flex-direction:column;gap:16px;
+  }
+  .po-status-band > *{margin-bottom:0;}
+
   /* GALLERY */
-  .gallery{grid-area:gallery;position:sticky;top:72px;display:flex;flex-direction:column;gap:12px;}
+  .gallery{display:flex;flex-direction:column;gap:10px;}
   .gallery-main{
     position:relative;width:100%;aspect-ratio:4/3;
     background:var(--panel);border-radius:14px;overflow:hidden;border:0.5px solid var(--line);
@@ -135,7 +160,7 @@
   .gallery-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
 
   /* DETAILS */
-  .details{grid-area:details;}
+  .details{min-width:0;}
   .listing-category-tag{
     display:inline-flex;align-items:center;gap:6px;
     font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
@@ -245,7 +270,7 @@
   .report-btn svg{width:13px;height:13px;}
 
   /* ══ PARTS SECTION ══ */
-  .parts{grid-area:parts;padding-top:40px;border-top:0.5px solid var(--line);}
+  .parts{padding-top:4px;}
   .parts-head{
     display:flex;align-items:center;justify-content:space-between;
     gap:16px;flex-wrap:wrap;margin-bottom:20px;
@@ -287,6 +312,14 @@
     display:flex;align-items:center;gap:12px;
     padding:13px 15px;cursor:pointer;user-select:none;
   }
+  .part-row-text{flex:1;min-width:0;}
+  .part-thumb{
+    width:52px;height:40px;border-radius:6px;overflow:hidden;flex-shrink:0;
+    background:var(--panel-2);border:0.5px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .part-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .part-thumb-empty svg{width:16px;height:16px;color:var(--steel-dim);opacity:0.5;}
   .part-name{
     flex:1;min-width:0;font-size:14px;font-weight:600;color:var(--white);
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
@@ -361,12 +394,9 @@
   }
 
   /* MOBILE */
-  @media(max-width:900px){
-    .listing-page{
-      grid-template-columns:1fr;
-      grid-template-areas:"gallery" "details" "parts";
-      gap:24px;padding:20px clamp(12px,4vw,24px) 60px;
-    }
+  @media(max-width:1024px){
+    .po-header{grid-template-columns:1fr;gap:16px;}
+    .listing-page{padding:20px clamp(12px,4vw,24px) 60px;gap:20px;}
     .gallery{position:static;top:auto;}
     .wordmark{display:none;}
   }
@@ -469,25 +499,76 @@
 
 <div class="listing-page" id="listing-page" style="display:none;">
 
-  <div class="gallery" id="gallery">
-    <div class="gallery-main" id="gallery-main">
-      <div class="no-photo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-        No photos
-      </div>
-    </div>
-    <div class="gallery-thumbs" id="gallery-thumbs" style="display:none;"></div>
-  </div>
-
-  <div class="details" id="details">
+  <div class="po-titlebar">
     <div class="listing-category-tag">Vehicle Part Out</div>
     <h1 class="listing-title" id="det-title"></h1>
+  </div>
 
+  <div class="po-header">
+
+    <!-- Main photo of the car -->
+    <section class="po-block po-block-photo">
+      <div class="po-block-label">Photos</div>
+      <div class="gallery" id="gallery">
+        <div class="gallery-main" id="gallery-main">
+          <div class="no-photo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            No photos
+          </div>
+        </div>
+        <div class="gallery-thumbs" id="gallery-thumbs" style="display:none;"></div>
+      </div>
+    </section>
+
+    <!-- Description / Notes -->
+    <section class="po-block po-block-desc">
+      <div class="po-block-label">Description &amp; Notes</div>
+      <div class="desc-section" id="desc-section" style="display:none;">
+        <div class="desc-body" id="det-desc"></div>
+      </div>
+    </section>
+
+    <!-- Make / Model / Year -->
+    <section class="po-block po-block-info">
+      <div class="specs-section" id="specs-section">
+        <div class="po-block-label">Make · Model · Year</div>
+        <div class="spec-grid" id="spec-grid"></div>
+      </div>
+
+      <div class="cta-row">
+        <a class="btn-ig" id="cta-ig" href="#" target="_blank" rel="noopener" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          Contact Seller on Instagram
+        </a>
+        <div class="btn-row-2">
+          <button class="btn-secondary" id="share-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+            Share
+          </button>
+          <button class="btn-secondary" id="jump-parts-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+            View Parts
+          </button>
+        </div>
+      </div>
+
+      <div class="seller-strip">
+        <div class="seller-avatar" id="seller-avatar">?</div>
+        <div class="seller-info">
+          <div class="seller-handle" id="seller-handle">—</div>
+          <div class="seller-sub">Seller · Performance Connect</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Status band -->
+  <div class="po-status-band">
     <div class="po-status-banner" id="po-status-banner">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
       <span id="po-status-banner-text"></span>
     </div>
-
     <div class="po-progress">
       <div class="po-progress-nums">
         <div class="po-stat avail"><b id="stat-avail">0</b><span>Available</span></div>
@@ -497,49 +578,6 @@
       </div>
       <div class="po-bar"><div class="po-bar-fill" id="po-bar-fill"></div></div>
       <div class="po-bar-label" id="po-bar-label"></div>
-    </div>
-
-    <div class="cta-row">
-      <a class="btn-ig" id="cta-ig" href="#" target="_blank" rel="noopener" style="display:none;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
-        Contact Seller on Instagram
-      </a>
-      <div class="btn-row-2">
-        <button class="btn-secondary" id="share-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
-          Share
-        </button>
-        <button class="btn-secondary" id="jump-parts-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
-          View Parts
-        </button>
-      </div>
-    </div>
-
-    <div class="specs-section" id="specs-section">
-      <div class="section-label">Vehicle Details</div>
-      <div class="spec-grid" id="spec-grid"></div>
-    </div>
-
-    <div class="desc-section" id="desc-section" style="display:none;">
-      <div class="section-label">Description</div>
-      <div class="desc-body" id="det-desc"></div>
-    </div>
-
-    <div class="seller-strip">
-      <div class="seller-avatar" id="seller-avatar">?</div>
-      <div class="seller-info">
-        <div class="seller-handle" id="seller-handle">—</div>
-        <div class="seller-sub">Seller · Performance Connect</div>
-      </div>
-    </div>
-
-    <div class="listing-footer-meta">
-      <span class="posted-date" id="det-posted"></span>
-      <a class="report-btn" id="report-btn" href="#">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-        Report listing
-      </a>
     </div>
   </div>
 
@@ -559,6 +597,14 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
     </button>
     <div class="sold-wrap" id="sold-wrap"></div>
+  </div>
+
+  <div class="listing-footer-meta">
+    <span class="posted-date" id="det-posted"></span>
+    <a class="report-btn" id="report-btn" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+      Report listing
+    </a>
   </div>
 
 </div>
@@ -739,14 +785,19 @@
 
     var sub = partSubline(p);
 
+    var thumbHtml = (p.photos && p.photos.length)
+      ? '<div class="part-thumb"><img src="'+esc(p.photos[0])+'" alt="" loading="lazy"></div>'
+      : '<div class="part-thumb part-thumb-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
+
     row.innerHTML =
       '<div class="part-row-main">' +
-        '<div style="flex:1;min-width:0;">' +
+        '<div class="part-row-text">' +
           '<div class="part-name">'+esc(p.name)+'</div>' +
           (sub?'<div class="part-sub">'+esc(sub)+'</div>':'') +
         '</div>' +
         priceHtml +
         '<span class="status-chip '+esc(p.status)+'">'+esc(STATUS_LABEL[p.status]||p.status)+'</span>' +
+        thumbHtml +
         '<span class="part-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>' +
       '</div>' +
       '<div class="part-detail">'+buildPartDetail(p)+'</div>';
@@ -930,10 +981,11 @@
     renderParts();
 
     /* Description */
-    if(vehicle.description&&vehicle.description.trim()){
-      document.getElementById('desc-section').style.display='block';
-      document.getElementById('det-desc').textContent=vehicle.description;
-    }
+    document.getElementById('desc-section').style.display='block';
+    document.getElementById('det-desc').textContent =
+      (vehicle.description && vehicle.description.trim())
+        ? vehicle.description
+        : 'No description provided for this build.';
 
     /* Seller strip */
     var handle=vehicle.instagram||vehicle.email||'seller';
