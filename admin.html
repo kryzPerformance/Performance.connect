@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Performance Connect</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#070808;--panel:#111415;--panel-2:#161B1C;--line:#23292b;
+    --cyan:#1FA9CF;--cyan-bright:#3DC9F0;
+    --steel:#8FA0A6;--steel-dim:#5C6A6E;--white:#F2F6F7;
+    --green:#3DF08A;--red:#E84545;--amber:#F0B83D;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--black);color:var(--white);font-family:'Inter',sans-serif;min-height:100vh;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:'Inter',sans-serif;cursor:pointer;border:none;background:none;}
+
+  .bg-grid{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(to right,rgba(255,255,255,0.015) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,0.015) 1px,transparent 1px);background-size:64px 64px;}
+  .page{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:36px clamp(16px,5vw,40px) 80px;}
+
+  /* ── Password gate ── */
+  .gate{position:fixed;inset:0;z-index:100;background:var(--black);display:flex;align-items:center;justify-content:center;padding:24px;}
+  .gate-box{max-width:360px;width:100%;text-align:center;}
+  .gate-box h1{font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;font-size:28px;text-transform:uppercase;margin-bottom:8px;}
+  .gate-box .accent{color:var(--cyan-bright);}
+  .gate-box p{font-size:13px;color:var(--steel);margin-bottom:24px;}
+  .gate-box input{width:100%;padding:13px 16px;border-radius:10px;background:var(--panel-2);border:1px solid var(--line);color:var(--white);font-size:15px;outline:none;margin-bottom:12px;transition:border-color 0.15s;}
+  .gate-box input:focus{border-color:var(--cyan);}
+  .gate-box button{width:100%;padding:13px;border-radius:10px;background:var(--cyan-bright);color:#03171D;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;letter-spacing:0.06em;text-transform:uppercase;}
+  .gate-err{color:var(--red);font-size:12.5px;margin-top:10px;display:none;}
+
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding-bottom:20px;border-bottom:0.5px solid var(--line);flex-wrap:wrap;gap:10px;}
+  .wordmark span{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.18em;}
+  .wordmark .accent{color:var(--cyan-bright);}
+  .back-link{font-size:12.5px;color:var(--steel);}
+  .back-link:hover{color:var(--cyan-bright);}
+
+  /* ── Tabs ── */
+  .tabs{display:flex;gap:6px;margin-bottom:28px;background:var(--panel);border:0.5px solid var(--line);border-radius:12px;padding:5px;}
+  .tab{flex:1;padding:11px;border-radius:8px;font-size:12.5px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--steel-dim);transition:all 0.15s;text-align:center;}
+  .tab.active{background:rgba(31,169,207,0.12);color:var(--cyan-bright);}
+  .tab .badge{display:inline-block;min-width:18px;height:18px;line-height:18px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;margin-left:5px;}
+
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:8px;}
+  h1.title{font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;font-size:clamp(24px,5vw,32px);text-transform:uppercase;margin-bottom:6px;}
+  h1.title .accent{color:var(--cyan-bright);}
+  .intro{font-size:13.5px;color:var(--steel);margin-bottom:24px;line-height:1.6;}
+
+  .card{background:var(--panel);border:0.5px solid var(--line);border-radius:14px;padding:22px;margin-bottom:18px;}
+  .card-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:0.04em;color:var(--cyan-bright);margin-bottom:16px;padding-bottom:10px;border-bottom:0.5px solid var(--line);}
+
+  .fgroup{margin-bottom:14px;}
+  .fgroup label{display:block;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--steel);margin-bottom:6px;}
+  .fgroup input,.fgroup select,.fgroup textarea{width:100%;padding:11px 13px;border-radius:8px;background:var(--panel-2);border:1px solid var(--line);color:var(--white);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color 0.15s;}
+  .fgroup input:focus,.fgroup select:focus,.fgroup textarea:focus{border-color:var(--cyan);}
+  .fgroup input::placeholder,.fgroup textarea::placeholder{color:var(--steel-dim);}
+  .fgroup textarea{resize:vertical;min-height:70px;}
+  .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+  .cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  @media(max-width:480px){.cat-grid{grid-template-columns:repeat(2,1fr);}}
+  .cat-btn{padding:10px 8px;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--steel-dim);cursor:pointer;transition:all 0.15s;text-align:center;}
+  .cat-btn:hover{border-color:var(--steel);color:var(--steel);}
+  .cat-btn.active{color:#03171D !important;border-color:transparent !important;}
+  .cat-btn[data-cat="oem"].active{background:#00D9FF;}
+  .cat-btn[data-cat="tire"].active{background:#FFC107;}
+  .cat-btn[data-cat="tool"].active{background:#39FF88;}
+  .cat-btn[data-cat="perf"].active{background:#FF4DA6;}
+  .cat-btn[data-cat="after"].active{background:#B34DFF;}
+  .cat-btn[data-cat="body"].active{background:#FF8C42;}
+  .cat-btn[data-cat="spec"].active{background:#FFD600;}
+  .cat-btn[data-cat="dealer"].active{background:#7CFF6B;}
+  /* event type colours */
+  .cat-btn[data-ev="meet"].active{background:#3DC9F0;}
+  .cat-btn[data-ev="track"].active{background:#FF4DA6;}
+  .cat-btn[data-ev="show"].active{background:#FFD600;}
+  .cat-btn[data-ev="coffee"].active{background:#FF8C42;}
+  .cat-btn[data-ev="other"].active{background:#7CFF6B;}
+
+  .addr-row{display:flex;gap:8px;align-items:flex-end;}
+  .addr-row .fgroup{flex:1;margin-bottom:0;}
+  .btn-geocode{padding:11px 14px;border-radius:8px;background:var(--panel-2);border:1px solid var(--line);color:var(--steel);font-size:12px;font-weight:600;white-space:nowrap;transition:all 0.15s;flex-shrink:0;height:44px;}
+  .btn-geocode:hover{color:var(--cyan-bright);border-color:var(--cyan);}
+  .geocode-status{font-size:12px;margin-top:6px;display:none;}
+  .geocode-status.ok{color:var(--green);}
+  .geocode-status.err{color:var(--red);}
+  .latlong-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+  .btn-primary{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border-radius:10px;background:var(--cyan-bright);color:#03171D;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;transition:background 0.15s;}
+  .btn-primary:hover{background:#62D6F5;}
+  .btn-primary:disabled{opacity:0.5;cursor:default;}
+  .btn-ghost{display:inline-flex;align-items:center;gap:7px;padding:11px 18px;border-radius:10px;background:transparent;border:0.5px solid var(--line);color:var(--steel);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s;}
+  .btn-ghost:hover{color:var(--white);border-color:var(--steel);}
+
+  .action-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
+  .msg{font-size:13px;margin-top:12px;padding:12px 14px;border-radius:8px;display:none;}
+  .msg.ok{background:rgba(61,240,138,0.1);border:0.5px solid rgba(61,240,138,0.3);color:var(--green);display:block;}
+  .msg.err{background:rgba(232,69,69,0.1);border:0.5px solid rgba(232,69,69,0.3);color:var(--red);display:block;}
+
+  /* Approval queue */
+  .queue-empty{text-align:center;padding:40px 20px;color:var(--steel-dim);font-size:14px;}
+  .event-row{background:var(--panel);border:0.5px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px;}
+  .event-row.pending{border-color:rgba(240,184,61,0.3);}
+  .event-row-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px;}
+  .event-row-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:17px;}
+  .event-row-type{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:3px 8px;border-radius:5px;background:rgba(31,169,207,0.12);color:var(--cyan-bright);white-space:nowrap;}
+  .event-row-meta{font-size:12.5px;color:var(--steel);line-height:1.6;margin-bottom:10px;}
+  .event-row-actions{display:flex;gap:8px;}
+  .btn-approve{flex:1;padding:9px;border-radius:7px;background:rgba(61,240,138,0.12);border:0.5px solid rgba(61,240,138,0.35);color:var(--green);font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;}
+  .btn-approve:hover{background:rgba(61,240,138,0.2);}
+  .btn-reject{padding:9px 16px;border-radius:7px;background:rgba(232,69,69,0.1);border:0.5px solid rgba(232,69,69,0.3);color:var(--red);font-size:12.5px;font-weight:600;}
+  .btn-reject:hover{background:rgba(232,69,69,0.18);}
+
+  .hint{font-size:12px;color:var(--steel-dim);line-height:1.6;margin-top:10px;}
+  .hint code{background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:4px;font-size:11px;}
+</style>
+</head>
+<body>
+
+<!-- ══════════ PASSWORD GATE ══════════ -->
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <h1>Admin <span class="accent">Access</span></h1>
+    <p>Sign in with your admin account to continue.</p>
+    <input type="email" id="gate-email" placeholder="Email" autocomplete="username" style="margin-bottom:12px;">
+    <input type="password" id="gate-input" placeholder="Password" autocomplete="current-password">
+    <button id="gate-btn">Unlock</button>
+    <div class="gate-err" id="gate-err">Login failed.</div>
+  </div>
+</div>
+
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="page" id="admin-page" style="display:none;">
+
+  <header>
+    <div class="wordmark"><span>PERFORMANCE<span class="accent">CONNECT</span> ADMIN</span></div>
+    <a href="#" class="back-link" id="logout-link" style="margin-right:14px;">Log out</a>
+    <a href="index.html" class="back-link">← Back to site</a>
+  </header>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" data-tab="affiliate">Add Affiliate</div>
+    <div class="tab" data-tab="event">Add Event</div>
+    <div class="tab" data-tab="queue">Approvals <span class="badge" id="queue-badge" style="display:none;">0</span></div>
+  </div>
+
+  <!-- ══════════ TAB 1: ADD AFFILIATE ══════════ -->
+  <div class="tab-panel active" id="panel-affiliate">
+    <div class="eyebrow">Admin Tool</div>
+    <h1 class="title">Add an <span class="accent">Affiliate</span></h1>
+    <p class="intro">Adds directly to the affiliates map. Generates a JSON entry to paste into <code>affiliates.json</code>.</p>
+
+    <div class="card">
+      <div class="card-title">Category</div>
+      <div class="cat-grid" id="aff-cat-grid">
+        <button class="cat-btn" data-cat="oem">OEM Dealer</button>
+        <button class="cat-btn" data-cat="tire">Tire Shop</button>
+        <button class="cat-btn" data-cat="tool">Tool Store</button>
+        <button class="cat-btn" data-cat="perf">Perf Shop</button>
+        <button class="cat-btn" data-cat="after">Aftermarket</button>
+        <button class="cat-btn" data-cat="body">Body Shop</button>
+        <button class="cat-btn" data-cat="spec">Specialty</button>
+        <button class="cat-btn" data-cat="dealer">Vehicle Sales</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Shop Details</div>
+      <div class="fgroup"><label>Shop name *</label><input type="text" id="aff-name" placeholder="e.g. MGMT Autoworks"></div>
+      <div class="frow">
+        <div class="fgroup"><label>Phone</label><input type="tel" id="aff-phone" placeholder="(416) 555-0000"></div>
+        <div class="fgroup"><label>Website</label><input type="url" id="aff-web" placeholder="https://..."></div>
+      </div>
+      <div class="fgroup"><label>Instagram (without @)</label><input type="text" id="aff-instagram" placeholder="shophandle"></div>
+      <div class="fgroup"><label>One-line note</label><input type="text" id="aff-notes" placeholder="e.g. Performance tuning, wraps, ceramic coatings"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Location</div>
+      <div class="fgroup">
+        <label>Full address *</label>
+        <div class="addr-row">
+          <div class="fgroup"><input type="text" id="aff-address" placeholder="123 Street, City, ON L4K 1V6"></div>
+          <button class="btn-geocode" id="aff-geocode" type="button">Look up</button>
+        </div>
+        <div class="geocode-status" id="aff-geo-status"></div>
+      </div>
+      <div class="latlong-row">
+        <div class="fgroup"><label>Latitude</label><input type="number" id="aff-lat" step="0.0001"></div>
+        <div class="fgroup"><label>Longitude</label><input type="number" id="aff-lng" step="0.0001"></div>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-primary" id="aff-generate">Generate JSON</button>
+      <button class="btn-ghost" id="aff-reset">Reset</button>
+    </div>
+    <div class="msg" id="aff-msg"></div>
+
+    <div class="card" id="aff-output-card" style="display:none;margin-top:18px;">
+      <div class="card-title">Copy → paste into affiliates.json</div>
+      <div style="background:#0A0C0D;border:1px solid rgba(31,169,207,0.3);border-radius:10px;padding:16px;font-family:'Courier New',monospace;font-size:13px;line-height:1.7;color:#C0CDD0;white-space:pre;overflow-x:auto;" id="aff-output"></div>
+      <button class="btn-ghost" id="aff-copy" style="margin-top:12px;">Copy JSON</button>
+      <p class="hint">Open <code>affiliates.json</code> on GitHub → add a comma after the last <code>}</code> → paste → commit.</p>
+    </div>
+  </div>
+
+  <!-- ══════════ TAB 2: ADD EVENT ══════════ -->
+  <div class="tab-panel" id="panel-event">
+    <div class="eyebrow">Admin Tool</div>
+    <h1 class="title">Add an <span class="accent">Event</span></h1>
+    <p class="intro">Adds an event directly to the calendar — auto-approved since you're posting it.</p>
+
+    <div class="card">
+      <div class="card-title">Event Type</div>
+      <div class="cat-grid" id="ev-type-grid">
+        <button class="cat-btn" data-ev="meet">Meet</button>
+        <button class="cat-btn" data-ev="track">Track Day</button>
+        <button class="cat-btn" data-ev="show">Car Show</button>
+        <button class="cat-btn" data-ev="coffee">Cars &amp; Coffee</button>
+        <button class="cat-btn" data-ev="other">Other</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Event Details</div>
+      <div class="fgroup"><label>Event title *</label><input type="text" id="ev-title" placeholder="e.g. Sunday JDM Meet"></div>
+      <div class="fgroup"><label>Description</label><textarea id="ev-desc" placeholder="What's happening, what to expect, entry cost..."></textarea></div>
+      <div class="frow">
+        <div class="fgroup"><label>Date *</label><input type="date" id="ev-date"></div>
+        <div class="fgroup"><label>Host / Organizer</label><input type="text" id="ev-host" placeholder="Shop or club name"></div>
+      </div>
+      <div class="frow">
+        <div class="fgroup"><label>Start time</label><input type="time" id="ev-start"></div>
+        <div class="fgroup"><label>End time</label><input type="time" id="ev-end"></div>
+      </div>
+      <div class="frow">
+        <div class="fgroup"><label>Instagram (without @)</label><input type="text" id="ev-instagram" placeholder="organizerhandle"></div>
+        <div class="fgroup"><label>Website / event link</label><input type="url" id="ev-web" placeholder="https://..."></div>
+      </div>
+      <div class="fgroup"><label>Cover photo URL</label><input type="url" id="ev-photo" placeholder="https://... (optional)"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Location</div>
+      <div class="fgroup"><label>Venue name</label><input type="text" id="ev-venue" placeholder="e.g. Woodbine Mall parking lot"></div>
+      <div class="fgroup">
+        <label>Full address *</label>
+        <div class="addr-row">
+          <div class="fgroup"><input type="text" id="ev-address" placeholder="123 Street, City, ON"></div>
+          <button class="btn-geocode" id="ev-geocode" type="button">Look up</button>
+        </div>
+        <div class="geocode-status" id="ev-geo-status"></div>
+      </div>
+      <div class="latlong-row">
+        <div class="fgroup"><label>Latitude</label><input type="number" id="ev-lat" step="0.0001"></div>
+        <div class="fgroup"><label>Longitude</label><input type="number" id="ev-lng" step="0.0001"></div>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-primary" id="ev-submit">Publish Event</button>
+      <button class="btn-ghost" id="ev-reset">Reset</button>
+    </div>
+    <div class="msg" id="ev-msg"></div>
+  </div>
+
+  <!-- ══════════ TAB 3: APPROVAL QUEUE ══════════ -->
+  <div class="tab-panel" id="panel-queue">
+    <div class="eyebrow">Admin Tool</div>
+    <h1 class="title">Pending <span class="accent">Approvals</span></h1>
+    <p class="intro">Events submitted by the public or affiliates. Approve to publish, reject to delete.</p>
+    <div id="queue-list">
+      <div class="queue-empty">Loading pending events...</div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ===== CONFIG =====
+  // Public anon key (same project as marketplace/events). Safe to expose:
+  // Row Level Security decides what anyone -- including a logged-in admin -- can do.
+  var SUPABASE_URL = 'https://myapluhgfpnyjsfrflhd.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15YXBsdWhnZnBueWpzZnJmbGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwODcxNDYsImV4cCI6MjA5NzY2MzE0Nn0.j_Xe_J1uvBA-w4Sag1tl3Yp7zqlaEmkQzt2eO6xz1vg';
+  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ===== AUTH GATE (real Supabase login) =====
+  async function unlock(){
+    var errEl = document.getElementById('gate-err');
+    errEl.style.display = 'none';
+    var email = (document.getElementById('gate-email').value || '').trim();
+    var pass  = document.getElementById('gate-input').value || '';
+    if(!email || !pass){ errEl.textContent='Enter your email and password.'; errEl.style.display='block'; return; }
+    var btn = document.getElementById('gate-btn');
+    btn.disabled = true; btn.textContent = 'Signing in...';
+    var res = await sb.auth.signInWithPassword({ email: email, password: pass });
+    btn.disabled = false; btn.textContent = 'Unlock';
+    if(res.error){ errEl.textContent = res.error.message || 'Login failed.'; errEl.style.display = 'block'; return; }
+    showAdmin();
+  }
+  function showAdmin(){
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('admin-page').style.display = 'block';
+    loadQueue();
+  }
+  async function logout(){ await sb.auth.signOut(); location.reload(); }
+
+  document.getElementById('gate-btn').addEventListener('click', unlock);
+  document.getElementById('gate-input').addEventListener('keydown', function(e){ if(e.key==='Enter') unlock(); });
+  document.getElementById('gate-email').addEventListener('keydown', function(e){ if(e.key==='Enter') unlock(); });
+  var _logout = document.getElementById('logout-link');
+  if(_logout){ _logout.addEventListener('click', function(e){ e.preventDefault(); logout(); }); }
+
+  // Restore an existing session (Supabase persists login across reloads)
+  sb.auth.getSession().then(function(res){
+    if(res.data && res.data.session){ showAdmin(); }
+  });
+
+  // ══════════ TABS ══════════
+  document.querySelectorAll('.tab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+      if(tab.dataset.tab === 'queue') loadQueue();
+    });
+  });
+
+  // ══════════ GEOCODING (shared) ══════════
+  async function geocode(addr, latId, lngId, statusId){
+    if(!addr){ showGeo(statusId, 'Enter an address first.', false); return; }
+    showGeo(statusId, 'Looking up...', true);
+    try{
+      var url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(addr);
+      var res = await fetch(url, { headers:{ 'Accept-Language':'en' }});
+      var data = await res.json();
+      if(data && data.length > 0){
+        document.getElementById(latId).value = parseFloat(data[0].lat).toFixed(4);
+        document.getElementById(lngId).value = parseFloat(data[0].lon).toFixed(4);
+        showGeo(statusId, '✓ Found: ' + data[0].display_name.split(',').slice(0,3).join(','), true);
+      } else {
+        showGeo(statusId, 'Not found. Enter coordinates manually.', false);
+      }
+    } catch(e){ showGeo(statusId, 'Lookup failed. Enter manually.', false); }
+  }
+  function showGeo(id, msg, ok){
+    var el = document.getElementById(id);
+    el.textContent = msg;
+    el.className = 'geocode-status ' + (ok ? 'ok' : 'err');
+    el.style.display = 'block';
+  }
+  function showMsg(id, msg, ok){
+    var el = document.getElementById(id);
+    el.textContent = msg;
+    el.className = 'msg ' + (ok ? 'ok' : 'err');
+  }
+
+  // ══════════ AFFILIATE TOOL ══════════
+  var affCat = null;
+  document.getElementById('aff-cat-grid').addEventListener('click', function(e){
+    var b = e.target.closest('.cat-btn'); if(!b) return;
+    document.querySelectorAll('#aff-cat-grid .cat-btn').forEach(function(x){ x.classList.remove('active'); });
+    b.classList.add('active'); affCat = b.dataset.cat;
+  });
+  document.getElementById('aff-geocode').addEventListener('click', function(){
+    geocode(document.getElementById('aff-address').value.trim(), 'aff-lat','aff-lng','aff-geo-status');
+  });
+  document.getElementById('aff-generate').addEventListener('click', function(){
+    var name = document.getElementById('aff-name').value.trim();
+    var address = document.getElementById('aff-address').value.trim();
+    var lat = parseFloat(document.getElementById('aff-lat').value);
+    var lng = parseFloat(document.getElementById('aff-lng').value);
+    if(!affCat){ showMsg('aff-msg','Select a category.',false); return; }
+    if(!name){ showMsg('aff-msg','Enter a shop name.',false); return; }
+    if(!address){ showMsg('aff-msg','Enter an address.',false); return; }
+    if(isNaN(lat)||isNaN(lng)){ showMsg('aff-msg','Look up or enter coordinates.',false); return; }
+    var entry = { cat: affCat, name: name, address: address };
+    var phone = document.getElementById('aff-phone').value.trim();
+    var web = document.getElementById('aff-web').value.trim();
+    var ig = document.getElementById('aff-instagram').value.trim().replace(/^@/,'');
+    var notes = document.getElementById('aff-notes').value.trim();
+    if(phone) entry.phone = phone;
+    if(web) entry.web = web;
+    if(ig) entry.instagram = '@' + ig;
+    entry.lat = parseFloat(lat.toFixed(4));
+    entry.lng = parseFloat(lng.toFixed(4));
+    if(notes) entry.notes = notes;
+    document.getElementById('aff-output').textContent = JSON.stringify(entry, null, 2);
+    document.getElementById('aff-output-card').style.display = 'block';
+    document.getElementById('aff-msg').className = 'msg';
+    document.getElementById('aff-output-card').scrollIntoView({behavior:'smooth'});
+  });
+  document.getElementById('aff-copy').addEventListener('click', function(){
+    navigator.clipboard.writeText(document.getElementById('aff-output').textContent);
+    this.textContent = '✓ Copied!';
+    var self = this; setTimeout(function(){ self.textContent = 'Copy JSON'; }, 2000);
+  });
+  document.getElementById('aff-reset').addEventListener('click', function(){
+    document.querySelectorAll('#aff-cat-grid .cat-btn').forEach(function(x){ x.classList.remove('active'); });
+    affCat = null;
+    ['aff-name','aff-phone','aff-web','aff-instagram','aff-notes','aff-address','aff-lat','aff-lng'].forEach(function(id){ document.getElementById(id).value=''; });
+    document.getElementById('aff-geo-status').style.display='none';
+    document.getElementById('aff-output-card').style.display='none';
+    document.getElementById('aff-msg').className='msg';
+  });
+
+  // ══════════ EVENT TOOL ══════════
+  var evType = null;
+  document.getElementById('ev-type-grid').addEventListener('click', function(e){
+    var b = e.target.closest('.cat-btn'); if(!b) return;
+    document.querySelectorAll('#ev-type-grid .cat-btn').forEach(function(x){ x.classList.remove('active'); });
+    b.classList.add('active'); evType = b.dataset.ev;
+  });
+  document.getElementById('ev-geocode').addEventListener('click', function(){
+    geocode(document.getElementById('ev-address').value.trim(), 'ev-lat','ev-lng','ev-geo-status');
+  });
+  document.getElementById('ev-submit').addEventListener('click', async function(){
+    var title = document.getElementById('ev-title').value.trim();
+    var date = document.getElementById('ev-date').value;
+    var address = document.getElementById('ev-address').value.trim();
+    if(!evType){ showMsg('ev-msg','Select an event type.',false); return; }
+    if(!title){ showMsg('ev-msg','Enter an event title.',false); return; }
+    if(!date){ showMsg('ev-msg','Select a date.',false); return; }
+    if(!address){ showMsg('ev-msg','Enter an address.',false); return; }
+
+    var btn = this; btn.disabled = true; btn.textContent = 'Publishing...';
+    var row = {
+      title: title,
+      event_type: evType,
+      description: document.getElementById('ev-desc').value.trim() || null,
+      event_date: date,
+      start_time: document.getElementById('ev-start').value || null,
+      end_time: document.getElementById('ev-end').value || null,
+      venue_name: document.getElementById('ev-venue').value.trim() || null,
+      address: address,
+      lat: parseFloat(document.getElementById('ev-lat').value) || null,
+      lng: parseFloat(document.getElementById('ev-lng').value) || null,
+      host: document.getElementById('ev-host').value.trim() || null,
+      instagram: (document.getElementById('ev-instagram').value.trim().replace(/^@/,'') ? '@'+document.getElementById('ev-instagram').value.trim().replace(/^@/,'') : null),
+      web: document.getElementById('ev-web').value.trim() || null,
+      cover_photo: document.getElementById('ev-photo').value.trim() || null,
+      status: 'approved' // admin-posted events are auto-approved
+    };
+    var res = await sb.from('events').insert(row);
+    btn.disabled = false; btn.textContent = 'Publish Event';
+    if(res.error){ showMsg('ev-msg','Error: ' + res.error.message, false); }
+    else {
+      showMsg('ev-msg','✓ Event published to the calendar!', true);
+      document.getElementById('ev-reset').click();
+    }
+  });
+  document.getElementById('ev-reset').addEventListener('click', function(){
+    document.querySelectorAll('#ev-type-grid .cat-btn').forEach(function(x){ x.classList.remove('active'); });
+    evType = null;
+    ['ev-title','ev-desc','ev-date','ev-host','ev-start','ev-end','ev-instagram','ev-web','ev-photo','ev-venue','ev-address','ev-lat','ev-lng'].forEach(function(id){ document.getElementById(id).value=''; });
+    document.getElementById('ev-geo-status').style.display='none';
+  });
+
+  // ══════════ APPROVAL QUEUE ══════════
+  async function loadQueue(){
+    if(!sb) return;
+    var list = document.getElementById('queue-list');
+    list.innerHTML = '<div class="queue-empty">Loading pending events...</div>';
+    var res = await sb.from('events').select('*').eq('status','pending').order('created_at',{ascending:false});
+    if(res.error){ list.innerHTML = '<div class="queue-empty">Error loading queue.</div>'; return; }
+    var pending = res.data || [];
+
+    // Update badge
+    var badge = document.getElementById('queue-badge');
+    if(pending.length > 0){ badge.textContent = pending.length; badge.style.display='inline-block'; }
+    else { badge.style.display='none'; }
+
+    if(pending.length === 0){
+      list.innerHTML = '<div class="queue-empty">No pending events. All caught up! ✓</div>';
+      return;
+    }
+
+    list.innerHTML = '';
+    pending.forEach(function(ev){
+      var div = document.createElement('div');
+      div.className = 'event-row pending';
+      var when = ev.event_date + (ev.start_time ? ' · ' + ev.start_time : '');
+      var loc = ev.venue_name ? ev.venue_name + ' — ' + (ev.address||'') : (ev.address||'');
+      div.innerHTML =
+        '<div class="event-row-top">'+
+          '<div class="event-row-title">'+esc(ev.title)+'</div>'+
+          '<div class="event-row-type">'+esc(ev.event_type)+'</div>'+
+        '</div>'+
+        '<div class="event-row-meta">'+
+          '📅 '+esc(when)+'<br>'+
+          (loc ? '📍 '+esc(loc)+'<br>' : '')+
+          (ev.host ? '👤 '+esc(ev.host)+'<br>' : '')+
+          (ev.description ? '<br>'+esc(ev.description) : '')+
+        '</div>'+
+        '<div class="event-row-actions">'+
+          '<button class="btn-approve" data-id="'+ev.id+'">✓ Approve &amp; publish</button>'+
+          '<button class="btn-reject" data-id="'+ev.id+'">Reject</button>'+
+        '</div>';
+      list.appendChild(div);
+    });
+
+    // Wire buttons
+    list.querySelectorAll('.btn-approve').forEach(function(b){
+      b.addEventListener('click', async function(){
+        b.disabled = true; b.textContent = 'Approving...';
+        var res = await sb.from('events').update({status:'approved'}).eq('id', b.dataset.id);
+        if(res.error){ b.textContent = 'Error'; }
+        else { loadQueue(); }
+      });
+    });
+    list.querySelectorAll('.btn-reject').forEach(function(b){
+      b.addEventListener('click', async function(){
+        if(!confirm('Delete this event submission?')) return;
+        var res = await sb.from('events').delete().eq('id', b.dataset.id);
+        if(!res.error) loadQueue();
+      });
+    });
+  }
+
+  function esc(s){ if(s==null) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>
