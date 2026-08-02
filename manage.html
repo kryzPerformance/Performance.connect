@@ -541,6 +541,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="pc-account.js"></script>
 <script>
   var SUPABASE_URL = 'https://myapluhgfpnyjsfrflhd.supabase.co';
   var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15YXBsdWhnZnBueWpzZnJmbGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwODcxNDYsImV4cCI6MjA5NzY2MzE0Nn0.j_Xe_J1uvBA-w4Sag1tl3Yp7zqlaEmkQzt2eO6xz1vg';
@@ -566,12 +567,18 @@
     if(e.key === 'Enter') document.getElementById('btn-lookup').click();
   });
 
-  // ── pre-fill from URL ?key= ──
+  // ── pre-fill from URL ?key=, else from stored pseudo-login (no key in URL) ──
   var params = new URLSearchParams(window.location.search);
   var urlKey = params.get('key');
+  var autoLoad = false;
+  if(!urlKey && window.PC && PC.account && PC.account.key && PC.account.key()){
+    urlKey = PC.account.key();   // signed in on this device — load their garage
+    autoLoad = true;
+  }
   if(urlKey){
     var stripped = urlKey.replace('PC-','').replace(/[^A-Z0-9]/gi,'').toUpperCase();
     if(stripped.length >= 4) keyField.value = stripped.slice(0,4) + (stripped.length > 4 ? '-'+stripped.slice(4,8) : '');
+    if(autoLoad) setTimeout(function(){ document.getElementById('btn-lookup').click(); }, 0);
   }
 
   // ── state ──
