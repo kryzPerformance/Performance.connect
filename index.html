@@ -670,14 +670,13 @@
 
   <div class="page">
     <header>
-      <div class="wordmark">PERFORMANCE<span>CONNECT</span></div>
+      <div class="wordmark">PERFORMANCE<span>CONNECT.CA</span></div>
       <nav class="site-nav">
         <a href="marketplace.html" class="nav-link">Marketplace</a>
         <a href="events.html" class="nav-link">Events</a>
         <a href="affiliates.html" class="nav-link">Affiliates</a>
         <a href="blog.html" class="nav-link">Blog</a>
       </nav>
-      <div class="locale-tag">PERFORMANCECONNECT.CA</div>
     </header>
 
     <main>
@@ -835,6 +834,28 @@
     bgVideo.addEventListener('error', function(){
       if(bgWrap) bgWrap.style.display = 'none';
     });
+  }
+
+  // ── Autoplay retry ────────────────────────────────────────────────────────
+  // iOS Low Power Mode, Android Data Saver, and some in-app browsers (IG/FB)
+  // block autoplay even for muted + playsinline video — the poster shows with a
+  // native play button instead. Re-attempt playback on the first user gesture;
+  // user-initiated play is always permitted, even in Low Power Mode.
+  if (bgVideo) {
+    var tryPlay = function(){
+      var p = bgVideo.play();
+      if (p && typeof p.catch === 'function') { p.catch(function(){}); }
+    };
+    tryPlay(); // in case autoplay is actually allowed
+    var kickPlay = function(){
+      tryPlay();
+      window.removeEventListener('touchstart', kickPlay);
+      window.removeEventListener('click', kickPlay);
+      window.removeEventListener('scroll', kickPlay);
+    };
+    window.addEventListener('touchstart', kickPlay, { passive: true });
+    window.addEventListener('click', kickPlay, { passive: true });
+    window.addEventListener('scroll', kickPlay, { passive: true });
   }
 
   // ── iOS Safari video height lock ─────────────────────────────────────────
