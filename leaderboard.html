@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Performance Pursuit — Leaderboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#070808;
+    --panel:#111415;
+    --panel-hi:#161a1b;
+    --line:#23292b;
+    --cyan:#1FA9CF;
+    --cyan-bright:#3DC9F0;
+    --steel:#8FA0A6;
+    --steel-dim:#5C6A6E;
+    --white:#F2F6F7;
+    --alien:#8B5CF6;
+    --alien-bright:#A78BFA;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{background:var(--black);}
+  body{
+    background:var(--black);
+    color:var(--white);
+    font-family:'Inter', sans-serif;
+    min-height:100dvh;
+    overflow-x:hidden;
+    position:relative;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
+  }
+
+  /* faint background grid — same as the main site */
+  .bg-grid{
+    position:fixed;
+    inset:0;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size:64px 64px;
+    pointer-events:none;
+    z-index:0;
+  }
+  .bg-scrim{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    background:radial-gradient(ellipse at 50% 0%, rgba(31,169,207,0.08) 0%, rgba(7,8,8,0) 55%);
+    pointer-events:none;
+  }
+
+  .page{
+    position:relative;
+    z-index:1;
+    max-width:640px;
+    margin:0 auto;
+    padding:28px clamp(16px,5vw,32px) 60px;
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:34px;
+  }
+  .back-btn{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    font-weight:500;
+    color:var(--steel);
+    background:transparent;
+    border:0.5px solid var(--line);
+    border-radius:999px;
+    padding:9px 15px 9px 12px;
+    cursor:pointer;
+    transition:color .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .back-btn:hover{ color:var(--cyan-bright); border-color:rgba(31,169,207,0.45); background:rgba(31,169,207,0.06); }
+  .back-btn svg{ width:15px; height:15px; }
+  .wordmark{
+    font-family:'Rajdhani',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:0.18em;
+    color:var(--white);
+  }
+  .wordmark span{ color:var(--cyan-bright); }
+
+  /* ---------- title block ---------- */
+  .titleblock{ text-align:center; margin-bottom:30px; }
+  .eyebrow{
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    font-weight:500;
+    letter-spacing:0.22em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    margin-bottom:16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+  }
+  .eyebrow::before, .eyebrow::after{
+    content:"";
+    width:30px; height:1px;
+    background:linear-gradient(to right, transparent, var(--cyan));
+  }
+  .eyebrow::after{ background:linear-gradient(to left, transparent, var(--cyan)); }
+  h1{
+    font-family:'Rajdhani',sans-serif;
+    font-weight:700;
+    font-style:italic;
+    font-size:clamp(38px,10vw,60px);
+    line-height:0.95;
+    letter-spacing:0.01em;
+    text-transform:uppercase;
+    color:var(--white);
+  }
+  h1 .accent{ color:var(--cyan-bright); }
+
+  /* ---------- the mystery counter ---------- */
+  .mystery{
+    margin:22px auto 0;
+    max-width:420px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    padding:13px 18px;
+    background:linear-gradient(180deg, rgba(139,92,246,0.10), rgba(139,92,246,0.03));
+    border:0.5px solid rgba(139,92,246,0.35);
+    border-radius:10px;
+    animation:mysterypulse 4s ease-in-out infinite;
+  }
+  @keyframes mysterypulse{
+    0%,100%{ border-color:rgba(139,92,246,0.30); }
+    50%{ border-color:rgba(139,92,246,0.60); }
+  }
+  .mystery .glyph{
+    font-size:19px;
+    filter:drop-shadow(0 0 8px rgba(167,139,250,0.6));
+  }
+  .mystery .m-text{
+    font-family:'Inter',sans-serif;
+    font-size:13.5px;
+    font-weight:500;
+    color:var(--alien-bright);
+    letter-spacing:0.02em;
+  }
+  .mystery .m-text b{
+    font-family:'Rajdhani',sans-serif;
+    font-weight:700;
+    font-size:16px;
+    color:#C4B5FD;
+  }
+
+  /* ---------- tabs ---------- */
+  .tabs{
+    display:flex;
+    gap:8px;
+    margin:28px 0 18px;
+  }
+  .tab{
+    flex:1;
+    font-family:'Rajdhani',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--steel);
+    background:rgba(255,255,255,0.03);
+    border:0.5px solid var(--line);
+    border-radius:8px;
+    padding:12px 10px;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .tab.active{
+    color:#03171D;
+    background:var(--cyan-bright);
+    border-color:var(--cyan-bright);
+  }
+  .tab:not(.active):hover{ color:var(--cyan-bright); border-color:rgba(31,169,207,0.4); }
+
+  /* ---------- leaderboard list ---------- */
+  .board{ display:flex; flex-direction:column; gap:7px; }
+  .row{
+    display:grid;
+    grid-template-columns:44px 1fr auto;
+    align-items:center;
+    gap:12px;
+    padding:14px 16px;
+    background:var(--panel);
+    border:0.5px solid var(--line);
+    border-radius:10px;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .row:hover{ background:var(--panel-hi); border-color:rgba(143,160,166,0.25); }
+
+  /* podium tints */
+  .row.r1{ border-color:rgba(255,209,102,0.4); background:linear-gradient(180deg, rgba(255,209,102,0.07), rgba(17,20,21,0.9)); }
+  .row.r2{ border-color:rgba(190,205,210,0.35); }
+  .row.r3{ border-color:rgba(205,127,80,0.32); }
+
+  .rank{
+    font-family:'Rajdhani',sans-serif;
+    font-weight:700;
+    font-style:italic;
+    font-size:22px;
+    text-align:center;
+    color:var(--steel-dim);
+    line-height:1;
+  }
+  .r1 .rank{ color:#FFD166; }
+  .r2 .rank{ color:#BECDD2; }
+  .r3 .rank{ color:#CD7F50; }
+
+  .driver{ min-width:0; }
+  .driver-name{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:'Rajdhani',sans-serif;
+    font-weight:600;
+    font-size:18px;
+    letter-spacing:0.02em;
+    color:var(--white);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .driver-sub{
+    font-family:'Inter',sans-serif;
+    font-size:11.5px;
+    color:var(--steel-dim);
+    letter-spacing:0.04em;
+    margin-top:3px;
+  }
+
+  /* the secret badge — the hook */
+  .badge{
+    flex-shrink:0;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:24px; height:24px;
+    border-radius:6px;
+    background:rgba(139,92,246,0.14);
+    border:0.5px solid rgba(139,92,246,0.5);
+    font-size:13px;
+    filter:drop-shadow(0 0 6px rgba(167,139,250,0.5));
+    animation:badgeglow 3s ease-in-out infinite;
+    cursor:help;
+  }
+  @keyframes badgeglow{
+    0%,100%{ box-shadow:0 0 0 0 rgba(139,92,246,0); }
+    50%{ box-shadow:0 0 10px 0 rgba(139,92,246,0.35); }
+  }
+
+  .score{
+    font-family:'Rajdhani',sans-serif;
+    font-weight:700;
+    font-size:21px;
+    color:var(--cyan-bright);
+    text-align:right;
+    line-height:1;
+    font-variant-numeric:tabular-nums;
+  }
+  .score .lbl{
+    display:block;
+    font-family:'Inter',sans-serif;
+    font-size:10px;
+    font-weight:500;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--steel-dim);
+    margin-top:4px;
+  }
+
+  /* ---------- your-rank sticky footer ---------- */
+  .yourank{
+    margin-top:20px;
+    display:grid;
+    grid-template-columns:44px 1fr auto;
+    align-items:center;
+    gap:12px;
+    padding:15px 16px;
+    background:linear-gradient(180deg, rgba(31,169,207,0.10), rgba(31,169,207,0.03));
+    border:1px solid rgba(31,169,207,0.45);
+    border-radius:10px;
+  }
+  .yourank .rank{ color:var(--cyan-bright); }
+  .yourank .driver-name{ color:var(--cyan-bright); }
+  .yourank .tag{
+    font-family:'Inter',sans-serif;
+    font-size:10px;
+    font-weight:600;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    background:rgba(31,169,207,0.12);
+    border-radius:4px;
+    padding:2px 7px;
+    margin-left:2px;
+  }
+
+  .footnote{
+    margin-top:26px;
+    text-align:center;
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    color:var(--steel-dim);
+    letter-spacing:0.03em;
+    line-height:1.6;
+  }
+
+  /* mock-only banner */
+  .mocktag{
+    position:fixed;
+    top:0; left:0; right:0;
+    z-index:5;
+    text-align:center;
+    font-family:'Inter',sans-serif;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--steel-dim);
+    background:rgba(7,8,8,0.9);
+    border-bottom:0.5px solid var(--line);
+    padding:6px;
+  }
+</style>
+  <style>
+    .hubbar{position:fixed;top:0;left:0;right:0;height:52px;z-index:60;display:flex;gap:8px;align-items:center;justify-content:center;
+      background:rgba(8,9,12,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:0.5px solid rgba(255,255,255,.08);padding:0 12px;}
+    .hpill{appearance:none;-webkit-appearance:none;border:0.5px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:#aeb6c0;
+      font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:14px;letter-spacing:.4px;padding:9px 24px;border-radius:999px;cursor:pointer;transition:all .15s;}
+    .hpill.active{background:linear-gradient(135deg,#1b6ee8,#26D9FF);color:#fff;border-color:transparent;box-shadow:0 4px 16px rgba(38,217,255,.32);}
+    #game-wrap{position:fixed;top:52px;left:0;right:0;bottom:0;z-index:50;display:none;background:#050507;}
+    #game-wrap.on{display:block;}
+    #game-frame{width:100%;height:100%;border:0;display:block;}
+    body.playing .page{display:none;}
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-scrim"></div>
+
+  <div class="hubbar">
+    <button class="hpill active" id="pill-board">&#127942; Leaderboard</button>
+    <button class="hpill" id="pill-play">&#9654; Play</button>
+  </div>
+  <div id="game-wrap"><iframe id="game-frame" title="Performance Pursuit" allow="autoplay; fullscreen; gyroscope; accelerometer"></iframe></div>
+
+
+  <div class="page" style="padding-top:68px;">
+
+    <div class="topbar">
+      <button class="back-btn" onclick="location.href='index.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        Menu
+      </button>
+      <div class="wordmark">PERFORMANCE<span>PURSUIT</span></div>
+    </div>
+
+    <div class="titleblock">
+      <div class="eyebrow">Global Rankings</div>
+      <h1>Top<br><span class="accent">Runners</span></h1>
+
+      <div class="mystery">
+        <span class="glyph">👽</span>
+        <span class="m-text"><b>4</b> drivers have uncovered the truth. Will you?</span>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active">High Score</button>
+      <button class="tab">This Week</button>
+      <button class="tab">Friends</button>
+    </div>
+
+    <div class="board" id="board"></div>
+
+    <div class="yourank">
+      <div class="rank">27</div>
+      <div class="driver">
+        <div class="driver-name">YOU <span class="tag">You</span></div>
+        <div class="driver-sub">@yourhandle · best run today</div>
+      </div>
+      <div class="score">184,900<span class="lbl">points</span></div>
+    </div>
+
+    <p class="footnote">
+      Ranked by highest single-run score. Sign in with your Performance key to claim your spot.<br>
+      Some drivers know something you don't.
+    </p>
+
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* Performance Pursuit hub — live leaderboard read + play toggle (client-side, anon key) */
+(function(){
+  var sb = supabase.createClient('https://myapluhgfpnyjsfrflhd.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15YXBsdWhnZnBueWpzZnJmbGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwODcxNDYsImV4cCI6MjA5NzY2MzE0Nn0.j_Xe_J1uvBA-w4Sag1tl3Yp7zqlaEmkQzt2eO6xz1vg');
+  var board = document.getElementById('board');
+
+  function getSession(){ try{ return JSON.parse(localStorage.getItem('pc_session')||'null'); }catch(e){ return null; } }
+  function fmt(n){ return (Number(n)||0).toLocaleString('en-US'); }
+  function esc(s){ var d=document.createElement('div'); d.textContent = s==null?'':String(s); return d.innerHTML; }
+
+  async function loadBoard(){
+    board.innerHTML = '<div style="text-align:center;color:#8892a0;padding:34px;">Loading runs…</div>';
+    var r = await sb.from('pursuit_scores')
+      .select('seller_id,driver_name,score,car,time_survived,found_ending')
+      .order('score', { ascending:false }).limit(300);
+    if(r.error){ board.innerHTML = '<div style="text-align:center;color:#ff6b6b;padding:34px;">Could not load scores.</div>'; return; }
+    // one row per driver — their best run
+    var seen = {}, rows = [];
+    (r.data||[]).forEach(function(d){
+      var k = (d.seller_id==null) ? ('anon'+rows.length) : ('s'+d.seller_id);
+      if(seen[k]) return; seen[k]=1; rows.push(d);
+    });
+    rows = rows.slice(0,50);
+    if(!rows.length){
+      board.innerHTML = '<div style="text-align:center;color:#8892a0;padding:34px;">No runs yet — be the first on the board.</div>';
+      renderYou(); return;
+    }
+    var html='';
+    rows.forEach(function(d,i){
+      var rank=i+1, cls = rank<=3 ? ' r'+rank : '';
+      var badge = d.found_ending ? '<span class="badge" title="This driver found the secret ending">&#128123;</span>' : '';
+      var sub = (d.car?esc(d.car):'') + (d.time_survived ? ((d.car?' · ':'')+'survived '+d.time_survived+'s') : '');
+      html += '<div class="row'+cls+'">'
+            +   '<div class="rank">'+rank+'</div>'
+            +   '<div class="driver"><div class="driver-name">'+esc(d.driver_name)+badge+'</div>'
+            +     '<div class="driver-sub">'+sub+'</div></div>'
+            +   '<div class="score">'+fmt(d.score)+'<span class="lbl">points</span></div>'
+            + '</div>';
+    });
+    board.innerHTML = html;
+    renderYou();
+  }
+
+  async function renderYou(){
+    var el = document.querySelector('.yourank'); if(!el) return;
+    var s = getSession();
+    if(!s || !s.seller_id){ el.style.display='none'; return; }
+    var mine = await sb.from('pursuit_scores').select('score').eq('seller_id', s.seller_id)
+                       .order('score', { ascending:false }).limit(1);
+    if(mine.error || !mine.data || !mine.data.length){ el.style.display='none'; return; }
+    var best = mine.data[0].score;
+    var rk = await sb.from('pursuit_scores').select('*', { count:'exact', head:true }).gt('score', best);
+    var rank = (rk.count||0) + 1;
+    el.style.display='';
+    var rEl=el.querySelector('.rank'); if(rEl) rEl.textContent = rank;
+    var nEl=el.querySelector('.driver-name'); if(nEl) nEl.innerHTML = esc(s.name||'You') + ' <span class="tag">You</span>';
+    var sEl=el.querySelector('.driver-sub'); if(sEl) sEl.textContent = (s.instagram ? ('@'+String(s.instagram).replace(/^@/,'')+' · ') : '') + 'your best run';
+    var scEl=el.querySelector('.score'); if(scEl) scEl.innerHTML = fmt(best) + '<span class="lbl">points</span>';
+  }
+
+  async function loadMystery(){
+    var el = document.querySelector('.mystery .m-text b'); if(!el) return;
+    var r = await sb.from('pursuit_scores').select('seller_id').eq('found_ending', true);
+    if(r.error) return;
+    var set={}; (r.data||[]).forEach(function(d){ set[d.seller_id]=1; });
+    el.textContent = Object.keys(set).length;
+  }
+
+  // ---- hub pills: leaderboard / play ----
+  var pillBoard=document.getElementById('pill-board'), pillPlay=document.getElementById('pill-play'),
+      gameWrap=document.getElementById('game-wrap'), frame=document.getElementById('game-frame');
+  function showBoard(){
+    document.body.classList.remove('playing'); gameWrap.classList.remove('on');
+    pillBoard.classList.add('active'); pillPlay.classList.remove('active');
+    loadBoard(); loadMystery();
+  }
+  function showPlay(){
+    if(!frame.getAttribute('src')) frame.setAttribute('src','arcade-120.html');
+    document.body.classList.add('playing'); gameWrap.classList.add('on');
+    pillPlay.classList.add('active'); pillBoard.classList.remove('active');
+  }
+  pillBoard.addEventListener('click', showBoard);
+  pillPlay.addEventListener('click', showPlay);
+  // the game (in the iframe) can ask to jump back to the board
+  window.addEventListener('message', function(e){ if(e && e.data === 'pc-show-leaderboard') showBoard(); });
+
+  // internal tabs stay visual-only for now
+  document.querySelectorAll('.tab').forEach(function(t){
+    t.addEventListener('click', function(){
+      document.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('active'); });
+      t.classList.add('active');
+    });
+  });
+
+  loadBoard(); loadMystery();
+})();
+</script>
+
+</body>
+</html>
