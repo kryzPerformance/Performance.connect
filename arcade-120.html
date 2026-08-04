@@ -147,6 +147,7 @@
   /* start overlay */
   .ov{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:radial-gradient(ellipse at center,rgba(7,8,8,.8),rgba(7,8,8,.96));}
   .ov.hidden{display:none;}
+  #go-submit .hidden{display:none;}
   .tag{font-size:11px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:var(--cyan);margin-bottom:12px;}
   .title-wrap{position:relative;margin-bottom:6px;}
   /* ---- Cinematic intro: layered scene, back to front ----
@@ -3699,6 +3700,7 @@ boot();
   }
   function normKey(raw){
     var c = (raw||'').replace(/[^A-Z0-9]/gi,'').toUpperCase();
+    if(c.length===10 && c.slice(0,2)==='PC') c = c.slice(2);  // allow full PC-XXXX-XXXX input
     return c.length===8 ? 'PC-'+c.slice(0,4)+'-'+c.slice(4,8) : null;
   }
   function likeEsc(s){ return String(s).replace(/[\\%_]/g, '\\$&'); }
