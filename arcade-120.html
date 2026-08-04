@@ -3715,7 +3715,7 @@ boot();
   }
   async function createSeller(k, ig){
     var r = await sb.from('sellers').insert([{ performance_key:k, instagram: ig||null }]).select().single();
-    if(r.error) throw new Error(r.error.message);
+    if(r.error) throw new Error((r.error.code?('['+r.error.code+'] '):'')+(r.error.message||r.error.details||r.error.hint||'seller create failed'));
     return r.data;
   }
 
@@ -3733,7 +3733,7 @@ boot();
       car: run.car || null, time_survived: run.time, drift_score: run.drift,
       peak_heat: run.heat, found_ending: !!run.found_ending
     }]);
-    if(ins.error) throw new Error(ins.error.message);
+    if(ins.error) throw new Error((ins.error.code?('['+ins.error.code+'] '):'')+(ins.error.message||ins.error.details||ins.error.hint||'insert failed'));
     var rk = await sb.from('pursuit_scores').select('*', { count:'exact', head:true }).gt('score', run.score);
     return (rk.count || 0) + 1;
   }
@@ -3751,7 +3751,7 @@ boot();
     var s = getSession(); if(!s || !s.seller_id) return;
     busy(true); err('');
     try{ var rank = await doInsert(s.seller_id, s.name, LAST); showRank(rank, null); }
-    catch(e){ err('Could not submit — try again.'); }
+    catch(e){ console.error('PCLB submit error:', e); err('Submit failed: '+((e && (e.message||e.code)) || JSON.stringify(e)).slice(0,120)); }
     busy(false);
   }
   async function submitForm(){
@@ -3775,7 +3775,7 @@ boot();
         setSession({ key:newk, seller_id:s2.seller_id, name:nm2, instagram: ig });
         showRank(rank2, newk);
       } else { err('Enter your key, or an Instagram handle to start.'); }
-    }catch(e){ err('Could not submit — try again.'); }
+    }catch(e){ console.error('PCLB submit error:', e); err('Submit failed: '+((e && (e.message||e.code)) || JSON.stringify(e)).slice(0,120)); }
     busy(false);
   }
 
