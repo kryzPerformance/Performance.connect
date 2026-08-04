@@ -2720,6 +2720,7 @@
   // Format user-entered key to PC-XXXX-XXXX
   function normaliseKey(raw){
     var clean = raw.replace(/[^A-Z0-9]/gi,'').toUpperCase();
+    if(clean.length === 10 && clean.slice(0,2) === 'PC') clean = clean.slice(2);  // allow full PC-XXXX-XXXX input
     if(clean.length === 8) return 'PC-' + clean.slice(0,4) + '-' + clean.slice(4,8);
     return null;
   }
