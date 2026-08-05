@@ -17,7 +17,7 @@
   canvas{display:block;}
 
   /* HUD */
-  .hud{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;justify-content:space-between;padding:14px 16px;pointer-events:none;font-family:'Rajdhani',sans-serif;}
+  .hud{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-right,0px)) 14px calc(16px + env(safe-area-inset-left,0px));pointer-events:none;font-family:'Rajdhani',sans-serif;}
   .hud-left .spd{font-weight:700;font-size:34px;line-height:1;color:var(--white);text-shadow:0 2px 10px rgba(0,0,0,.7);}
   .hud-left .spd span{font-size:13px;color:var(--steel);margin-left:3px;}
   /* tachometer — ramp-up wedge that rises left→right, fills with speed */
@@ -3617,11 +3617,43 @@ function boot(){
             height: Math.round(window.innerHeight * DPR_R),
             zoom: 1/DPR_R
           },
+          // iOS/Safari renderer tuning: hint the discrete/perf GPU, a low-latency
+          // canvas context for snappier touch, and don't refuse WebGL on weaker GPUs.
+          render:{
+            powerPreference:'high-performance',
+            desynchronized:true,
+            failIfMajorPerformanceCaveat:false,
+            antialias:true
+          },
           scene:[GameScene],
-          fps:{ target:60 }
+          // min:30 stops a single hitch (app-switch, GC) from spiralling into a
+          // huge delta step that flings the car across the map on resume.
+          fps:{ target:60, min:30 }
         });
+
+        // --- iOS WebGL context-loss recovery ---
+        // Safari drops the WebGL context under memory pressure or after the app is
+        // backgrounded; without this the canvas comes back solid black. preventDefault
+        // lets the browser restore it, then we rebuild GPU textures by restarting the scene.
+        if(game.canvas){
+          game.canvas.addEventListener('webglcontextlost', function(e){
+            e.preventDefault();
+            const s = game.scene.getScene('game');
+            if(s && game.scene.isActive('game') && !s.paused) s.pauseGame();
+          }, false);
+          game.canvas.addEventListener('webglcontextrestored', function(){
+            if(game && game.scene.isActive('game')) game.scene.start('game');
+          }, false);
+        }
+
+        // Debounced resize: iOS fires resize constantly as the URL bar shows/hides,
+        // and each game.scale.resize() reallocates the canvas — expensive on mobile.
+        let _rzTimer=null;
         window.addEventListener('resize', ()=>{
-          if(game) game.scale.resize(Math.round(window.innerWidth*DPR_R), Math.round(window.innerHeight*DPR_R));
+          if(_rzTimer) clearTimeout(_rzTimer);
+          _rzTimer=setTimeout(()=>{
+            if(game) game.scale.resize(Math.round(window.innerWidth*DPR_R), Math.round(window.innerHeight*DPR_R));
+          }, 150);
         });
       } catch(err){
         showFatal(err);
@@ -3663,6 +3695,16 @@ function boot(){
     document.getElementById('pause-btn').style.display='flex';
     if(isTouch) document.getElementById('touch').classList.add('on');
     game.scene.start('game');   // fresh scene → paused resets to false in create()
+  });
+
+  // Auto-pause when the tab/app is backgrounded (app switch, lock screen, incoming
+  // call). On iOS the render loop freezes anyway; surfacing the pause overlay means
+  // the player resumes on their terms instead of being rammed the instant they return.
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.hidden && game){
+      const s = game.scene.getScene('game');
+      if(s && game.scene.isActive('game') && !s.paused) s.pauseGame();
+    }
   });
 }
 function showFatal(err){
