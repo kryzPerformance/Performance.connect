@@ -344,6 +344,7 @@
   <div class="car-grid" id="car-grid"></div>
   <div class="car-stats" id="car-stats"></div>
   <button class="btn" id="btn-drive"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Drive</button>
+  <button class="btn-ghost" id="btn-leaderboard2" style="margin-top:10px;background:transparent;border:0.5px solid var(--line);color:var(--steel);padding:11px 22px;border-radius:999px;font-family:Inter;font-weight:600;font-size:13px;">🏆 Leaderboard</button>
 </div>
 
 <div class="ov hidden" id="over">
@@ -378,6 +379,7 @@
   </div>
   <button class="btn" id="btn-retry" style="margin-top:16px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></svg>Run Again</button>
   <button class="btn-ghost" id="btn-garage2" style="margin-top:10px;background:transparent;border:0.5px solid var(--line);color:var(--steel);padding:11px 22px;border-radius:999px;font-family:Inter;font-weight:600;font-size:13px;">Change Car</button>
+  <button class="btn-ghost" id="btn-leaderboard" style="margin-top:8px;background:transparent;border:0.5px solid var(--line);color:var(--steel);padding:11px 22px;border-radius:999px;font-family:Inter;font-weight:600;font-size:13px;">🏆 Leaderboard</button>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
@@ -3638,6 +3640,9 @@ function boot(){
     game.scene.start('game');
   });
   // Game over → change car
+  function goToBoard(){ try{ if(window.parent && window.parent!==window){ window.parent.postMessage('pc-show-leaderboard','*'); return; } }catch(e){} location.href='pursuit.html'; }
+  var _lb1=document.getElementById('btn-leaderboard'); if(_lb1) _lb1.addEventListener('click',goToBoard);
+  var _lb2=document.getElementById('btn-leaderboard2'); if(_lb2) _lb2.addEventListener('click',goToBoard);
   document.getElementById('btn-garage2').addEventListener('click',()=>{
     document.getElementById('over').classList.add('hidden');
     document.getElementById('garage').classList.remove('hidden');

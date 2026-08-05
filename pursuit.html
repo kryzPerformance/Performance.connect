@@ -487,7 +487,9 @@
     pillBoard.classList.add('active'); pillPlay.classList.remove('active');
     loadBoard(); loadMystery();
   }
+  var isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
   function showPlay(){
+    if(isIOS){ location.href='arcade-120.html'; return; }   // iOS: full-page (iframe memory limit crashes the game)
     if(!frame.getAttribute('src')) frame.setAttribute('src','arcade-120.html');
     document.body.classList.add('playing'); gameWrap.classList.add('on');
     pillPlay.classList.add('active'); pillBoard.classList.remove('active');
