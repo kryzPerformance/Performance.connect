@@ -778,6 +778,26 @@ class GameScene extends Phaser.Scene {
     this.add.rectangle(W/2, H/2, W, H, 0x0c0e12);
     this._buildCity(W, H);
 
+    // ---- Camera culling registry ----
+    // Phaser submits every display-object to the GPU each frame — it does NOT
+    // frustum-cull Images/TileSprites/Rectangles. On a 7200×7200 world that means
+    // hundreds of offscreen scenery quads drawn every frame (draw calls + fill +
+    // GPU memory), the likely cause of the iOS crash. We snapshot every STATIC
+    // scenery object right here (the whole city is built, no moving entity exists
+    // yet) and cache its world AABB once, then toggle .visible against the camera
+    // view each frame. This is purely visual — physics uses this.solids /
+    // this.roadRects arrays, untouched — so gameplay is identical.
+    this._cull = [];
+    for(const o of this.children.list){
+      if(!o || o.visible === false) continue;          // respect intentionally-hidden objects
+      const tn = o.type;
+      if(tn === 'Graphics' || tn === 'RenderTexture') continue; // world-spanning / dynamic — leave on
+      let b;
+      try { b = o.getBounds(); } catch(e){ continue; }
+      if(!b || !isFinite(b.x) || b.width <= 0 || b.height <= 0) continue;
+      this._cull.push({ o, x:b.x, y:b.y, r:b.right, btm:b.bottom });
+    }
+
     // ---- Skid marks: lazy 1024px RT tiles (a single world-sized RT exceeds
     //      mobile GPU texture limits and gets silently downsampled = blurry) ----
     this.skidTiles = new Map();
@@ -2892,6 +2912,34 @@ class GameScene extends Phaser.Scene {
     this.camLead.x += (tx-this.camLead.x)*Math.min(1,dt*camFollow);
     this.camLead.y += (ty-this.camLead.y)*Math.min(1,dt*camFollow);
     this.cameras.main.centerOn(this.camLead.x, this.camLead.y);
+
+    // ---- Camera culling pass ----
+    // Only objects overlapping the camera view (+margin, so nothing pops at the
+    // edges) stay renderable; everything offscreen is skipped by Phaser's renderer.
+    // Setting .visible only when it actually changes avoids per-frame churn.
+    if(this._cull){
+      const view = this.cameras.main.worldView;
+      const M = 300;
+      const vx = view.x - M, vy = view.y - M, vr = view.right + M, vb = view.bottom + M;
+      const list = this._cull;
+      for(let i = 0; i < list.length; i++){
+        const c = list[i];
+        const vis = c.x < vr && c.r > vx && c.y < vb && c.btm > vy;
+        if(c.o.visible !== vis) c.o.visible = vis;
+      }
+      // Moving entities (cars/cops/traffic): cull by centre point + generous margin.
+      // Their AI/physics still run every frame — only their sprite draw is skipped.
+      const DM = 200;
+      const dvx = view.x - DM, dvy = view.y - DM, dvr = view.right + DM, dvb = view.bottom + DM;
+      const cullPt = g => {
+        if(!g || !g.scene) return;   // skip destroyed objects (dead cops linger in this.cops until pruned)
+        const vis = g.x > dvx && g.x < dvr && g.y > dvy && g.y < dvb;
+        if(g.visible !== vis) g.visible = vis;
+      };
+      if(this.cops)     for(const c of this.cops)     cullPt(c.gfx);
+      if(this.traffic)  for(const t of this.traffic)  cullPt(t.gfx);
+      if(this.meetCars) for(const m of this.meetCars) cullPt(m.gfx);
+    }
     // Zoom: wider with speed, extra breathing room mid-drift — feels faster than it is
     const cam=this.cameras.main;
     const driftZoom = v.isDrifting ? 0.045 : 0;
