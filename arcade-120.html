@@ -801,12 +801,20 @@ class GameScene extends Phaser.Scene {
     // ---- Skid marks: lazy 1024px RT tiles (a single world-sized RT exceeds
     //      mobile GPU texture limits and gets silently downsampled = blurry) ----
     this.skidTiles = new Map();
+    // Bound the largest disposable GPU allocation. Each tile is a 1024×1024
+    // render-texture = 4 MB of VRAM; capping the count caps peak memory. Fewer on
+    // iPhone, where Safari reclaims the WebGL context under pressure. Cosmetic only —
+    // older skid marks just fade from memory sooner; physics is unaffected.
+    this._skidCap = TOUCH_DEVICE ? 6 : 12;
+    // Free every skid render-texture when this scene shuts down (retry / change car)
+    // so restarts never accumulate orphaned GPU textures.
+    this.events.once('shutdown', ()=>this._disposeSkids());
     this.skidBrush = this.add.circle(0,0,3,0x0a0a0a,0.5).setVisible(false);
     this._skidTile = (x,y)=>{
       const ts=1024, ix=Math.floor(x/ts), iy=Math.floor(y/ts), key=ix+','+iy;
       let t=this.skidTiles.get(key);
       if(!t){
-        if(this.skidTiles.size >= 14){
+        if(this.skidTiles.size >= this._skidCap){
           // recycle the least-recently-used tile (oldest marks fade from memory)
           let ok=null, ot=Infinity;
           for(const [k,v] of this.skidTiles){ if(v.last<ot){ ot=v.last; ok=k; } }
@@ -839,6 +847,43 @@ class GameScene extends Phaser.Scene {
       });
     } catch(e){ this.exhaust = null; }
     this._exhaustT = 0;
+
+    // ---- Pooled impact bursts (sparks / explosions) ----
+    // Impact flashes used to be created with this.add.ellipse(...) and destroy()ed
+    // on every hit — each create/destroy churns a WebGL GameObject and feeds the GC,
+    // causing frame hitches during heavy pursuit. We keep a fixed ring of ellipses,
+    // recolour/rescale one per hit, and return it to the pool on tween-complete
+    // instead of destroying it. Visuals are identical; nothing is allocated per hit
+    // beyond the tween itself. Base geometry is 100px so scale = diameter/100.
+    this._burstPool = [];
+    for(let i = 0; i < 12; i++){
+      this._burstPool.push(
+        this.add.ellipse(0, 0, 100, 100, 0xffffff, 1).setDepth(40).setVisible(false).setActive(false)
+      );
+    }
+    // one shared onComplete — allocated once, not per burst
+    this._burstRelease = (tw, targets)=>{
+      const e = (targets && targets[0]) || (tw && tw.targets && tw.targets[0]);
+      if(!e) return;
+      e.setVisible(false).setActive(false).setScale(1).setAlpha(1);
+      this._burstPool.push(e);
+    };
+    this._spawnBurst = (x, y, diam, color, fillAlpha, scaleTo, dur)=>{
+      const e = this._burstPool.pop();
+      if(!e) return;                       // pool drained (bounded) — drop the flash, never allocate
+      const s0 = diam / 100;
+      e.setPosition(x, y).setFillStyle(color, fillAlpha)
+       .setScale(s0).setAlpha(1).setVisible(true).setActive(true);
+      this.tweens.add({ targets:e, scale:s0*scaleTo, alpha:0, duration:dur, onComplete:this._burstRelease });
+    };
+
+    // ---- Reusable scratch objects (avoid per-frame literals) ----
+    // The car's stats never change mid-run, and the input struct is rebuilt every
+    // frame; hoisting both to persistent objects removes ~2 allocations per frame.
+    this._carStats = { spd:this.car.spd, acc:this.car.acc, grip:this.car.grip };
+    this._input = { left:false, right:false, gas:false, throttle:0, reverse:0,
+                    brakePedal:false, handbrake:false, steerAxis:0 };
+    this._nrScratch = { road:null, dist:0 };   // _nearestRoad result, consumed immediately by its caller
 
     // ---- INTRO: the meet -> the bust -> the scatter ----
     // Every car you didn't pick is parked with you at the meet. Then the
@@ -2429,7 +2474,10 @@ class GameScene extends Phaser.Scene {
       const d=Math.hypot(x-px, y-py);
       if(d<bd){ bd=d; best=r; }
     }
-    return {road:best, dist:bd};
+    // reuse a scratch object — the single caller reads it immediately
+    const nr = this._nrScratch || (this._nrScratch = { road:null, dist:0 });
+    nr.road = best; nr.dist = bd;
+    return nr;
   }
 
   _pushOutOfSolids(o, cr){
@@ -2663,16 +2711,15 @@ class GameScene extends Phaser.Scene {
 
     // gather input
     const k=this.keys;
-    const input = {
-      left:  k.left.isDown||k.leftA.isDown,
-      right: k.right.isDown||k.rightA.isDown,
-      gas:   k.up.isDown||k.upA.isDown||this.touch.throttle>0.02,
-      throttle: (k.up.isDown||k.upA.isDown) ? 1 : (this.touch.throttle||0),
-      reverse: (k.down.isDown||k.downA.isDown) ? 1 : (this.touch.reverse||0),
-      brakePedal: k.down.isDown||k.downA.isDown||this.touch.reverse>0.02,
-      handbrake: k.space.isDown||this.touch.brake,
-      steerAxis: this.touch.steer || 0    // -1..1 steering angle from wheel
-    };
+    const input = this._input;   // reused each frame — no per-frame allocation
+    input.left      = k.left.isDown||k.leftA.isDown;
+    input.right     = k.right.isDown||k.rightA.isDown;
+    input.gas       = k.up.isDown||k.upA.isDown||this.touch.throttle>0.02;
+    input.throttle  = (k.up.isDown||k.upA.isDown) ? 1 : (this.touch.throttle||0);
+    input.reverse   = (k.down.isDown||k.downA.isDown) ? 1 : (this.touch.reverse||0);
+    input.brakePedal= k.down.isDown||k.downA.isDown||this.touch.reverse>0.02;
+    input.handbrake = k.space.isDown||this.touch.brake;
+    input.steerAxis = this.touch.steer || 0;    // -1..1 steering angle from wheel
     // On touch: brake button doubles as handbrake (hold) — feels natural on mobile
     if(this.touch.brake) input.handbrake = true;
     if(this.intro && this.intro.phase!=='go'){
@@ -2689,7 +2736,7 @@ class GameScene extends Phaser.Scene {
       v.vy += ry * WHEEL.returnKick;
       WHEEL.returnKick = 0;
     }
-    v.update(dt, input, {spd:this.car.spd, acc:this.car.acc, grip:this.car.grip});
+    v.update(dt, input, this._carStats);   // stats object reused — no per-frame literal
 
     // collision vs solids (simple push-out + speed loss + shake)
     this._collide(v);
@@ -3017,6 +3064,18 @@ class GameScene extends Phaser.Scene {
     b.t.rt.draw(this.skidBrush, b.lx, b.ly);
   }
 
+  // Manually free the skid render-textures (the largest disposable GPU allocation,
+  // up to ~24 MB on iPhone). Called on context-loss and backgrounding — i.e. exactly
+  // when iOS is under memory pressure — and on scene shutdown. Safe to call anytime:
+  // the tiles are lazy and rebuild themselves on the next _skidTile() request.
+  _disposeSkids(){
+    if(!this.skidTiles) return;
+    for(const [, t] of this.skidTiles){
+      if(t && t.rt && t.rt.scene) t.rt.destroy();
+    }
+    this.skidTiles.clear();
+  }
+
   _updatePolice(dt, v){
     const t = this.elapsed;
 
@@ -3232,9 +3291,15 @@ class GameScene extends Phaser.Scene {
     this._bannerTO=setTimeout(()=>b.classList.remove('show'), 2600);
   }
   _greenFlash(){
-    const f=this.add.rectangle(0,0,6000,6000,0x2bff88,0.0).setScrollFactor(0).setDepth(95).setOrigin(0,0);
+    // one persistent full-screen rect, reused — no create/destroy per invasion
+    let f=this._greenFlashObj;
+    if(!f){
+      f=this._greenFlashObj=this.add.rectangle(0,0,6000,6000,0x2bff88,0.0)
+        .setScrollFactor(0).setDepth(95).setOrigin(0,0);
+    }
+    f.setFillStyle(0x2bff88, 0.0).setVisible(true).setActive(true);
     this.tweens.add({targets:f, fillAlpha:0.5, yoyo:true, duration:180, repeat:1,
-      onComplete:()=>f.destroy()});
+      onComplete:()=>{ f.setVisible(false).setActive(false); }});
   }
   _awakenUFO(v){
     this._invasion=true;
@@ -3256,8 +3321,7 @@ class GameScene extends Phaser.Scene {
     for(const c of this.cops){
       if(c.alive){
         c.alive=false;
-        const fl=this.add.ellipse(c.x, c.y, 64, 64, 0x2bff88, 0.9).setDepth(40);
-        this.tweens.add({targets:fl, scale:2.6, alpha:0, duration:450, onComplete:()=>fl.destroy()});
+        this._spawnBurst(c.x, c.y, 64, 0x2bff88, 0.9, 2.6, 450);
         if(c.gfx) c.gfx.setVisible(false);
       }
     }
@@ -3443,8 +3507,7 @@ class GameScene extends Phaser.Scene {
           this.health -= impact;
           this._trainHitCd = 0.85;
           this.cameras.main.shake(300, 0.024); this.shakeT=0.35;
-          const fl=this.add.ellipse(v.x, v.y, 90, 90, 0xffd08a, 0.55).setDepth(40);
-          this.tweens.add({targets:fl, scale:2.2, alpha:0, duration:320, onComplete:()=>fl.destroy()});
+          this._spawnBurst(v.x, v.y, 90, 0xffd08a, 0.55, 2.2, 320);
           v.vx = wx*520 + Math.cos(car.rotation)*t.spd*0.55;      // thrown clear
           v.vy = wy*520 + Math.sin(car.rotation)*t.spd*0.55;
         } else {
@@ -3687,7 +3750,10 @@ function boot(){
           game.canvas.addEventListener('webglcontextlost', function(e){
             e.preventDefault();
             const s = game.scene.getScene('game');
-            if(s && game.scene.isActive('game') && !s.paused) s.pauseGame();
+            if(s){
+              if(s._disposeSkids) s._disposeSkids();   // free GPU textures under memory pressure
+              if(game.scene.isActive('game') && !s.paused) s.pauseGame();
+            }
           }, false);
           game.canvas.addEventListener('webglcontextrestored', function(){
             if(game && game.scene.isActive('game')) game.scene.start('game');
@@ -3751,7 +3817,10 @@ function boot(){
   document.addEventListener('visibilitychange', ()=>{
     if(document.hidden && game){
       const s = game.scene.getScene('game');
-      if(s && game.scene.isActive('game') && !s.paused) s.pauseGame();
+      if(s && game.scene.isActive('game')){
+        if(!s.paused) s.pauseGame();
+        if(s._disposeSkids) s._disposeSkids();   // release VRAM proactively before iOS reclaims it
+      }
     }
   });
 }
