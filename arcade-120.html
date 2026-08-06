@@ -2759,6 +2759,14 @@ class GameScene extends Phaser.Scene {
     if(this._abducting) return;   // abduction cinematic — let the tweens run untouched
     if(!this.intro || this.intro.phase==='go') this.elapsed += dt;
 
+    // ── per-frame CPU profiler (measure only — NOT optimizing yet) ──
+    // seg(label) credits the wall-clock time since the previous mark to that bucket.
+    if(!this._pf) this._pf = { acc:{}, max:{}, frames:0,
+      order:['player','collision','traffic','police','train','camera','renderPrep','particles','zones','ui','other'] };
+    let _pfT = performance.now();
+    const seg = k => { const n = performance.now(); const d = n - _pfT; _pfT = n;
+      const q = this._pf; q.acc[k] = (q.acc[k]||0) + d; if(d > (q.max[k]||0)) q.max[k] = d; };
+
     // gather input
     const k=this.keys;
     const input = this._input;   // reused each frame — no per-frame allocation
@@ -2787,10 +2795,12 @@ class GameScene extends Phaser.Scene {
       WHEEL.returnKick = 0;
     }
     v.update(dt, input, this._carStats);   // stats object reused — no per-frame literal
+    seg('player');
 
     // collision vs solids (simple push-out + speed loss + shake)
     this._collide(v);
     this._collideArena(v);   // arena stands containment (entrance at south)
+    seg('collision');
 
     // sync sprite
     this.carGfx.setPosition(v.x, v.y);
@@ -2835,8 +2845,10 @@ class GameScene extends Phaser.Scene {
       }
     }
 
+    seg('other');   // carGfx sync + intro cinematic
     this._updateMeetCars(dt, v);
     this._updateTraffic(dt, v);
+    seg('traffic');
 
     // mall roof reveal — fade when anyone's story is happening inside
     if(this.mallRoof){
@@ -2963,6 +2975,7 @@ class GameScene extends Phaser.Scene {
       }
     }
 
+    seg('zones');   // landmark/egg triggers + roof reveals
     // brake lights flare under braking / handbrake
     const cl = this.carGfx.getData('carLights');
     if(cl){
@@ -2987,6 +3000,7 @@ class GameScene extends Phaser.Scene {
       this._layMarks(v);
       if(Math.random()<0.6) this._puff(v);
     }
+    seg('particles');
 
     // ===== Camera v0.2: velocity look-ahead, corner anticipation, speed zoom, drift lean =====
     const camSpd01 = Math.min(1, v.speed / (TUNE.maxSpeed * this.car.spd));
@@ -3009,6 +3023,7 @@ class GameScene extends Phaser.Scene {
     this.camLead.x += (tx-this.camLead.x)*Math.min(1,dt*camFollow);
     this.camLead.y += (ty-this.camLead.y)*Math.min(1,dt*camFollow);
     this.cameras.main.centerOn(this.camLead.x, this.camLead.y);
+    seg('camera');
 
     // ---- Camera culling pass ----
     // Only objects overlapping the camera view (+margin, so nothing pops at the
@@ -3038,6 +3053,7 @@ class GameScene extends Phaser.Scene {
       if(this.meetCars) for(const m of this.meetCars) cullPt(m.gfx);
       if(this.trainCars) for(const r of this.trainCars) cullPt(r);   // train circles the loop — cull live
     }
+    seg('renderPrep');   // camera-cull visibility pass (what the renderer will draw)
     // Zoom: wider with speed, extra breathing room mid-drift — feels faster than it is
     const cam=this.cameras.main;
     const driftZoom = v.isDrifting ? 0.045 : 0;
@@ -3051,9 +3067,11 @@ class GameScene extends Phaser.Scene {
 
     // screen shake decay
     if(this.shakeT>0){ this.shakeT-=dt; }
+    seg('camera');
 
     // ── POLICE ──
     if(!this.busted && (!this.intro || this.intro.phase==='go')) this._updatePolice(dt, v);
+    seg('police');
 
     // ---- SECRET alien invasion: track Heat-5 survival, trigger + drive the UFO ----
     if(this.ufo && !this.busted && (!this.intro || this.intro.phase==='go')){
@@ -3064,7 +3082,9 @@ class GameScene extends Phaser.Scene {
       }
       this._updateUFO(dt, v);
     }
+    seg('other');   // UFO secret system
     if(this.train && !this.busted) this._updateTrain(dt, v);
+    seg('train');
 
     // gently scroll the water textures for a flowing look
     if(this._water) for(const t of this._water){ t.tilePositionX += t._sx*dt; t.tilePositionY += t._sy*dt; }
@@ -3074,6 +3094,7 @@ class GameScene extends Phaser.Scene {
       b.img.y = b.y0 + Math.sin(this.elapsed*b.f*0.8 + b.p)*2.5;
     }
 
+    seg('other');   // water + boats ambient animation
     // drift scoring
     if(v.isDrifting){
       this.driftChain += v.speed*dt*0.05;
@@ -3094,6 +3115,10 @@ class GameScene extends Phaser.Scene {
     frac = Math.pow(frac, 0.6);            // curve: expands the low/mid range
     if(this.$tachoFill) this.$tachoFill.style.width = (frac*100).toFixed(1)+'%';
     this.$timer.textContent = this.elapsed.toFixed(1)+'s';
+    seg('ui');   // drift scoring + HUD DOM writes
+
+    const _p = this._pf; _p.frames++;
+    if(_p.frames >= 30) this._pfReport();   // refresh overlay ~2x/sec
   }
 
   _puff(v){
@@ -3145,6 +3170,46 @@ class GameScene extends Phaser.Scene {
       document.body.appendChild(b);
     }
     return b;
+  }
+
+  // ── per-frame CPU profiler overlay ──
+  _pfBox(){
+    let b = document.getElementById('pc-perf');
+    if(!b){
+      b = document.createElement('div');
+      b.id = 'pc-perf';
+      b.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:9997;'
+        + 'background:rgba(6,8,12,.9);border:1px solid #26D9FF;border-radius:8px;'
+        + 'padding:7px 9px;color:#bfe0ff;font-family:monospace;font-size:10px;'
+        + 'line-height:1.4;white-space:pre;pointer-events:auto;min-width:186px;';
+      b.addEventListener('click', ()=>{ b._min = !b._min; });   // tap to collapse/expand
+      document.body.appendChild(b);
+    }
+    return b;
+  }
+
+  _pfReport(){
+    const p = this._pf, n = p.frames || 1;
+    const label = { player:'Player', collision:'Collision', traffic:'AI traffic',
+      police:'Police AI', train:'Train', camera:'Camera', renderPrep:'Render prep',
+      particles:'Particles', zones:'Zones/eggs', ui:'UI', other:'Other' };
+    let totAvg = 0;
+    for(const k of p.order) totAvg += (p.acc[k]||0)/n;
+    // sort worst-first so the biggest frame-time consumer is on top
+    const rows = p.order.map(k => ({ k, avg:(p.acc[k]||0)/n, max:(p.max[k]||0) }))
+                        .sort((a,b)=> b.avg - a.avg);
+    const box = this._pfBox();
+    if(box._min){
+      box.textContent = 'PERF ' + totAvg.toFixed(2) + 'ms/f  (tap)';
+    } else {
+      let s = 'PER-FRAME CPU  avg / max ms  (' + n + 'f)\n';
+      for(const r of rows){
+        s += (label[r.k] || r.k).padEnd(11) + r.avg.toFixed(3).padStart(7) + ' /' + r.max.toFixed(2).padStart(7) + '\n';
+      }
+      s += 'TOTAL'.padEnd(11) + totAvg.toFixed(3).padStart(7) + '\n(tap to collapse)';
+      box.textContent = s;
+    }
+    p.acc = {}; p.max = {}; p.frames = 0;   // reset rolling window
   }
   _dbg(msg){
     const t = this._t0 ? (performance.now() - this._t0) : 0;
