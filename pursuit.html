@@ -441,7 +441,7 @@
     var html='';
     rows.forEach(function(d,i){
       var rank=i+1, cls = rank<=3 ? ' r'+rank : '';
-      var badge = d.found_ending ? '<span class="badge" title="This driver found the secret ending">&#128123;</span>' : '';
+      var badge = d.found_ending ? '<span class="badge" title="This driver found the secret ending">&#128125;</span>' : '';
       var sub = (d.car?esc(d.car):'') + (d.time_survived ? ((d.car?' · ':'')+'survived '+d.time_survived+'s') : '');
       html += '<div class="row'+cls+'">'
             +   '<div class="rank">'+rank+'</div>'
@@ -472,11 +472,12 @@
   }
 
   async function loadMystery(){
-    var el = document.querySelector('.mystery .m-text b'); if(!el) return;
+    var el = document.querySelector('.mystery .m-text'); if(!el) return;
     var r = await sb.from('pursuit_scores').select('seller_id').eq('found_ending', true);
     if(r.error) return;
     var set={}; (r.data||[]).forEach(function(d){ set[d.seller_id]=1; });
-    el.textContent = Object.keys(set).length;
+    var n = Object.keys(set).length;
+    el.innerHTML = '<b>'+n+'</b> '+(n===1?'driver has':'drivers have')+' uncovered the truth. Will you?';
   }
 
   // ---- hub pills: leaderboard / play ----

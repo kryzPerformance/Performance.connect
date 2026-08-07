@@ -964,6 +964,19 @@ class GameScene extends Phaser.Scene {
       this.input.keyboard.on('keydown-P',   ()=> this.paused ? this.resumeGame() : this.pauseGame());
       this.input.keyboard.on('keydown-ESC', ()=> this.paused ? this.resumeGame() : this.pauseGame());
     }
+    // Let HTML text inputs (Instagram / Performance Key) receive W/A/S/D/space:
+    // Phaser captures those keys and preventDefault()s them, which otherwise eats typing.
+    // Pause key capture while any such field is focused, resume on blur.
+    if(this.input.keyboard){
+      const _kb = this.input.keyboard;
+      ['go-ig','go-key'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el){
+          el.addEventListener('focus', ()=>{ try { _kb.disableGlobalCapture(); } catch(e){} });
+          el.addEventListener('blur',  ()=>{ try { _kb.enableGlobalCapture();  } catch(e){} });
+        }
+      });
+    }
     this.touch = TOUCH;   // shared global input state (survives restarts)
     this._wireTouch();
 
@@ -2951,6 +2964,28 @@ class GameScene extends Phaser.Scene {
       const ct = under ? 0.10 : 1;
       this.gsCanopy.alpha += (ct - this.gsCanopy.alpha) * Math.min(1, dt*6);
       const inZone = Phaser.Geom.Rectangle.Contains(this.gsFuelRect, v.x, v.y);
+      // ── TEMP fuel-gate diagnostic (remove once fixed) ──
+      // Shows the four conditions live whenever the car is near the station,
+      // so we can read which gate is blocking the pit stop instead of guessing.
+      if(Math.hypot(v.x-2907, v.y-3888) < 700){
+        let d = document.getElementById('pc-fuel-dbg');
+        if(!d){
+          d = document.createElement('div'); d.id = 'pc-fuel-dbg';
+          d.style.cssText = 'position:fixed;left:8px;top:8px;z-index:9999;'
+            + 'background:rgba(6,8,12,.92);border:1px solid #7CFF6B;border-radius:8px;'
+            + 'padding:6px 9px;color:#9dffb0;font-family:monospace;font-size:11px;'
+            + 'line-height:1.45;white-space:pre;';
+          document.body.appendChild(d);
+        }
+        d.textContent = 'FUEL GATES  (need all ok)\n'
+          + 'inZone : ' + inZone + '\n'
+          + 'speed  : ' + v.speed.toFixed(0) + (v.speed < 150 ? '  ok (<150)' : '  TOO FAST') + '\n'
+          + 'used   : ' + this._fuelUsed + (this._fuelUsed ? '  ALREADY USED' : '  ok') + '\n'
+          + 'phase  : ' + (this.intro ? this.intro.phase : 'go') + '\n'
+          + 'car pos: ' + v.x.toFixed(0) + ', ' + v.y.toFixed(0) + '\n'
+          + 'zone   : x 2737-3077  y 3835-4039\n'
+          + 'fuelT  : ' + this._fuelT.toFixed(2) + ' / 0.90';
+      }
       if(!this._fuelUsed && inZone && v.speed < 150 && (!this.intro || this.intro.phase==='go')){
         this._fuelT += dt;
         if(!this._fuelBar){
@@ -3211,6 +3246,7 @@ class GameScene extends Phaser.Scene {
     }
     p.acc = {}; p.max = {}; p.frames = 0;   // reset rolling window
   }
+
   _dbg(msg){
     const t = this._t0 ? (performance.now() - this._t0) : 0;
     const line = '[' + t.toFixed(0).padStart(5) + 'ms] ' + msg;
