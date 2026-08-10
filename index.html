@@ -456,6 +456,21 @@
     outline-offset:2px;
   }
 
+  .footer-legal{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-size:12px;
+    letter-spacing:0.04em;
+  }
+  .footer-legal a{
+    color:var(--steel-dim);
+    text-decoration:none;
+    transition:color 0.15s ease;
+  }
+  .footer-legal a:hover{ color:var(--cyan-bright); }
+  .footer-legal .sep{ color:var(--line); }
+
   /* ---------- feature submission modal ---------- */
   .modal-overlay{
     position:fixed;
@@ -745,6 +760,11 @@
           </svg>
         </a>
       </div>
+      <nav class="footer-legal" aria-label="Legal">
+        <a href="terms.html">Terms of Use</a>
+        <span class="sep">·</span>
+        <a href="privacy.html">Privacy Policy</a>
+      </nav>
     </footer>
   </div>
 

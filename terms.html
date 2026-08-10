@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms of Use — Performance Connect</title>
+<meta name="description" content="Terms of Use for Performance Connect — the Toronto & GTA performance car marketplace and community. Governed by the laws of Ontario, Canada.">
+<link rel="canonical" href="https://performanceconnect.ca/terms.html">
+<meta name="theme-color" content="#070808">
+<meta name="robots" content="index,follow">
+<meta property="og:title" content="Terms of Use — Performance Connect">
+<meta property="og:description" content="The terms that govern your use of Performance Connect.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://performanceconnect.ca/terms.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#070808;
+    --panel:#111415;
+    --panel-2:#161a1b;
+    --line:#23292b;
+    --cyan:#1FA9CF;
+    --cyan-bright:#3DC9F0;
+    --steel:#8FA0A6;
+    --steel-dim:#5C6A6E;
+    --white:#F2F6F7;
+    --body:#C7D0D2;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{background:var(--black);scroll-behavior:smooth}
+  body{
+    background:var(--black);
+    color:var(--body);
+    font-family:'Inter',sans-serif;
+    line-height:1.72;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    padding-bottom:3rem;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size:64px 64px;
+    background-attachment:fixed;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(ellipse 900px 520px at 50% -6%, rgba(31,169,207,0.10), transparent 60%);
+  }
+  a{color:var(--cyan-bright);text-decoration:none}
+  a:hover{text-decoration:underline}
+  :focus-visible{outline:2px solid var(--cyan-bright);outline-offset:3px;border-radius:4px}
+
+  .skip{position:absolute;left:-9999px;top:0;background:var(--cyan-bright);color:#02181f;padding:10px 16px;border-radius:0 0 10px 0;font-weight:700;z-index:30}
+  .skip:focus{left:0}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:20;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:16px clamp(18px,6vw,40px);
+    background:rgba(7,8,8,0.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    border-bottom:0.5px solid var(--line);
+  }
+  .back{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:13px;font-weight:600;letter-spacing:0.03em;color:var(--steel);
+    padding:8px 16px;border-radius:999px;border:0.5px solid var(--line);
+    background:rgba(255,255,255,0.03);
+    transition:color .15s ease,border-color .15s ease,background .15s ease;
+  }
+  .back:hover{text-decoration:none;color:var(--cyan-bright);border-color:rgba(31,169,207,0.45);background:rgba(31,169,207,0.07)}
+  .back svg{width:15px;height:15px}
+  .wordmark{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;letter-spacing:0.18em;color:var(--white)}
+  .wordmark span{color:var(--cyan-bright)}
+
+  .wrap{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:0 clamp(18px,6vw,24px)}
+
+  /* ---------- doc toggle ---------- */
+  .toggle{display:inline-flex;padding:4px;gap:4px;background:var(--panel);border:0.5px solid var(--line);border-radius:999px;margin:30px 0 4px}
+  .toggle a{padding:8px 18px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:0.03em;color:var(--steel)}
+  .toggle a:hover{text-decoration:none;color:var(--cyan-bright)}
+  .toggle a.is-current{color:var(--cyan-bright);background:rgba(31,169,207,0.08);border:0.5px solid rgba(31,169,207,0.35)}
+
+  /* ---------- hero ---------- */
+  .hero{padding:28px 0 14px}
+  .eyebrow{
+    font-size:13px;font-weight:500;letter-spacing:0.22em;text-transform:uppercase;color:var(--cyan);
+    display:flex;align-items:center;gap:14px;margin-bottom:20px;
+  }
+  .eyebrow::before,.eyebrow::after{content:"";width:30px;height:1px;background:linear-gradient(to right,transparent,var(--cyan))}
+  .eyebrow::after{background:linear-gradient(to left,transparent,var(--cyan))}
+  h1{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;text-transform:uppercase;
+    font-size:clamp(2.4rem,9vw,3.6rem);line-height:1.0;letter-spacing:0.01em;color:var(--white);
+  }
+  h1 .accent{color:var(--cyan-bright)}
+  .dates{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+  .pill{font-size:12px;font-weight:500;letter-spacing:0.05em;color:var(--steel);background:var(--panel);border:0.5px solid var(--line);padding:6px 13px;border-radius:999px}
+  .pill b{color:var(--cyan-bright);font-weight:600}
+  .intro{background:var(--panel);border:0.5px solid var(--line);border-radius:var(--radius);padding:22px;margin:26px 0 6px}
+  .intro p{color:var(--steel);font-size:1rem}
+  .intro strong{color:var(--white);font-weight:600}
+
+  /* ---------- table of contents ---------- */
+  details.toc{background:var(--panel);border:0.5px solid var(--line);border-radius:var(--radius);margin:26px 0 8px;overflow:hidden}
+  details.toc summary{
+    cursor:pointer;list-style:none;padding:16px 20px;
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;text-transform:uppercase;letter-spacing:0.02em;font-size:1.05rem;color:var(--white);
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  details.toc summary::-webkit-details-marker{display:none}
+  details.toc summary::after{content:"+";color:var(--cyan-bright);font-weight:700;font-size:1.3rem;line-height:1}
+  details.toc[open] summary::after{content:"\2013"}
+  .toc-list{padding:2px 12px 14px;columns:2;column-gap:12px}
+  .toc-list a{display:flex;gap:9px;padding:7px 9px;border-radius:8px;color:var(--steel);font-size:.86rem;line-height:1.35;break-inside:avoid}
+  .toc-list a:hover{text-decoration:none;background:var(--panel-2);color:var(--white)}
+  .toc-list a .n{font-family:'Rajdhani',sans-serif;font-weight:600;color:var(--cyan-bright);font-size:.86rem;flex:none}
+  @media(max-width:560px){.toc-list{columns:1}}
+
+  /* ---------- sections ---------- */
+  section.sec{padding:34px 0 6px;border-top:0.5px solid var(--line);margin-top:12px}
+  section.sec:first-of-type{border-top:none}
+  .sec-head{display:flex;align-items:baseline;gap:13px;margin-bottom:15px;scroll-margin-top:80px}
+  .sec-num{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;color:var(--cyan-bright);flex:none}
+  h2.section-title{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;text-transform:uppercase;letter-spacing:0.01em;line-height:1.08;
+    font-size:clamp(1.28rem,4.6vw,1.62rem);color:var(--white);margin:0;
+  }
+  .sec p{margin-bottom:14px}
+  .sec p:last-child{margin-bottom:0}
+  .sec ul{margin:0 0 16px;padding:0;list-style:none}
+  .sec li{position:relative;padding:4px 0 4px 22px}
+  .sec li::before{content:"";position:absolute;left:2px;top:13px;width:6px;height:6px;border-radius:1px;background:var(--cyan);box-shadow:0 0 8px rgba(31,169,207,0.55)}
+
+  /* ---------- contact card ---------- */
+  .card{background:var(--panel-2);border:0.5px solid var(--line);border-left:2px solid var(--cyan-bright);border-radius:12px;padding:18px 20px;margin-top:6px}
+  .card .label{font-family:'Rajdhani',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;font-size:.72rem;color:var(--steel-dim);margin-bottom:10px}
+  .card p{margin-bottom:6px;color:var(--white)}
+  .card p:last-child{margin-bottom:0}
+  .card a{color:var(--cyan-bright)}
+
+  /* ---------- footer ---------- */
+  footer{max-width:780px;margin:52px auto 0;padding:26px clamp(18px,6vw,24px) 0;border-top:0.5px solid var(--line);text-align:center}
+  footer .tag{font-family:'Rajdhani',sans-serif;font-weight:600;font-style:italic;text-transform:uppercase;letter-spacing:0.06em;color:var(--steel);font-size:.9rem;margin-bottom:14px}
+  footer .flinks{display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap;font-size:12px;letter-spacing:0.04em}
+  footer .flinks a{color:var(--steel-dim);transition:color .15s ease}
+  footer .flinks a:hover{color:var(--cyan-bright);text-decoration:none}
+  footer .flinks .sep{color:var(--line)}
+
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="topbar">
+  <a class="back" href="index.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Back
+  </a>
+  <div class="wordmark">PERFORMANCE<span>CONNECT.CA</span></div>
+</div>
+
+<div class="wrap">
+
+  <nav class="toggle" aria-label="Legal documents">
+    <a href="terms.html" class="is-current" aria-current="page">Terms of Use</a>
+    <a href="privacy.html">Privacy Policy</a>
+  </nav>
+
+  <header class="hero">
+    <p class="eyebrow">Legal</p>
+    <h1>Terms of <span class="accent">Use</span></h1>
+    <div class="dates">
+      <span class="pill">Effective <b>August 8, 2026</b></span>
+      <span class="pill">Last updated <b>August 8, 2026</b></span>
+    </div>
+    <div class="intro">
+      <p>These Terms of Use govern your access to and use of the Performance Connect website, applications, services, features, and community (the <strong>"Platform"</strong>). By accessing or using the Platform — creating an account, posting content, registering for an event, creating a listing, or otherwise using it — you agree to these Terms. If you do not agree, you must not use the Platform.</p>
+    </div>
+  </header>
+
+  <details class="toc">
+    <summary>Contents</summary>
+    <div class="toc-list">
+      <a href="#s1"><span class="n">01</span>Eligibility</a>
+      <a href="#s2"><span class="n">02</span>Your Account</a>
+      <a href="#s3"><span class="n">03</span>Using Performance Connect</a>
+      <a href="#s4"><span class="n">04</span>User Content</a>
+      <a href="#s5"><span class="n">05</span>Public Content</a>
+      <a href="#s6"><span class="n">06</span>Events</a>
+      <a href="#s7"><span class="n">07</span>Marketplace &amp; Transactions</a>
+      <a href="#s8"><span class="n">08</span>Business Listings</a>
+      <a href="#s9"><span class="n">09</span>Reviews &amp; Contributions</a>
+      <a href="#s10"><span class="n">10</span>Intellectual Property</a>
+      <a href="#s11"><span class="n">11</span>Third-Party Services &amp; Links</a>
+      <a href="#s12"><span class="n">12</span>Payments &amp; Paid Features</a>
+      <a href="#s13"><span class="n">13</span>Content Moderation</a>
+      <a href="#s14"><span class="n">14</span>Suspension &amp; Termination</a>
+      <a href="#s15"><span class="n">15</span>Availability &amp; Changes</a>
+      <a href="#s16"><span class="n">16</span>Disclaimers</a>
+      <a href="#s17"><span class="n">17</span>Limitation of Liability</a>
+      <a href="#s18"><span class="n">18</span>Indemnification</a>
+      <a href="#s19"><span class="n">19</span>Privacy</a>
+      <a href="#s20"><span class="n">20</span>Changes to These Terms</a>
+      <a href="#s21"><span class="n">21</span>Governing Law</a>
+      <a href="#s22"><span class="n">22</span>Contact</a>
+    </div>
+  </details>
+
+  <main id="main">
+
+    <section class="sec" id="s1">
+      <div class="sec-head"><span class="sec-num">01</span><h2 class="section-title">Eligibility</h2></div>
+      <p>You must meet the minimum age required to use the Platform under the laws applicable to you.</p>
+      <p>If you are under the age of majority in your jurisdiction, you may only use Performance Connect with the involvement and permission of a parent or legal guardian where required by law.</p>
+      <p>You are responsible for ensuring that your use of the Platform is lawful in your location.</p>
+    </section>
+
+    <section class="sec" id="s2">
+      <div class="sec-head"><span class="sec-num">02</span><h2 class="section-title">Your Account</h2></div>
+      <p>Certain Performance Connect features may require an account. When creating an account, you agree to:</p>
+      <ul>
+        <li>Provide accurate and current information;</li>
+        <li>Keep your login credentials secure;</li>
+        <li>Not share your password with others;</li>
+        <li>Not impersonate another person or organization;</li>
+        <li>Not create an account for another person without authorization;</li>
+        <li>Notify us if you believe your account has been compromised.</li>
+      </ul>
+      <p>You are responsible for activity occurring through your account unless that activity resulted from a security failure attributable to Performance Connect.</p>
+      <p>We reserve the right to suspend or terminate accounts that violate these Terms or applicable law.</p>
+    </section>
+
+    <section class="sec" id="s3">
+      <div class="sec-head"><span class="sec-num">03</span><h2 class="section-title">Using Performance Connect</h2></div>
+      <p>Performance Connect is intended for legitimate automotive-community purposes. You agree to use the Platform responsibly and lawfully. You must not use Performance Connect to:</p>
+      <ul>
+        <li>Break any applicable law or regulation;</li>
+        <li>Harass, threaten, intimidate, or abuse another person;</li>
+        <li>Defraud or scam another user;</li>
+        <li>Impersonate another person, business, organization, or representative;</li>
+        <li>Upload malicious software or harmful code;</li>
+        <li>Attempt to gain unauthorized access to accounts, systems, or data;</li>
+        <li>Interfere with the operation or security of the Platform;</li>
+        <li>Scrape, copy, harvest, or systematically collect information without permission;</li>
+        <li>Spam or excessively solicit users;</li>
+        <li>Upload content that infringes another person's intellectual property or other legal rights;</li>
+        <li>Facilitate illegal activity;</li>
+        <li>Post fraudulent, deceptive, or materially misleading information.</li>
+      </ul>
+    </section>
+
+    <section class="sec" id="s4">
+      <div class="sec-head"><span class="sec-num">04</span><h2 class="section-title">User Content</h2></div>
+      <p>Performance Connect allows users to create and share content, including profiles, photographs, videos, vehicle information, event information, reviews, comments, messages, listings, business information, and other material (<strong>"User Content"</strong>).</p>
+      <p>You retain ownership of User Content that you create and submit.</p>
+      <p>By submitting User Content to Performance Connect, you grant us a non-exclusive, worldwide, royalty-free license to host, store, reproduce, display, distribute, format, and otherwise use that content as reasonably necessary to operate, maintain, improve, and promote the Platform. This license does not transfer ownership of your content to Performance Connect.</p>
+      <p>You represent that:</p>
+      <ul>
+        <li>You own or have the necessary rights to submit the content;</li>
+        <li>Your content does not unlawfully infringe another person's rights;</li>
+        <li>Your content complies with these Terms and applicable law.</li>
+      </ul>
+      <p>You are responsible for your User Content.</p>
+    </section>
+
+    <section class="sec" id="s5">
+      <div class="sec-head"><span class="sec-num">05</span><h2 class="section-title">Public Content</h2></div>
+      <p>Certain information you choose to publish may be visible to other users or the public. This may include:</p>
+      <ul>
+        <li>Your username;</li>
+        <li>Profile information;</li>
+        <li>Vehicle information;</li>
+        <li>Photographs and videos;</li>
+        <li>Event listings;</li>
+        <li>Marketplace listings;</li>
+        <li>Business information;</li>
+        <li>Public comments or reviews.</li>
+      </ul>
+      <p>Do not publish information that you do not want other people to see.</p>
+      <p>Privacy settings may limit the visibility of certain information, but no online system can guarantee that information will never be copied, saved, or redistributed by others.</p>
+    </section>
+
+    <section class="sec" id="s6">
+      <div class="sec-head"><span class="sec-num">06</span><h2 class="section-title">Events</h2></div>
+      <p>Performance Connect may allow users, clubs, businesses, or other organizations to create and promote automotive events. Event organizers are responsible for the accuracy and legality of their events, including:</p>
+      <ul>
+        <li>Event details;</li>
+        <li>Locations;</li>
+        <li>Dates and times;</li>
+        <li>Admission requirements;</li>
+        <li>Permits and approvals;</li>
+        <li>Insurance;</li>
+        <li>Safety requirements;</li>
+        <li>Cancellation policies;</li>
+        <li>Refund policies;</li>
+        <li>Compliance with applicable laws.</li>
+      </ul>
+      <p>Performance Connect does not guarantee that an event will occur as advertised. Performance Connect is not the organizer of third-party events unless expressly stated otherwise.</p>
+      <p>We are not responsible for injuries, property damage, cancellations, losses, or disputes arising from participation in third-party events, except to the extent liability cannot legally be excluded.</p>
+    </section>
+
+    <section class="sec" id="s7">
+      <div class="sec-head"><span class="sec-num">07</span><h2 class="section-title">Marketplace &amp; Transactions</h2></div>
+      <p>Performance Connect may provide features that allow users to advertise, buy, sell, trade, or otherwise exchange automotive-related goods or services.</p>
+      <p>Unless expressly stated otherwise, Performance Connect is not the seller, buyer, owner, broker, or party to transactions between users. Users are responsible for conducting their own due diligence.</p>
+      <p>Performance Connect does not guarantee:</p>
+      <ul>
+        <li>The existence or condition of an item;</li>
+        <li>The accuracy of a listing;</li>
+        <li>The identity of a seller or buyer;</li>
+        <li>Payment;</li>
+        <li>Delivery;</li>
+        <li>Ownership of an item;</li>
+        <li>The legality of a transaction.</li>
+      </ul>
+      <p>Users are responsible for complying with all laws applicable to their transactions. Fraudulent, stolen, counterfeit, prohibited, or illegal items may not be listed.</p>
+    </section>
+
+    <section class="sec" id="s8">
+      <div class="sec-head"><span class="sec-num">08</span><h2 class="section-title">Business Listings</h2></div>
+      <p>Businesses may create profiles or listings on Performance Connect. Businesses are responsible for ensuring that their information is accurate and current.</p>
+      <p>Performance Connect does not guarantee or endorse every business, product, service, review, or claim appearing on the Platform. We may remove or modify business listings that violate these Terms or applicable policies.</p>
+    </section>
+
+    <section class="sec" id="s9">
+      <div class="sec-head"><span class="sec-num">09</span><h2 class="section-title">Reviews &amp; Community Contributions</h2></div>
+      <p>Users may be able to submit reviews, ratings, comments, or other community contributions. Reviews must reflect genuine experiences. You must not:</p>
+      <ul>
+        <li>Submit fabricated reviews;</li>
+        <li>Review a business solely to manipulate its rating;</li>
+        <li>Submit reviews on behalf of another person without authorization;</li>
+        <li>Threaten a business or user in exchange for a review;</li>
+        <li>Coordinate fraudulent review campaigns.</li>
+      </ul>
+      <p>Performance Connect may remove content that violates these requirements.</p>
+    </section>
+
+    <section class="sec" id="s10">
+      <div class="sec-head"><span class="sec-num">10</span><h2 class="section-title">Intellectual Property</h2></div>
+      <p>The Performance Connect name, logos, trademarks, branding, software, interface, designs, graphics, and original Platform content are owned by or licensed to Performance Connect.</p>
+      <p>Except where permitted by law or expressly authorized by us, you may not copy, modify, reproduce, sell, distribute, reverse engineer, republish, or create derivative works from Performance Connect's proprietary materials.</p>
+      <p>Your use of the Platform does not give you ownership of Performance Connect intellectual property.</p>
+    </section>
+
+    <section class="sec" id="s11">
+      <div class="sec-head"><span class="sec-num">11</span><h2 class="section-title">Third-Party Services &amp; Links</h2></div>
+      <p>The Platform may contain links to third-party websites, services, businesses, applications, payment processors, mapping services, or other resources. Those third parties operate under their own terms and privacy policies.</p>
+      <p>Performance Connect is not responsible for the content, availability, security, or practices of third-party services.</p>
+    </section>
+
+    <section class="sec" id="s12">
+      <div class="sec-head"><span class="sec-num">12</span><h2 class="section-title">Payments &amp; Paid Features</h2></div>
+      <p>Performance Connect may offer paid subscriptions, memberships, advertising, promotional services, or other paid features. Where applicable, pricing and billing terms will be presented before purchase.</p>
+      <p>Unless otherwise stated or required by law:</p>
+      <ul>
+        <li>Paid services may renew automatically;</li>
+        <li>You may cancel future renewals through the applicable account controls;</li>
+        <li>Cancellation does not necessarily provide a refund for a period already paid for;</li>
+        <li>Taxes may apply.</li>
+      </ul>
+      <p>Any specific refund terms presented at the time of purchase will apply to that purchase.</p>
+    </section>
+
+    <section class="sec" id="s13">
+      <div class="sec-head"><span class="sec-num">13</span><h2 class="section-title">Content Moderation</h2></div>
+      <p>We reserve the right, but do not assume an obligation, to review, restrict, remove, or disable access to User Content or accounts that we reasonably believe:</p>
+      <ul>
+        <li>Violates these Terms;</li>
+        <li>Violates applicable law;</li>
+        <li>Creates a risk to users or the Platform;</li>
+        <li>Is fraudulent or deceptive;</li>
+        <li>Infringes another person's rights;</li>
+        <li>Is otherwise inappropriate for Performance Connect.</li>
+      </ul>
+      <p>We may take action without prior notice where reasonably necessary to protect users, the Platform, or third parties.</p>
+    </section>
+
+    <section class="sec" id="s14">
+      <div class="sec-head"><span class="sec-num">14</span><h2 class="section-title">Account Suspension &amp; Termination</h2></div>
+      <p>You may stop using Performance Connect at any time. We may suspend, restrict, or terminate your account if:</p>
+      <ul>
+        <li>You violate these Terms;</li>
+        <li>You engage in fraudulent or abusive conduct;</li>
+        <li>Your activity creates a security or legal risk;</li>
+        <li>We are required to do so by law;</li>
+        <li>We discontinue the applicable service.</li>
+      </ul>
+      <p>Where appropriate, we may provide notice and an opportunity to address the issue. Termination does not eliminate obligations that by their nature should continue after termination.</p>
+    </section>
+
+    <section class="sec" id="s15">
+      <div class="sec-head"><span class="sec-num">15</span><h2 class="section-title">Availability &amp; Changes</h2></div>
+      <p>We work to keep Performance Connect available and reliable, but we do not guarantee uninterrupted access. We may:</p>
+      <ul>
+        <li>Modify features;</li>
+        <li>Add or remove services;</li>
+        <li>Change the Platform's design;</li>
+        <li>Temporarily suspend features;</li>
+        <li>Discontinue features or services.</li>
+      </ul>
+      <p>We may do so for operational, security, legal, business, or technical reasons.</p>
+    </section>
+
+    <section class="sec" id="s16">
+      <div class="sec-head"><span class="sec-num">16</span><h2 class="section-title">Disclaimers</h2></div>
+      <p>To the maximum extent permitted by applicable law, Performance Connect is provided on an <strong>"as available"</strong> and <strong>"as is"</strong> basis. We do not guarantee that:</p>
+      <ul>
+        <li>The Platform will always be available;</li>
+        <li>Information will always be accurate;</li>
+        <li>User Content will be reliable;</li>
+        <li>Events or listings will occur as advertised;</li>
+        <li>The Platform will be completely free from errors or security vulnerabilities.</li>
+      </ul>
+      <p>Nothing in these Terms excludes a warranty, right, or protection that cannot legally be excluded.</p>
+    </section>
+
+    <section class="sec" id="s17">
+      <div class="sec-head"><span class="sec-num">17</span><h2 class="section-title">Limitation of Liability</h2></div>
+      <p>To the maximum extent permitted by applicable law, Performance Connect and its owners, employees, contractors, affiliates, and service providers will not be responsible for indirect, incidental, special, consequential, exemplary, or punitive damages arising from your use of the Platform. This includes losses relating to:</p>
+      <ul>
+        <li>User-to-user transactions;</li>
+        <li>Events;</li>
+        <li>Listings;</li>
+        <li>Business interactions;</li>
+        <li>Lost profits;</li>
+        <li>Lost data;</li>
+        <li>Business interruption;</li>
+        <li>Unauthorized access;</li>
+        <li>Third-party services.</li>
+      </ul>
+      <p>Nothing in these Terms limits liability where doing so would be prohibited by applicable law.</p>
+    </section>
+
+    <section class="sec" id="s18">
+      <div class="sec-head"><span class="sec-num">18</span><h2 class="section-title">Indemnification</h2></div>
+      <p>To the extent permitted by law, you agree to defend, indemnify, and hold harmless Performance Connect and its owners, employees, contractors, affiliates, and service providers from claims, losses, liabilities, costs, and expenses arising from:</p>
+      <ul>
+        <li>Your violation of these Terms;</li>
+        <li>Your User Content;</li>
+        <li>Your misuse of the Platform;</li>
+        <li>Your violation of another person's rights;</li>
+        <li>Your transactions or interactions with other users.</li>
+      </ul>
+    </section>
+
+    <section class="sec" id="s19">
+      <div class="sec-head"><span class="sec-num">19</span><h2 class="section-title">Privacy</h2></div>
+      <p>Our collection and use of personal information is described in the <a href="privacy.html">Performance Connect Privacy Policy</a>. By using the Platform, you acknowledge that you have reviewed the Privacy Policy.</p>
+    </section>
+
+    <section class="sec" id="s20">
+      <div class="sec-head"><span class="sec-num">20</span><h2 class="section-title">Changes to These Terms</h2></div>
+      <p>We may update these Terms from time to time. When changes are made, we will update the "Last Updated" date. If changes are material, we may provide additional notice where appropriate.</p>
+      <p>Your continued use of Performance Connect after updated Terms become effective constitutes acceptance of the updated Terms, to the extent permitted by law.</p>
+    </section>
+
+    <section class="sec" id="s21">
+      <div class="sec-head"><span class="sec-num">21</span><h2 class="section-title">Governing Law</h2></div>
+      <p>These Terms are governed by the laws of the Province of Ontario and the applicable federal laws of Canada, without regard to conflict-of-law principles.</p>
+      <p>Any dispute will be handled in accordance with applicable Canadian law and the courts having appropriate jurisdiction in Ontario, subject to any mandatory rights or protections that apply to you under the laws of your jurisdiction.</p>
+    </section>
+
+    <section class="sec" id="s22">
+      <div class="sec-head"><span class="sec-num">22</span><h2 class="section-title">Contact</h2></div>
+      <p>Questions regarding these Terms may be directed to:</p>
+      <div class="card">
+        <p class="label">Get in touch</p>
+        <p><strong>Performance Connect</strong></p>
+        <p>Email: <a href="mailto:info@performanceconnect.ca">info@performanceconnect.ca</a></p>
+        <p>Website: <a href="https://performanceconnect.ca">performanceconnect.ca</a></p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  <p class="tag">Built for the automotive community.</p>
+  <nav class="flinks" aria-label="Legal">
+    <a href="index.html">Home</a>
+    <span class="sep">·</span>
+    <a href="terms.html">Terms of Use</a>
+    <span class="sep">·</span>
+    <a href="privacy.html">Privacy Policy</a>
+  </nav>
+</footer>
+
+</body>
+</html>
