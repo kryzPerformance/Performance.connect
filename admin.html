@@ -121,6 +121,26 @@
 
   .hint{font-size:12px;color:var(--steel-dim);line-height:1.6;margin-top:10px;}
   .hint code{background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:4px;font-size:11px;}
+
+  .listings-toolbar{display:flex;gap:10px;align-items:flex-end;margin-bottom:8px;}
+  .listing-thumb{width:52px;height:52px;border-radius:8px;object-fit:cover;border:0.5px solid var(--line);flex-shrink:0;background:var(--panel-2);}
+  .listing-remove{flex:1;padding:9px;border-radius:7px;background:rgba(232,69,69,0.1);border:0.5px solid rgba(232,69,69,0.3);color:var(--red);font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;}
+  .listing-remove:hover{background:rgba(232,69,69,0.18);}
+  .listing-remove:disabled{opacity:0.55;cursor:default;}
+
+  .seg{display:flex;gap:6px;margin-bottom:16px;background:var(--panel);border:0.5px solid var(--line);border-radius:12px;padding:5px;max-width:340px;}
+  .seg-btn{flex:1;padding:10px;border-radius:8px;font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--steel-dim);transition:all 0.15s;}
+  .seg-btn.active{background:rgba(31,169,207,0.12);color:var(--cyan-bright);}
+
+  .po-parts{margin-top:12px;border-top:0.5px solid var(--line);padding-top:10px;}
+  .po-part-row{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:12.5px;color:var(--steel);}
+  .po-part-row:not(:last-child){border-bottom:0.5px solid rgba(35,41,43,0.6);}
+  .po-part-name{flex:1;min-width:0;color:var(--white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .po-part-price{color:var(--steel);flex-shrink:0;}
+  .po-part-del{flex-shrink:0;padding:5px 10px;border-radius:6px;background:rgba(232,69,69,0.1);border:0.5px solid rgba(232,69,69,0.3);color:var(--red);font-size:11px;font-weight:700;}
+  .po-part-del:hover{background:rgba(232,69,69,0.18);}
+  .po-part-del:disabled{opacity:0.55;cursor:default;}
+  .po-parts-empty{font-size:12px;color:var(--steel-dim);padding:4px 0;}
 </style>
 </head>
 <body>
@@ -151,6 +171,7 @@
     <div class="tab active" data-tab="affiliate">Add Affiliate</div>
     <div class="tab" data-tab="event">Add Event</div>
     <div class="tab" data-tab="queue">Approvals <span class="badge" id="queue-badge" style="display:none;">0</span></div>
+    <div class="tab" data-tab="listings">Listings</div>
   </div>
 
   <!-- ══════════ TAB 1: ADD AFFILIATE ══════════ -->
@@ -284,6 +305,30 @@
     </div>
   </div>
 
+  <!-- ══════════ TAB 4: LISTINGS MODERATION ══════════ -->
+  <div class="tab-panel" id="panel-listings">
+    <div class="eyebrow">Admin Tool</div>
+    <h1 class="title">Manage <span class="accent">Listings</span></h1>
+    <p class="intro">Every marketplace listing and part-out on the platform. Search, then remove any post. Deletion is permanent.</p>
+
+    <div class="seg" id="listings-seg">
+      <button class="seg-btn active" data-src="listings" type="button">Marketplace</button>
+      <button class="seg-btn" data-src="partout" type="button">Part-outs</button>
+    </div>
+
+    <div class="listings-toolbar">
+      <div class="fgroup" style="flex:1;margin-bottom:0;">
+        <input type="text" id="listings-search" placeholder="Search...">
+      </div>
+      <button class="btn-ghost" id="listings-refresh" type="button" style="height:44px;">Refresh</button>
+    </div>
+    <div class="hint" id="listings-count" style="margin-top:0;margin-bottom:16px;"></div>
+
+    <div id="listings-list">
+      <div class="queue-empty">Loading listings...</div>
+    </div>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -335,6 +380,7 @@
       tab.classList.add('active');
       document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
       if(tab.dataset.tab === 'queue') loadQueue();
+      if(tab.dataset.tab === 'listings') loadActiveSource();
     });
   });
 
@@ -528,6 +574,216 @@
       });
     });
   }
+
+  // ══════════ LISTINGS / PART-OUT MODERATION ══════════
+  var _source = 'listings';       // 'listings' | 'partout'
+  var _allListings = [];
+  var _allPartouts = [];          // each vehicle gets a ._parts array attached
+  var _loadedPartouts = false;
+
+  function loadActiveSource(){
+    if(_source === 'partout') loadPartouts();
+    else loadListings();
+  }
+  function renderActive(){
+    if(_source === 'partout') renderPartouts();
+    else renderListings();
+  }
+
+  // ---- Marketplace listings ----
+  async function loadListings(){
+    if(!sb) return;
+    var list = document.getElementById('listings-list');
+    list.innerHTML = '<div class="queue-empty">Loading listings...</div>';
+    document.getElementById('listings-count').textContent = '';
+    var res = await sb.from('listings').select('*').order('created_at',{ascending:false});
+    if(res.error){ list.innerHTML = '<div class="queue-empty">Error loading listings.</div>'; return; }
+    _allListings = res.data || [];
+    renderListings();
+  }
+  function renderListings(){
+    var list = document.getElementById('listings-list');
+    var q = (document.getElementById('listings-search').value || '').trim().toLowerCase();
+    var rows = _allListings.filter(function(l){
+      if(!q) return true;
+      return [l.title, l.category, l.location, l.seller_id, l.id, l.status].join(' ').toLowerCase().indexOf(q) !== -1;
+    });
+
+    document.getElementById('listings-count').textContent =
+      _allListings.length ? (rows.length + ' of ' + _allListings.length + ' listing' + (_allListings.length===1?'':'s')) : '';
+
+    if(rows.length === 0){
+      list.innerHTML = '<div class="queue-empty">' + (q ? 'No listings match your search.' : 'No listings found.') + '</div>';
+      return;
+    }
+
+    list.innerHTML = '';
+    rows.forEach(function(l){
+      var div = document.createElement('div');
+      div.className = 'event-row';
+      var thumb = (l.photo_urls && l.photo_urls.length) ? l.photo_urls[0] : '';
+      var price = (l.price != null && l.price !== '') ? ('$' + esc(String(l.price))) : '';
+      var when  = l.created_at ? new Date(l.created_at).toLocaleDateString() : '';
+      var sub   = [price, esc(l.category||''), esc(l.location||'')].filter(Boolean).join(' · ');
+      div.innerHTML =
+        '<div class="event-row-top">'+
+          '<div style="display:flex;gap:12px;align-items:flex-start;min-width:0;">'+
+            (thumb ? '<img src="'+esc(thumb)+'" class="listing-thumb" alt="" onerror="this.style.display=\'none\'">' : '')+
+            '<div style="min-width:0;">'+
+              '<div class="event-row-title">'+esc(l.title||'(untitled)')+'</div>'+
+              '<div class="event-row-meta" style="margin-bottom:0;">'+sub+'</div>'+
+            '</div>'+
+          '</div>'+
+          '<div class="event-row-type">'+esc(l.status||'')+'</div>'+
+        '</div>'+
+        '<div class="event-row-meta">'+
+          (when ? '🗓 '+esc(when)+' · ' : '')+
+          'seller: '+esc(l.seller_id||'—')+' · id: '+esc(String(l.id))+
+        '</div>'+
+        '<div class="event-row-actions">'+
+          '<button class="listing-remove" data-id="'+esc(String(l.id))+'">Remove listing</button>'+
+        '</div>';
+      list.appendChild(div);
+    });
+
+    list.querySelectorAll('.listing-remove').forEach(function(b){
+      b.addEventListener('click', async function(){
+        if(!confirm('Permanently remove this listing? This cannot be undone.')) return;
+        b.disabled = true; b.textContent = 'Removing...';
+        var res = await sb.from('listings').delete().eq('id', b.dataset.id);
+        if(res.error){ b.disabled=false; b.textContent='Remove listing'; alert('Could not remove: '+res.error.message); return; }
+        _allListings = _allListings.filter(function(x){ return String(x.id) !== String(b.dataset.id); });
+        renderListings();
+      });
+    });
+  }
+
+  // ---- Part-outs (vehicles + parts) ----
+  async function loadPartouts(){
+    if(!sb) return;
+    var list = document.getElementById('listings-list');
+    list.innerHTML = '<div class="queue-empty">Loading part-outs...</div>';
+    document.getElementById('listings-count').textContent = '';
+    var r = await Promise.all([
+      sb.from('partout_vehicles').select('*').order('created_at',{ascending:false}),
+      sb.from('partout_parts').select('*').order('created_at',{ascending:false})
+    ]);
+    if(r[0].error || r[1].error){ list.innerHTML = '<div class="queue-empty">Error loading part-outs.</div>'; return; }
+    var vehicles = r[0].data || [];
+    var parts = r[1].data || [];
+    var byVehicle = {};
+    parts.forEach(function(p){ (byVehicle[p.vehicle_id] = byVehicle[p.vehicle_id] || []).push(p); });
+    vehicles.forEach(function(v){ v._parts = byVehicle[v.id] || []; });
+    _allPartouts = vehicles;
+    _loadedPartouts = true;
+    renderPartouts();
+  }
+  function renderPartouts(){
+    var list = document.getElementById('listings-list');
+    var q = (document.getElementById('listings-search').value || '').trim().toLowerCase();
+    var rows = _allPartouts.filter(function(v){
+      if(!q) return true;
+      var partNames = (v._parts||[]).map(function(p){ return p.name; }).join(' ');
+      return [v.year, v.make, v.model, v.trim, v.location, v.seller_id, v.id, v.status, partNames].join(' ').toLowerCase().indexOf(q) !== -1;
+    });
+
+    document.getElementById('listings-count').textContent =
+      _allPartouts.length ? (rows.length + ' of ' + _allPartouts.length + ' part-out' + (_allPartouts.length===1?'':'s')) : '';
+
+    if(rows.length === 0){
+      list.innerHTML = '<div class="queue-empty">' + (q ? 'No part-outs match your search.' : 'No part-outs found.') + '</div>';
+      return;
+    }
+
+    list.innerHTML = '';
+    rows.forEach(function(v){
+      var div = document.createElement('div');
+      div.className = 'event-row';
+      var thumb = (v.photos && v.photos.length) ? v.photos[0] : '';
+      var title = [v.year, v.make, v.model, v.trim].filter(Boolean).join(' ') || '(vehicle)';
+      var when  = v.created_at ? new Date(v.created_at).toLocaleDateString() : '';
+      var parts = v._parts || [];
+
+      var partsHtml;
+      if(parts.length === 0){
+        partsHtml = '<div class="po-parts-empty">No individual parts listed.</div>';
+      } else {
+        partsHtml = parts.map(function(p){
+          var pp = (p.price != null && p.price !== '') ? ('$' + esc(String(p.price))) : '—';
+          return '<div class="po-part-row">'+
+                   '<span class="po-part-name">'+esc(p.name||'(unnamed part)')+'</span>'+
+                   '<span class="po-part-price">'+pp+'</span>'+
+                   '<button class="po-part-del" data-part-id="'+esc(String(p.id))+'" data-vehicle-id="'+esc(String(v.id))+'">Remove</button>'+
+                 '</div>';
+        }).join('');
+      }
+
+      div.innerHTML =
+        '<div class="event-row-top">'+
+          '<div style="display:flex;gap:12px;align-items:flex-start;min-width:0;">'+
+            (thumb ? '<img src="'+esc(thumb)+'" class="listing-thumb" alt="" onerror="this.style.display=\'none\'">' : '')+
+            '<div style="min-width:0;">'+
+              '<div class="event-row-title">'+esc(title)+'</div>'+
+              '<div class="event-row-meta" style="margin-bottom:0;">'+
+                (v.location ? esc(v.location)+' · ' : '')+parts.length+' part'+(parts.length===1?'':'s')+
+              '</div>'+
+            '</div>'+
+          '</div>'+
+          '<div class="event-row-type">'+esc(v.status||'')+'</div>'+
+        '</div>'+
+        '<div class="event-row-meta">'+
+          (when ? '🗓 '+esc(when)+' · ' : '')+
+          'seller: '+esc(v.seller_id||'—')+' · id: '+esc(String(v.id))+
+        '</div>'+
+        '<div class="po-parts">'+partsHtml+'</div>'+
+        '<div class="event-row-actions" style="margin-top:12px;">'+
+          '<button class="listing-remove" data-vehicle-id="'+esc(String(v.id))+'">Remove entire part-out'+(parts.length?(' (+ '+parts.length+' part'+(parts.length===1?'':'s')+')'):'')+'</button>'+
+        '</div>';
+      list.appendChild(div);
+    });
+
+    // Remove a single part
+    list.querySelectorAll('.po-part-del').forEach(function(b){
+      b.addEventListener('click', async function(){
+        if(!confirm('Remove this part? This cannot be undone.')) return;
+        b.disabled = true; b.textContent = '...';
+        var res = await sb.from('partout_parts').delete().eq('id', b.dataset.partId);
+        if(res.error){ b.disabled=false; b.textContent='Remove'; alert('Could not remove part: '+res.error.message); return; }
+        var v = _allPartouts.filter(function(x){ return String(x.id) === String(b.dataset.vehicleId); })[0];
+        if(v){ v._parts = (v._parts||[]).filter(function(p){ return String(p.id) !== String(b.dataset.partId); }); }
+        renderPartouts();
+      });
+    });
+
+    // Remove an entire part-out (parts cascade-delete via FK)
+    list.querySelectorAll('.listing-remove').forEach(function(b){
+      b.addEventListener('click', async function(){
+        if(!confirm('Permanently remove this entire part-out and all its parts? This cannot be undone.')) return;
+        b.disabled = true; b.textContent = 'Removing...';
+        var res = await sb.from('partout_vehicles').delete().eq('id', b.dataset.vehicleId);
+        if(res.error){ b.disabled=false; b.textContent='Remove entire part-out'; alert('Could not remove: '+res.error.message); return; }
+        _allPartouts = _allPartouts.filter(function(x){ return String(x.id) !== String(b.dataset.vehicleId); });
+        renderPartouts();
+      });
+    });
+  }
+
+  // ---- Shared toolbar wiring ----
+  document.getElementById('listings-seg').addEventListener('click', function(e){
+    var b = e.target.closest('.seg-btn'); if(!b) return;
+    if(b.dataset.src === _source) return;
+    document.querySelectorAll('#listings-seg .seg-btn').forEach(function(x){ x.classList.remove('active'); });
+    b.classList.add('active');
+    _source = b.dataset.src;
+    document.getElementById('listings-search').value = '';
+    document.getElementById('listings-search').placeholder =
+      _source === 'partout' ? 'Search year, make, model, part, seller, id...' : 'Search title, category, location, seller, id...';
+    // Load part-outs the first time; otherwise re-render cached data
+    if(_source === 'partout' && !_loadedPartouts) loadPartouts();
+    else renderActive();
+  });
+  document.getElementById('listings-search').addEventListener('input', renderActive);
+  document.getElementById('listings-refresh').addEventListener('click', loadActiveSource);
 
   function esc(s){ if(s==null) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
