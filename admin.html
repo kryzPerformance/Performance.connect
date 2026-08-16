@@ -650,8 +650,13 @@
       b.addEventListener('click', async function(){
         if(!confirm('Permanently remove this listing? This cannot be undone.')) return;
         b.disabled = true; b.textContent = 'Removing...';
-        var res = await sb.from('listings').delete().eq('id', b.dataset.id);
+        var res = await sb.from('listings').delete().eq('id', b.dataset.id).select();
         if(res.error){ b.disabled=false; b.textContent='Remove listing'; alert('Could not remove: '+res.error.message); return; }
+        if(!res.data || res.data.length === 0){
+          b.disabled=false; b.textContent='Remove listing';
+          alert('Nothing was deleted. This is a Row Level Security block — the listings table has no DELETE policy for the logged-in admin (authenticated role). See the SQL fix.');
+          return;
+        }
         _allListings = _allListings.filter(function(x){ return String(x.id) !== String(b.dataset.id); });
         renderListings();
       });
@@ -747,8 +752,13 @@
       b.addEventListener('click', async function(){
         if(!confirm('Remove this part? This cannot be undone.')) return;
         b.disabled = true; b.textContent = '...';
-        var res = await sb.from('partout_parts').delete().eq('id', b.dataset.partId);
+        var res = await sb.from('partout_parts').delete().eq('id', b.dataset.partId).select();
         if(res.error){ b.disabled=false; b.textContent='Remove'; alert('Could not remove part: '+res.error.message); return; }
+        if(!res.data || res.data.length === 0){
+          b.disabled=false; b.textContent='Remove';
+          alert('Nothing was deleted. RLS block — partout_parts has no DELETE policy for the authenticated role. See the SQL fix.');
+          return;
+        }
         var v = _allPartouts.filter(function(x){ return String(x.id) === String(b.dataset.vehicleId); })[0];
         if(v){ v._parts = (v._parts||[]).filter(function(p){ return String(p.id) !== String(b.dataset.partId); }); }
         renderPartouts();
@@ -760,8 +770,13 @@
       b.addEventListener('click', async function(){
         if(!confirm('Permanently remove this entire part-out and all its parts? This cannot be undone.')) return;
         b.disabled = true; b.textContent = 'Removing...';
-        var res = await sb.from('partout_vehicles').delete().eq('id', b.dataset.vehicleId);
+        var res = await sb.from('partout_vehicles').delete().eq('id', b.dataset.vehicleId).select();
         if(res.error){ b.disabled=false; b.textContent='Remove entire part-out'; alert('Could not remove: '+res.error.message); return; }
+        if(!res.data || res.data.length === 0){
+          b.disabled=false; b.textContent='Remove entire part-out';
+          alert('Nothing was deleted. RLS block — partout_vehicles has no DELETE policy for the authenticated role. See the SQL fix.');
+          return;
+        }
         _allPartouts = _allPartouts.filter(function(x){ return String(x.id) !== String(b.dataset.vehicleId); });
         renderPartouts();
       });
