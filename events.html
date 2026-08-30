@@ -414,7 +414,7 @@
   function renderMap(visible){
     if(!map){
       map = L.map('map',{ zoomControl:true, attributionControl:true }).setView(GTA, 10);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=cb1_2kmf_1_d41adf512fd6276fff46f9bf,{
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=cb1_2kmf_1_d41adf512fd6276fff46f9bf',{
         subdomains:'abcd', maxZoom:19
       }).addTo(map);
     }
