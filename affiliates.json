@@ -79,10 +79,10 @@
   "name": "VPX Performance",
   "address": "3485 Harvester rd Burlington, Ont L7N3T3",
   "phone": "(416) 246-1810",
-  "web": "vpxperformance.com",
+  "web": "https://www.vpxperformance.com",
   "instagram": "@vpxperformance",
   "lat": 43.3629,
   "lng": -79.7837,
   "notes": "Performance Tuning, Upgrades, Diagnostic services"
-},
+}
 ]
