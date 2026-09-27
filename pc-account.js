@@ -159,6 +159,10 @@ window.PC = window.PC || {};
       '@media (max-width:640px){.pc-acct.docked .pc-acct-pill{padding:6px 11px;font-size:12.5px;gap:6px;}',
       '.pc-acct.docked .pc-acct-ico{width:36px;height:13px;}',
       '.pc-acct.docked .pc-acct-label{max-width:92px;}}',
+      '.pc-acct-top{position:relative;z-index:6;display:flex;justify-content:flex-end;padding:10px 12px 0;}',
+      '.pc-acct.topped{position:static;display:flex;}',
+      '.pc-acct.topped .pc-acct-pill{padding:6px 12px;font-size:12.5px;gap:6px;border-color:rgba(61,201,240,0.35);max-width:70vw;}',
+      '.pc-acct.topped .pc-acct-ico{width:38px;height:14px;}',
       '.pc-acct-menu.pc-acct-menu.floating{position:fixed;box-sizing:border-box;z-index:2147483000;font-family:Inter,system-ui,sans-serif;}',
       '.pc-acct-menu{position:absolute;top:calc(100% + 8px);right:0;min-width:210px;',
       'background:#0c0f10;border:0.5px solid rgba(255,255,255,0.14);border-radius:12px;',
@@ -319,18 +323,38 @@ window.PC = window.PC || {};
   function mountPoint() {
     return document.querySelector('nav.site-nav, nav.pcn-bar');
   }
+  // Phones: the pill gets its own row at the very top-right, above the wordmark.
+  // Desktop: it sits at the end of the menu row.
+  var phone = window.matchMedia ? window.matchMedia('(max-width:640px)') : { matches: false };
+  var topRow = null;
+  function pageHeader(nav) {
+    if (nav.classList.contains('pcn-bar')) return nav.previousElementSibling || nav;
+    return nav.closest('header, .topbar') || nav.parentElement;
+  }
   function place() {
     var nav = mountPoint();
-    if (nav) {
+    if (nav && phone.matches) {
+      var hdr = pageHeader(nav);
+      if (!topRow) { topRow = document.createElement('div'); topRow.className = 'pc-acct-top'; }
+      if (topRow.nextElementSibling !== hdr) hdr.parentNode.insertBefore(topRow, hdr);
+      root.classList.remove('docked');
+      root.classList.add('topped');
+      if (root.parentNode !== topRow) topRow.appendChild(root);
+    } else if (nav) {
+      root.classList.remove('topped');
       root.classList.add('docked');
       if (root.parentNode !== nav || nav.lastElementChild !== root) nav.appendChild(root);
-      if (window.PC.Nav && window.PC.Nav.center) setTimeout(window.PC.Nav.center, 0);
+      if (topRow && topRow.parentNode) topRow.parentNode.removeChild(topRow);
     } else {
-      root.classList.remove('docked');
+      root.classList.remove('docked', 'topped');
       if (root.parentNode !== document.body) document.body.appendChild(root);
     }
+    if (window.PC.Nav && window.PC.Nav.center) setTimeout(window.PC.Nav.center, 0);
   }
-  acct.dock = function () { if (root) place(); };  // pc-nav.js calls this after rebuilding the menu
+  acct.dock = function () { if (root) place(); };
+  function onPhoneChange() { closeMenus(); if (root) place(); }
+  if (phone.addEventListener) phone.addEventListener('change', onPhoneChange);
+  else if (phone.addListener) phone.addListener(onPhoneChange);  // pc-nav.js calls this after rebuilding the menu
 
   function render() {
     injectStyles();
