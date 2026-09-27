@@ -42,6 +42,7 @@
       '.site-nav>a:first-child,.pcn-bar>a:first-child{margin-left:auto}' +
       '.site-nav>a:last-child,.pcn-bar>a:last-child{margin-right:auto}' +
       '.site-nav>a,.pcn-bar>a{flex:0 0 auto}' +
+      '.site-nav>a:last-of-type,.pcn-bar>a:last-of-type{margin-right:auto}' +
     '}' +
     // injected bar for pages without a main nav
     '.pcn-bar{position:relative;z-index:5;display:flex;align-items:center;justify-content:center;gap:8px;' +
@@ -74,12 +75,19 @@
       }
       frag.appendChild(a);
     });
+    var acctPill = nav.querySelector('.pc-acct');   // keep the sign-in pill (pc-account.js) at the end
     nav.replaceChildren(frag);
+    if (acctPill) nav.appendChild(acctPill);
+    centerCurrent(nav);
+  }
+
+  // on phones, scroll the highlighted link into view (leaving room for the sign-in pill)
+  function centerCurrent(nav) {
     var cur = nav.querySelector('[aria-current]');
-    // on phones, scroll the highlighted link into view inside the row
-    if (cur && nav.scrollWidth > nav.clientWidth) {
-      nav.scrollLeft = cur.offsetLeft - (nav.clientWidth - cur.offsetWidth) / 2;
-    }
+    if (!cur || nav.scrollWidth <= nav.clientWidth) return;
+    var pill = nav.querySelector('.pc-acct');
+    var room = nav.clientWidth - (pill ? pill.offsetWidth : 0);
+    nav.scrollLeft = cur.offsetLeft - nav.offsetLeft - (room - cur.offsetWidth) / 2;
   }
 
   function build() {
@@ -102,8 +110,18 @@
     fill(bar, 'pcn-link');
   }
 
-  PC.Nav = { links: LINKS, rebuild: build };
+  function buildAndDock() {
+    build();
+    if (PC.account && PC.account.dock) PC.account.dock();
+    document.querySelectorAll('nav.site-nav, nav.pcn-bar').forEach(centerCurrent);
+  }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build);
-  else build();
+  PC.Nav = {
+    links: LINKS,
+    rebuild: buildAndDock,
+    center: function () { document.querySelectorAll('nav.site-nav, nav.pcn-bar').forEach(centerCurrent); }
+  };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildAndDock);
+  else buildAndDock();
 })();

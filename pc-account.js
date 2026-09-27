@@ -150,7 +150,16 @@ window.PC = window.PC || {};
       '.pc-acct-pill:hover{border-color:rgba(61,201,240,0.5);background:rgba(10,12,13,0.94);}',
       '.pc-acct-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
       '.pc-acct-dot{width:7px;height:7px;border-radius:50%;background:' + ACCENT + ';flex:0 0 auto;box-shadow:0 0 6px ' + ACCENT + ';}',
-      '.pc-acct-ico{width:14px;height:14px;flex:0 0 auto;}',
+      '.pc-acct-ico{display:block;width:44px;height:16px;flex:0 0 auto;background:' + ACCENT + ';',
+      '-webkit-mask:url(/assets/icons/pc-key.png) center/contain no-repeat;mask:url(/assets/icons/pc-key.png) center/contain no-repeat;}',
+      /* docked: lives at the end of the site menu row instead of floating over the page */
+      '.pc-acct.docked{position:sticky;top:auto;right:0;z-index:3;flex:0 0 auto;display:flex;',
+      'margin-left:4px;padding-left:6px;background:linear-gradient(to right,rgba(7,8,8,0),rgba(7,8,8,0.92) 6px);}',
+      '.pc-acct.docked .pc-acct-pill{padding:7px 13px;border-color:rgba(61,201,240,0.35);max-width:48vw;}',
+      '@media (max-width:640px){.pc-acct.docked .pc-acct-pill{padding:6px 11px;font-size:12.5px;gap:6px;}',
+      '.pc-acct.docked .pc-acct-ico{width:36px;height:13px;}',
+      '.pc-acct.docked .pc-acct-label{max-width:92px;}}',
+      '.pc-acct-menu.pc-acct-menu.floating{position:fixed;box-sizing:border-box;z-index:2147483000;font-family:Inter,system-ui,sans-serif;}',
       '.pc-acct-menu{position:absolute;top:calc(100% + 8px);right:0;min-width:210px;',
       'background:#0c0f10;border:0.5px solid rgba(255,255,255,0.14);border-radius:12px;',
       'padding:6px;box-shadow:0 12px 40px rgba(0,0,0,0.55);display:none;}',
@@ -186,7 +195,8 @@ window.PC = window.PC || {};
     document.head.appendChild(s);
   }
 
-  var KEY_ICON = '<svg class="pc-acct-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.6 12.4 21 2"/><path d="m15.5 7.5 3 3"/></svg>';
+  // Performance Key logo (assets/icons/pc-key.png), drawn as a mask so it always matches ACCENT
+  var KEY_ICON = '<span class="pc-acct-ico" aria-hidden="true"></span>';
 
   var root = null;
 
@@ -294,22 +304,44 @@ window.PC = window.PC || {};
   }
 
   /* ── Pill render ─────────────────────────────────────────────────────────── */
+  var menuEl = null;
   function closeMenus() {
-    var open = root && root.querySelector('.pc-acct-menu.open');
-    if (open) open.classList.remove('open');
+    if (menuEl) menuEl.classList.remove('open');
   }
   document.addEventListener('click', function (e) {
-    if (root && !root.contains(e.target)) closeMenus();
+    if (root && !root.contains(e.target) && !(menuEl && menuEl.contains(e.target))) closeMenus();
   });
+  window.addEventListener('resize', closeMenus);
+  window.addEventListener('scroll', closeMenus, { passive: true });
+
+  /* Where the pill lives: at the end of the site menu row (pc-nav.js) so it
+     never covers the wordmark or links. Falls back to top-right if a page has no menu. */
+  function mountPoint() {
+    return document.querySelector('nav.site-nav, nav.pcn-bar');
+  }
+  function place() {
+    var nav = mountPoint();
+    if (nav) {
+      root.classList.add('docked');
+      if (root.parentNode !== nav || nav.lastElementChild !== root) nav.appendChild(root);
+      if (window.PC.Nav && window.PC.Nav.center) setTimeout(window.PC.Nav.center, 0);
+    } else {
+      root.classList.remove('docked');
+      if (root.parentNode !== document.body) document.body.appendChild(root);
+    }
+  }
+  acct.dock = function () { if (root) place(); };  // pc-nav.js calls this after rebuilding the menu
 
   function render() {
     injectStyles();
     if (!root) {
       root = document.createElement('div');
       root.className = 'pc-acct';
-      document.body.appendChild(root);
     }
+    place();
     root.textContent = '';
+    if (menuEl && menuEl.parentNode) menuEl.parentNode.removeChild(menuEl);
+    menuEl = null;
     var i = acct.get();
 
     var pill = document.createElement('div');
@@ -359,11 +391,18 @@ window.PC = window.PC || {};
     menu.appendChild(mIg);
     menu.appendChild(sep);
     menu.appendChild(mForget);
-    root.appendChild(menu);
+    // the menu row can scroll/clip, so the dropdown opens on <body>, positioned under the pill
+    menu.classList.add('floating');
+    document.body.appendChild(menu);
+    menuEl = menu;
 
     pill.addEventListener('click', function (e) {
       e.stopPropagation();
-      menu.classList.toggle('open');
+      if (menu.classList.contains('open')) { closeMenus(); return; }
+      var r = pill.getBoundingClientRect();
+      menu.style.top = Math.round(r.bottom + 8) + 'px';
+      menu.style.right = Math.max(8, Math.round(window.innerWidth - r.right)) + 'px';
+      menu.classList.add('open');
     });
   }
 

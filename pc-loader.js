@@ -41,7 +41,7 @@
 
   // ---------- styles ----------
   var css =
-    '.pcl-overlay{position:fixed;inset:0;z-index:2147483000;background:#000;display:flex;' +
+    '.pcl-overlay{position:fixed;inset:0;z-index:2147483100;background:#000;display:flex;' +
     'align-items:center;justify-content:center;opacity:0;visibility:hidden;' +
     'transition:opacity ' + FADE + 'ms ease,visibility 0s linear ' + FADE + 'ms}' +
     '.pcl-overlay.pcl-on{opacity:1;visibility:visible;transition:opacity ' + FADE + 'ms ease}' +
@@ -52,7 +52,7 @@
     '.pcl-sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}' +
     'html.pcl-lock,html.pcl-lock body{overflow:hidden!important}' +
     // pre-paint cover for page-load mode, until <body> exists and the overlay mounts
-    'html.pcl-boot::after{content:"";position:fixed;inset:0;z-index:2147483001;' +
+    'html.pcl-boot::after{content:"";position:fixed;inset:0;z-index:2147483101;' +
     'background:#000 url("' + SRC.poster + '") center/auto min(88vh,150vw) no-repeat}';
   var style = document.createElement('style');
   style.id = 'pc-loader-css';
