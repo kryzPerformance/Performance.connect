@@ -123,7 +123,7 @@
   function reveal() {
     showTimer = null;
     mount(function () {
-      if (count === 0) return;
+      if (count === 0) { document.documentElement.classList.remove('pcl-boot'); return; }
       play(overlay.querySelector('video'));
       var booting = document.documentElement.classList.contains('pcl-boot');
       if (booting) overlay.style.transition = 'none'; // page load: appear instantly, no see-through fade
@@ -164,7 +164,11 @@
     if (opts.force) count = 0; else count = Math.max(0, count - 1);
     if (count > 0) return;
     if (showTimer) { clearTimeout(showTimer); showTimer = null; return; } // never appeared
-    if (!overlay || !overlay.classList.contains('pcl-on')) return;
+    if (!overlay || !overlay.classList.contains('pcl-on')) {
+      // closed before the overlay finished mounting: drop the page-load cover too
+      document.documentElement.classList.remove('pcl-boot');
+      return;
+    }
     var wait = Math.max(0, MIN_VISIBLE - (Date.now() - shownAt));
     if (hideTimer) clearTimeout(hideTimer);
     hideTimer = setTimeout(conceal, wait);

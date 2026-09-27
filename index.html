@@ -4,14 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="/pc-loader.js" data-pageload></script>
-<title>Performance Connect — Toronto &amp; GTA Performance Car Marketplace</title>
-<meta name="description" content="Buy and sell performance cars, wheels, and parts across the GTA. JDM, Euro, USDM, domestic — every scene, one platform. Fitment-first listings, free to post.">
+<script src="/pc-nav.js" defer></script>
+<title>Performance Connect — Toronto &amp; GTA Car Community Hub</title>
+<meta name="description" content="The home of the GTA performance car scene. Find meets and events, buy and sell cars and parts, connect with trusted shops, and show off your build. JDM, Euro, USDM, domestic — every scene, one platform.">
 <link rel="canonical" href="https://performanceconnect.ca/">
 <meta name="theme-color" content="#070808">
 
 <!-- Link previews (iMessage, Instagram, Discord, Facebook) -->
-<meta property="og:title" content="Performance Connect — Toronto & GTA Performance Car Marketplace">
-<meta property="og:description" content="Buy and sell performance cars, wheels, and parts. Every scene. One platform.">
+<meta property="og:title" content="Performance Connect — Toronto & GTA Car Community Hub">
+<meta property="og:description" content="Meets, builds, parts and the people behind them. Every scene. One platform.">
 <meta property="og:url" content="https://performanceconnect.ca/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Performance Connect">
@@ -286,6 +287,66 @@
   .cta-primary:focus-visible, .cta-secondary:focus-visible{
     outline:2px solid var(--white);
     outline-offset:2px;
+  }
+
+  /* ---------- community hub cards ---------- */
+  .hub-label{
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    font-weight:500;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--steel-dim);
+    margin-bottom:14px;
+  }
+  .hub-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:10px;
+    width:100%;
+    margin-bottom:44px;
+    text-shadow:none;
+  }
+  .hub-card{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    text-align:left;
+    text-decoration:none;
+    padding:14px 16px;
+    border-radius:8px;
+    border:0.5px solid var(--line);
+    background:rgba(17,20,21,0.72);
+    -webkit-backdrop-filter:blur(6px);
+    backdrop-filter:blur(6px);
+    transition:border-color 0.15s ease, background 0.15s ease, transform 0.12s ease;
+  }
+  .hub-card:hover{ border-color:rgba(31,169,207,0.55); background:rgba(31,169,207,0.08); }
+  .hub-card:active{ transform:scale(0.98); }
+  .hub-card:focus-visible{ outline:2px solid var(--white); outline-offset:2px; }
+  .hub-title{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:17px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--white);
+  }
+  .hub-title::after{ content:"\00a0→"; color:var(--cyan-bright); }
+  .hub-sub{
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    line-height:1.4;
+    color:var(--steel);
+  }
+  @media (max-width: 640px){
+    .hub-grid{ grid-template-columns:repeat(2, 1fr); }
+    .hub-card{ padding:12px 13px; }
+    .hub-title{ font-size:15px; letter-spacing:0.03em; }
+    .hub-sub{ font-size:12.5px; }
+  }
+  @media (max-width: 360px){
+    .hub-grid{ grid-template-columns:1fr; }
   }
 
   .capture-label{
@@ -690,8 +751,9 @@
     <header>
       <div class="wordmark">PERFORMANCE<span>CONNECT.CA</span></div>
       <nav class="site-nav">
-        <a href="marketplace.html" class="nav-link">Marketplace</a>
+        <a href="index.html" class="nav-link is-current active" aria-current="page">Home</a>
         <a href="events.html" class="nav-link">Events</a>
+        <a href="marketplace.html" class="nav-link">Marketplace</a>
         <a href="affiliates.html" class="nav-link">Affiliates</a>
         <a href="blog.html" class="nav-link">Blog</a>
       </nav>
@@ -703,13 +765,42 @@
 
         <p class="eyebrow">Beta is Live</p>
 
-        <h1><span class="h1-geo">Toronto &amp; GTA Performance Car Marketplace</span>Buy. Sell. Build.<br><span class="accent">Connect.</span></h1>
-        <p class="subline">Every scene. One platform.<br>The marketplace for performance cars, parts, and the people who build them.</p>
+        <h1><span class="h1-geo">Toronto &amp; GTA Car Community Hub</span>Meet. Build. Trade.<br><span class="accent">Connect.</span></h1>
+        <p class="subline">Every scene. One platform.<br>Events, builds, parts, and the people behind them — all in one place.</p>
 
         <div class="hero-ctas">
-          <a href="marketplace.html" class="cta-primary">Browse the Marketplace</a>
+          <a href="events.html" class="cta-primary">Find an Event</a>
+          <a href="marketplace.html" class="cta-secondary">Browse the Marketplace</a>
+        </div>
+
+        <!-- Community hub: one card per section of the site -->
+        <p class="hub-label">Explore the hub</p>
+        <div class="hub-grid">
+          <a href="events.html" class="hub-card">
+            <span class="hub-title">Events</span>
+            <span class="hub-sub">Meets, shows &amp; track days across the GTA</span>
+          </a>
+          <a href="marketplace.html" class="hub-card">
+            <span class="hub-title">Marketplace</span>
+            <span class="hub-sub">Cars, wheels &amp; parts. Fitment-first, free to post</span>
+          </a>
+          <a href="affiliates.html" class="hub-card">
+            <span class="hub-title">Affiliates</span>
+            <span class="hub-sub">Trusted shops, dealers &amp; tuners near you</span>
+          </a>
+          <a href="blog.html" class="hub-card">
+            <span class="hub-title">Blog</span>
+            <span class="hub-sub">News, stories &amp; scene updates</span>
+          </a>
+          <a href="event-submit.html" class="hub-card">
+            <span class="hub-title">Host a Meet</span>
+            <span class="hub-sub">Put your event on the community calendar</span>
+          </a>
           <!-- Points to marketplace and auto-opens the listing modal via ?list=true -->
-          <a href="marketplace.html?list=true" class="cta-secondary">Sell Something</a>
+          <a href="marketplace.html?list=true" class="hub-card">
+            <span class="hub-title">Sell Something</span>
+            <span class="hub-sub">List your car or parts in minutes</span>
+          </a>
         </div>
 
         <p class="capture-label">Get updates as we grow</p>
