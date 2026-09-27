@@ -10,7 +10,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
   :root{
     --black:#070808;
@@ -934,15 +933,6 @@
   }
   .lmodal-overlay.open{ display:flex; }
 
-  /* GTA map sits behind the modal card */
-  .lmodal-map{
-    position:fixed;
-    inset:0;
-    z-index:0;
-    opacity:0.18;
-    pointer-events:none;
-  }
-
   .lmodal{
     background:#0A0C0D;
     border:0.5px solid rgba(35,41,43,0.9);
@@ -1368,7 +1358,6 @@
   }
 
 </style>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="pc-account.js"></script>
 </head>
@@ -1620,8 +1609,6 @@
      CREATE LISTING MODAL
      ============================================================ -->
 <div class="lmodal-overlay" id="lmodal-overlay">
-  <!-- Dark GTA map — sits behind the modal card -->
-  <div class="lmodal-map" id="lmodal-map"></div>
   <div class="lmodal" id="lmodal">
     <div class="lmodal-accent-bar"></div>
     <div class="lmodal-head">
@@ -2234,25 +2221,6 @@
   var step    = 1;
   var selectedCat = null;
 
-  // ── GTA map background inside modal overlay ──────────────────────────────
-  // Initialised lazily on first modal open so it doesn't run on page load
-  var modalMap = null;
-  function initModalMap(){
-    if(modalMap) return;
-    var mapEl = document.getElementById('lmodal-map');
-    if(!mapEl || typeof L === 'undefined') return;
-    modalMap = L.map(mapEl, {
-      center: [43.7184, -79.5181], zoom: 11,
-      zoomControl: false, dragging: false, scrollWheelZoom: false,
-      doubleClickZoom: false, touchZoom: false, keyboard: false,
-      attributionControl: false
-    });
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
-      subdomains:'abcd', maxZoom:19
-    }).addTo(modalMap);
-  }
-
-  // ── Card back mini-maps (GTA with cyan filter) ────────────────────────────
   function openModal(){
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -2262,11 +2230,6 @@
     if(window.PC && PC.account && PC.account.isLoggedIn && PC.account.isLoggedIn()){
       PC.account.prefillKeyField('perf-key-input');
     }
-    // Init map on first open, invalidate size so tiles render correctly
-    setTimeout(function(){
-      initModalMap();
-      if(modalMap) modalMap.invalidateSize();
-    }, 80);
   }
   function closeModal(){
     overlay.classList.remove('open');
