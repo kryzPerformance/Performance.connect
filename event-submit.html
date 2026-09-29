@@ -255,9 +255,10 @@
   var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   // ===== FLYER PARSER =====
-  // Paste your deployed Cloudflare Worker URL here to switch on AI auto-fill.
-  // Leave it empty ('') and the flyer upload hides itself — the manual form still works.
-  var FLYER_PARSER_URL = '';
+  // Supabase Edge Function (supabase/functions/flyer-parser). It holds the
+  // OpenAI key server-side; this page only knows the URL.
+  // Set to '' to hide the flyer upload — the manual form still works.
+  var FLYER_PARSER_URL = SUPABASE_URL + '/functions/v1/flyer-parser';
 
   // ===== helpers =====
   function showMsg(id, msg, ok){
@@ -355,7 +356,27 @@
     var statusEl = document.getElementById('flyer-status');
     var preview = document.getElementById('flyer-preview');
 
-    zone.addEventListener('click', function(){ input.click(); });
+    // Phone photos can be 5-10 MB. Shrink to max 1600px JPEG before sending:
+    // faster upload, cheaper AI call, and still plenty sharp to read text.
+    function shrinkImage(dataUrl){
+      return new Promise(function(resolve){
+        var img = new Image();
+        img.onload = function(){
+          var MAX = 1600;
+          var scale = Math.min(1, MAX / Math.max(img.width, img.height));
+          var c = document.createElement('canvas');
+          c.width = Math.round(img.width * scale);
+          c.height = Math.round(img.height * scale);
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          resolve(c.toDataURL('image/jpeg', 0.85));
+        };
+        img.onerror = function(){ resolve(dataUrl); };
+        img.src = dataUrl;
+      });
+    }
+
+    var busy = false;
+    zone.addEventListener('click', function(){ if(!busy) input.click(); });
     input.addEventListener('change', function(){
       var file = input.files && input.files[0];
       if(!file) return;
@@ -364,15 +385,22 @@
         var dataUrl = reader.result;
         preview.src = dataUrl; preview.style.display = 'block';
         statusEl.className = 'flyer-status busy';
-        statusEl.textContent = 'Reading your flyer...';
+        statusEl.textContent = 'Reading your flyer... (this can take ~15 seconds)';
+        busy = true;
         try{
+          var small = await shrinkImage(dataUrl);
           var res = await fetch(FLYER_PARSER_URL, {
             method: 'POST',
-            headers: { 'Content-Type':'application/json' },
-            body: JSON.stringify({ image: dataUrl })
+            headers: {
+              'Content-Type':'application/json',
+              // Supabase functions require the public anon key to be sent
+              'Authorization':'Bearer ' + SUPABASE_ANON_KEY,
+              'apikey': SUPABASE_ANON_KEY
+            },
+            body: JSON.stringify({ image: small })
           });
           var out = await res.json();
-          if(out && out.extractedFields){
+          if(res.ok && out && out.extractedFields){
             applyExtracted(out.extractedFields);
             statusEl.className = 'flyer-status ok';
             statusEl.textContent = '✓ Filled in what we could read — please check everything below.';
@@ -384,6 +412,8 @@
           statusEl.className = 'flyer-status err';
           statusEl.textContent = "Couldn't read that one. Fill in the details manually below.";
         }
+        busy = false;
+        input.value = '';   // allow re-picking the same file
       };
       reader.readAsDataURL(file);
     });
