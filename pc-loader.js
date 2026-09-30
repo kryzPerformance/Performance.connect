@@ -2,10 +2,17 @@
  * pc-loader.js — Performance Connect "Car Collector" loading screen
  * Build-free, plain <script>. Attaches to window.PC.Loader.
  *
- * Assets (default base: /assets/loader/):
- *   pc-loader.mp4          primary animation (~230 KB)
- *   pc-loader.webp         animated fallback when video can't autoplay (iOS Low Power Mode, etc.)
- *   pc-loader-poster.webp  static frame (poster + prefers-reduced-motion)
+ * Rotation: each page load picks ONE loading screen from VARIANTS below, at random,
+ * using the weights (higher = more often). Only the chosen one downloads.
+ * To add a screen: drop <id>.mp4, <id>.webp, <id>-poster.webp in /assets/loader/
+ * and add a line to VARIANTS. To change the odds, edit the weights.
+ *
+ * Assets per screen (default base: /assets/loader/):
+ *   <id>.mp4          primary animation (~250-420 KB)
+ *   <id>.webp         animated fallback when video can't autoplay (iOS Low Power Mode, etc.)
+ *   <id>-poster.webp  still frame (poster + prefers-reduced-motion)
+ *
+ * Testing: add ?loader=<id> to any page URL to force a screen (e.g. ?loader=p1).
  *
  * Usage
  *   <script src="/pc-loader.js" data-pageload></script>   // in <head>: covers the initial page load
@@ -27,10 +34,47 @@
   var attr = function (n) { return script && script.hasAttribute(n) ? script.getAttribute(n) : null; };
   var BASE = attr('data-base') || '/assets/loader/';
   if (BASE.slice(-1) !== '/') BASE += '/';
+
+  // ---------- loading screens (weights: higher = more often) ----------
+  // 10 regulars x 10 = 100, plus 2 rares x 2  ->  each rare ~1 in 52 loads (either rare ~1 in 26)
+  var VARIANTS = [
+    { id: '930',   name: 'Porsche 930',              weight: 10 },
+    { id: 'r8',    name: 'Audi R8',                  weight: 10 },
+    { id: 'z06',   name: 'Corvette Z06',             weight: 10 },
+    { id: 'rx7',   name: 'Mazda RX-7',               weight: 10 },
+    { id: 'supra', name: 'Toyota Supra',             weight: 10 },
+    { id: 'viper', name: 'Dodge Viper ACR',          weight: 10 },
+    { id: 'gto',   name: 'Pontiac GTO Judge',        weight: 10 },
+    { id: 'm3',    name: 'BMW M3',                   weight: 10 },
+    { id: 'evo',   name: 'Mitsubishi Evo',           weight: 10 },
+    { id: 'gtr',   name: 'Nissan GT-R',              weight: 10 },
+    { id: 'gt3rs', name: 'Porsche 911 GT3 RS', rare: true, weight: 2 },
+    { id: 'p1',    name: 'McLaren P1',         rare: true, weight: 2 }
+  ];
+
+  function pickVariant() {
+    var forced = null;
+    try { forced = new URLSearchParams(location.search).get('loader'); } catch (e) {}
+    for (var f = 0; f < VARIANTS.length; f++) if (VARIANTS[f].id === forced) return VARIANTS[f];
+    var last = null;
+    try { last = sessionStorage.getItem('pcl-last'); } catch (e) {}
+    function roll() {
+      var total = 0, i;
+      for (i = 0; i < VARIANTS.length; i++) total += VARIANTS[i].weight;
+      var r = Math.random() * total;
+      for (i = 0; i < VARIANTS.length; i++) { r -= VARIANTS[i].weight; if (r < 0) return VARIANTS[i]; }
+      return VARIANTS[0];
+    }
+    var v = roll();
+    if (last && v.id === last) v = roll();               // avoid the same screen twice in a row
+    try { sessionStorage.setItem('pcl-last', v.id); } catch (e) {}
+    return v;
+  }
+  var CHOSEN = pickVariant();
   var SRC = {
-    mp4: BASE + 'pc-loader.mp4',
-    webp: BASE + 'pc-loader.webp',
-    poster: BASE + 'pc-loader-poster.webp'
+    mp4: BASE + CHOSEN.id + '.mp4',
+    webp: BASE + CHOSEN.id + '.webp',
+    poster: BASE + CHOSEN.id + '-poster.webp'
   };
 
   var SHOW_DELAY = 180;   // ms before appearing (fast operations never flash)
@@ -49,6 +93,13 @@
     'max-width:100vw;object-fit:contain;background:#000;pointer-events:none;user-select:none}' +
     '.pcl-inline{display:flex;align-items:center;justify-content:center;padding:16px 0;width:100%}' +
     '.pcl-inline .pcl-media{height:auto;width:min(180px,40vw)}' +
+    '.pcl-rare{position:absolute;left:50%;top:max(14px,calc(50% - min(44vh,75vw) - 2px));transform:translateX(-50%);' +
+    'z-index:2;padding:6px 14px;border-radius:999px;border:1px solid rgba(255,214,102,0.55);' +
+    'background:rgba(20,16,4,0.72);font:700 12px/1 Rajdhani,Inter,system-ui,sans-serif;letter-spacing:0.22em;' +
+    'text-transform:uppercase;white-space:nowrap;color:#FFD666;text-shadow:0 0 12px rgba(255,200,80,0.6);' +
+    'animation:pcl-rare-glow 1.6s ease-in-out infinite}' +
+    '@keyframes pcl-rare-glow{0%,100%{box-shadow:0 0 0 rgba(255,214,102,0)}50%{box-shadow:0 0 18px rgba(255,214,102,0.45)}}' +
+    '@media (prefers-reduced-motion:reduce){.pcl-rare{animation:none}}' +
     '.pcl-sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}' +
     'html.pcl-lock,html.pcl-lock body{overflow:hidden!important}' +
     // pre-paint cover for page-load mode, until <body> exists and the overlay mounts
@@ -108,9 +159,16 @@
     overlay.setAttribute('aria-live', 'polite');
     var sr = document.createElement('span');
     sr.className = 'pcl-sr';
-    sr.textContent = 'Loading…';
+    sr.textContent = CHOSEN.rare ? 'Loading… rare find: ' + CHOSEN.name : 'Loading…';
     media = makeMedia();
     overlay.appendChild(media);
+    if (CHOSEN.rare) {
+      var badge = document.createElement('div');
+      badge.className = 'pcl-rare';
+      badge.setAttribute('aria-hidden', 'true');
+      badge.textContent = '\u2726 Rare find \u00b7 ' + CHOSEN.name + ' \u2726';
+      overlay.appendChild(badge);
+    }
     overlay.appendChild(sr);
   }
   function mount(cb) {
@@ -207,7 +265,7 @@
     };
   }
 
-  PC.Loader = { show: show, hide: hide, wrap: wrap, inline: inline, src: SRC };
+  PC.Loader = { show: show, hide: hide, wrap: wrap, inline: inline, src: SRC, variant: CHOSEN, variants: VARIANTS };
 
   // ---------- page-load mode ----------
   if (script && script.hasAttribute('data-pageload')) {
