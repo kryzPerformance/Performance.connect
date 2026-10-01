@@ -36,7 +36,7 @@
   if (BASE.slice(-1) !== '/') BASE += '/';
 
   // ---------- loading screens (weights: higher = more often) ----------
-  // 10 regulars x 10 = 100, plus 2 rares x 2  ->  each rare ~1 in 52 loads (either rare ~1 in 26)
+  // 10 regulars x 10 = 100, plus 2 rares x 0.2  ->  each rare ~1 in 500 loads (either rare ~1 in 250)
   var VARIANTS = [
     { id: '930',   name: 'Porsche 930',              weight: 10 },
     { id: 'r8',    name: 'Audi R8',                  weight: 10 },
@@ -48,8 +48,8 @@
     { id: 'm3',    name: 'BMW M3',                   weight: 10 },
     { id: 'evo',   name: 'Mitsubishi Evo',           weight: 10 },
     { id: 'gtr',   name: 'Nissan GT-R',              weight: 10 },
-    { id: 'gt3rs', name: 'Porsche 911 GT3 RS', rare: true, weight: 2 },
-    { id: 'p1',    name: 'McLaren P1',         rare: true, weight: 2 }
+    { id: 'gt3rs', name: 'Porsche 911 GT3 RS', rare: true, weight: 0.2 },
+    { id: 'p1',    name: 'McLaren P1',         rare: true, weight: 0.2 }
   ];
 
   function pickVariant() {
