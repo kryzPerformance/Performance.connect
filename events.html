@@ -444,8 +444,19 @@
       pts.push([ev.lat, ev.lng]);
     });
 
-    if(pts.length > 1) map.fitBounds(pts, { padding:[50,50] });
-    else if(pts.length === 1) map.setView(pts[0], 12);
+    lastPts = pts;
+    fitToPins();
+  }
+
+  // Zoom the map to show every pin. Only works while the map is visible:
+  // a hidden map has zero size, and fitting pins into zero size zooms all
+  // the way in. So we skip it while hidden and run it again when Map opens.
+  var lastPts = [];
+  function fitToPins(){
+    if(!map || !document.getElementById('map').offsetWidth) return;
+    if(lastPts.length > 1) map.fitBounds(lastPts, { padding:[50,50], maxZoom:13 });
+    else if(lastPts.length === 1) map.setView(lastPts[0], 12);
+    else map.setView(GTA, 10);
   }
 
   // ── Filter pills ──
@@ -483,7 +494,7 @@
     if(view === 'map'){
       document.body.classList.add('map-mode');
       document.getElementById('btn-map').classList.add('active');
-      if(map) setTimeout(function(){ map.invalidateSize(); }, 100);
+      if(map) setTimeout(function(){ map.invalidateSize(); fitToPins(); }, 100);
     } else if(view === 'cal'){
       document.body.classList.add('cal-mode');
       document.getElementById('btn-cal').classList.add('active');
