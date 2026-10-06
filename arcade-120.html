@@ -654,6 +654,20 @@ const TUNE = {
   lowSpeedZone:     380,    // px/s where the agility boost fades out
   lowSpeedAgility:  0.45,   // up to +45% steering rate when slow
   lowSpeedGrip:     0.90,   // up to +90% grip when slow (rotation stays planted)
+  // Handbrake drift initiation: temporary rear traction break + controlled
+  // rear kick + preserved forward momentum (layered on the grip model above).
+  hbMinSpeed:       120,    // below this the handbrake just scrubs speed (no drift)
+  hbFullSpeed:      320,    // kick/grip-break reach full strength here
+  hbYawKick:        2.4,    // rad/s of rear-step-out rotation on pull (decays fast)
+  hbYawDecay:       5.0,    // how quickly that kick fades (higher = shorter flick)
+  hbSideKick:       0.14,   // fraction of speed thrown sideways (rear breakaway) on pull
+  hbSteerAssist:    0.40,   // extra steering authority while sliding (angle control)
+  hbEngage:         9.0,    // per-sec rate the low-grip state engages
+  hbRelease:        2.0,    // per-sec rate rear grip returns after release (~0.5s)
+  hbCoast:          0.50,   // fraction of coast drag removed while drifting (carry momentum, never a boost)
+  hbScrub:          0.22,   // forward speed lost per sec while held at speed (keeps momentum)
+  hbLowSpeedScrub:  1.6,    // extra per-sec scrub at low speed (handbrake = brake there)
+  hbSpinSlip:       0.55,   // slip ratio where the anti-spin guard starts catching the car
 };
 
 /* ---------- VehiclePhysics: the heart of the game ---------- */
@@ -666,6 +680,9 @@ class VehiclePhysics {
     this.sideSlip = 0;           // 0..1 how sideways we're moving (for drift detect)
     this.isDrifting = false;
     this.isSkidding = false;
+    this.hbAmt = 0;              // 0..1 handbrake low-grip state (ramps in, eases out)
+    this.hbYaw = 0;              // rad/s decaying rear-step-out rotation from a pull
+    this._hbPrev = false;
   }
 
   update(dt, input, stats){
@@ -712,10 +729,49 @@ class VehiclePhysics {
     const slipNow = this.speed > 30 ? Math.abs(vSide)/this.speed : 0;
 
     let grip = TUNE.gripNormal;
-    if(input.handbrake) grip = TUNE.gripHandbrake;
-    else if(Math.abs(steer) > 0.30 && this.speed > 160) grip = TUNE.gripThrottleDrift;
+    if(Math.abs(steer) > 0.30 && this.speed > 160) grip = TUNE.gripThrottleDrift;
     grip *= stats.grip;
     grip *= (1 + lowSpd * TUNE.lowSpeedGrip);   // low-speed: velocity hugs the facing direction
+
+    // --- Handbrake: rear traction break + controlled kick + preserved momentum ---
+    const hbOn = !!input.handbrake && dir === 1;
+    // 0 below hbMinSpeed -> 1 at hbFullSpeed: kick and grip-break scale with speed
+    const hbSpd = Math.max(0, Math.min(1, (this.speed - TUNE.hbMinSpeed) / (TUNE.hbFullSpeed - TUNE.hbMinSpeed)));
+    // ramp the low-grip state in quickly, ease it out on release (no snap back to straight)
+    this.hbAmt += ((hbOn ? 1 : 0) - this.hbAmt) * Math.min(1, (hbOn ? TUNE.hbEngage : TUNE.hbRelease) * dt);
+    // anti-spin guard: once already very sideways, start catching the car
+    const spinGuard = Math.max(0, Math.min(1, (slipNow - TUNE.hbSpinSlip) / 0.30));
+    const steerSign = steer > 0.05 ? 1 : (steer < -0.05 ? -1 : 0);
+    if(hbOn && !this._hbPrev && hbSpd > 0 && steerSign !== 0){
+      // pull: rear steps out away from the steer direction (nose rotates in)
+      const k = hbSpd * Math.max(0.65, Math.abs(steer));
+      this.hbYaw = steerSign * TUNE.hbYawKick * k;
+      const sideKick = -steerSign * this.speed * TUNE.hbSideKick * k;
+      vSide += sideKick;
+    }
+    if(hbOn && !this._hbPrev) this._hbEntry = Math.max(this.speed, TUNE.hbFullSpeed);
+    this._hbPrev = hbOn;
+    if(this.hbYaw !== 0){
+      // countersteer bleeds the kick off faster; spin guard also damps it
+      const opposing = steerSign !== 0 && steerSign !== Math.sign(this.hbYaw);
+      const decay = TUNE.hbYawDecay * (opposing ? 2.2 : 1) + spinGuard * 6;
+      this.angle += this.hbYaw * dt;
+      this.hbYaw *= Math.exp(-decay * dt);
+      if(Math.abs(this.hbYaw) < 0.02) this.hbYaw = 0;
+    }
+    const hbEff = this.hbAmt * hbSpd;
+    if(hbEff > 0.001){
+      // steering sets the drift angle while sliding (less authority if near a spin)
+      this.angle += steer * turn * TUNE.hbSteerAssist * hbEff * (1 - spinGuard*0.8) * dt;
+      // blend toward low rear grip; spin guard keeps some grip so it doesn't swap ends
+      const blend = hbEff * (1 - 0.6*spinGuard);
+      grip += (TUNE.gripHandbrake * stats.grip - grip) * blend;
+    }
+    if(hbOn){
+      // mild scrub at speed (momentum carries); at low speed it's just a brake
+      const scrub = TUNE.hbScrub + TUNE.hbLowSpeedScrub * (1 - hbSpd);
+      vForward *= Math.exp(-scrub * dt);
+    }
 
     // Aggressive-steer traction break: whipping the wheel fast at speed makes the
     // rear step out into a drift. Scales with how fast the wheel moves AND car speed.
@@ -740,7 +796,8 @@ class VehiclePhysics {
     this.vy = fy*vForward + ry*vSide;
 
     // --- Drag / coast slowdown ---
-    const dragF = Math.pow(TUNE.drag, dt*60);
+    // while handbrake-drifting at speed, ease coast drag so the slide carries momentum
+    const dragF = Math.pow(TUNE.drag, dt*60*(1 - TUNE.hbCoast*hbEff));
     this.vx *= dragF; this.vy *= dragF;
 
     // --- Speed cap (scaled by car top speed) ---
@@ -748,6 +805,10 @@ class VehiclePhysics {
     this.speed = Math.hypot(this.vx, this.vy);
     if(this.speed > maxSp){
       const s = maxSp/this.speed; this.vx*=s; this.vy*=s; this.speed=maxSp;
+    }
+    // drag relief only carries momentum — never faster than the drift entry speed
+    if(hbEff > 0.001 && this._hbEntry && this.speed > this._hbEntry){
+      const s = this._hbEntry/this.speed; this.vx*=s; this.vy*=s; this.speed=this._hbEntry;
     }
 
     // --- Drift / skid detection ---
