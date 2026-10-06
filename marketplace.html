@@ -1377,16 +1377,16 @@
 
   <div class="page">
     <header>
-      <a href="index.html" class="wordmark">
+      <a href="/" class="wordmark">
         <img src="logo_transparent.png" alt="Performance Connect">
         <span>PERFORMANCE<span class="accent">CONNECT</span></span>
       </a>
       <nav class="site-nav">
-        <a href="index.html" class="nav-link">Home</a>
-        <a href="events.html" class="nav-link">Events</a>
-        <a href="marketplace.html" class="nav-link is-current active" aria-current="page">Marketplace</a>
-        <a href="affiliates.html" class="nav-link">Affiliates</a>
-        <a href="blog.html" class="nav-link">Blog</a>
+        <a href="/" class="nav-link">Home</a>
+        <a href="/events" class="nav-link">Events</a>
+        <a href="/marketplace" class="nav-link is-current active" aria-current="page">Marketplace</a>
+        <a href="/affiliates" class="nav-link">Affiliates</a>
+        <a href="/blog" class="nav-link">Blog</a>
       </nav>
       <div class="locale-tag">PERFORMANCECONNECT.CA</div>
     </header>
@@ -1401,7 +1401,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
             List something
           </button>
-          <a href="manage.html" class="create-btn create-btn--ghost">
+          <a href="/manage" class="create-btn create-btn--ghost">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
             Manage Your Listings
           </a>
@@ -2037,7 +2037,7 @@
         <p class="success-sub" id="success-sub">Your listing is now live on the marketplace,<br>attached to your Performance Key.</p>
         <div class="success-key" id="success-key-display">PC-XXXX-XXXX</div>
         <div class="success-actions">
-          <a href="marketplace.html" class="btn-view-listing" id="success-view-btn">View marketplace</a>
+          <a href="/marketplace" class="btn-view-listing" id="success-view-btn">View marketplace</a>
           <button class="btn-list-another" id="success-list-another">List another</button>
         </div>
       </div>
@@ -2085,9 +2085,9 @@
     </div>
 
     <div class="pk-manage-link">
-      <a href="perf-key-card.html" id="pk-card-link" target="_blank">View key card →</a>
+      <a href="/perf-key-card" id="pk-card-link" target="_blank">View key card →</a>
       &nbsp;&nbsp;·&nbsp;&nbsp;
-      <a href="manage.html" id="pk-manage-link">Manage listings →</a>
+      <a href="/manage" id="pk-manage-link">Manage listings →</a>
     </div>
 
     <button class="pk-close" id="pk-close">Done — view marketplace</button>
@@ -2127,7 +2127,7 @@
         return;
       }
       rows = pRes.data.map(function(p){
-        return { title:p.name, price:p.price, photo_urls:p.photos, href:'partout.html?id=' + p.vehicle_id };
+        return { title:p.name, price:p.price, photo_urls:p.photos, href:'/partout?id=' + p.vehicle_id };
       });
     } else {
       var res = await sb.from('listings')
@@ -2142,7 +2142,7 @@
         return;
       }
       rows = res.data.map(function(l){
-        return { title:l.title, price:l.price, photo_urls:l.photo_urls, href:'listing.html?id=' + l.id };
+        return { title:l.title, price:l.price, photo_urls:l.photo_urls, href:'/listing?id=' + l.id };
       });
     }
 
@@ -2777,8 +2777,8 @@
   function showPerfKeySuccess(perfKey){
     document.getElementById('pk-key-display').textContent = perfKey;
     document.getElementById('pk-overlay').style.display = 'flex';
-    document.getElementById('pk-manage-link').href = 'manage.html?key=' + encodeURIComponent(perfKey);
-    document.getElementById('pk-card-link').href = 'perf-key-card.html?key=' + encodeURIComponent(perfKey);
+    document.getElementById('pk-manage-link').href = '/manage?key=' + encodeURIComponent(perfKey);
+    document.getElementById('pk-card-link').href = '/perf-key-card?key=' + encodeURIComponent(perfKey);
   }
 
   // Copy key to clipboard
@@ -2795,7 +2795,7 @@
   // QR code download — generates a QR linking to the manage page
   document.getElementById('pk-btn-qr').addEventListener('click', function(){
     var key = document.getElementById('pk-key-display').textContent;
-    var cardUrl = window.location.origin + '/perf-key-card.html?key=' + encodeURIComponent(key);
+    var cardUrl = window.location.origin + '/perf-key-card?key=' + encodeURIComponent(key);
     var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&bgcolor=070808&color=3DC9F0&margin=20&data=' + encodeURIComponent(cardUrl);
     var a = document.createElement('a');
     a.href = qrUrl;
@@ -3009,7 +3009,7 @@
     var sub = document.getElementById('success-sub');
     if(sub){
       sub.innerHTML = '"' + escHtml(title) + '" is live. Now add your parts so buyers can find them — ' +
-        '<a href="manage.html?key=' + encodeURIComponent(perfKey) + '" style="color:var(--cyan-bright);font-weight:600;">open Manage &amp; add parts →</a>';
+        '<a href="/manage?key=' + encodeURIComponent(perfKey) + '" style="color:var(--cyan-bright);font-weight:600;">open Manage &amp; add parts →</a>';
     }
     if(typeof loadListings === 'function'){ loadListings(); }
   }
@@ -3349,7 +3349,7 @@
     var card = document.createElement('a');
     card.className = 'listing-card' + (l._isPart ? ' listing-card-part' : '');
     // Parts link to their parent part-out page; listings to the listing page.
-    card.href = l._isPart ? ('partout.html?id=' + l._vehicleId) : ('listing.html?id=' + l.id);
+    card.href = l._isPart ? ('/partout?id=' + l._vehicleId) : ('/listing?id=' + l.id);
 
     var thumb = '';
     if(l.photo_urls && l.photo_urls.length > 0){

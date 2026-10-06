@@ -21,11 +21,11 @@
 
   // Menu order, left to right. `match` = extra pages that count as "inside" this section.
   var LINKS = [
-    { label: 'Home',        href: 'index.html',       match: ['', 'index'] },
-    { label: 'Events',      href: 'events.html',      match: ['events', 'event-submit'] },
-    { label: 'Marketplace', href: 'marketplace.html', match: ['marketplace', 'listing', 'partout', 'manage'] },
-    { label: 'Affiliates',  href: 'affiliates.html',  match: ['affiliates'] },
-    { label: 'Blog',        href: 'blog.html',        match: ['blog'] }
+    { label: 'Home',        href: '/',       match: ['', 'index'] },
+    { label: 'Events',      href: '/events',      match: ['events', 'event-submit'] },
+    { label: 'Marketplace', href: '/marketplace', match: ['marketplace', 'listing', 'partout', 'manage'] },
+    { label: 'Affiliates',  href: '/affiliates',  match: ['affiliates'] },
+    { label: 'Blog',        href: '/blog',        match: ['blog'] }
   ];
 
   // "/events.html" -> "events", "/" -> ""  (also handles Cloudflare's extension-less URLs)

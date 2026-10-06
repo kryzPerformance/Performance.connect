@@ -379,16 +379,16 @@
 
 <div class="page">
   <header>
-    <a href="index.html" class="wordmark">
+    <a href="/" class="wordmark">
       <img src="logo_transparent.png" alt="Performance Connect">
       <span>PERFORMANCE<span class="accent">CONNECT</span></span>
     </a>
     <nav class="site-nav">
-      <a href="index.html" class="nav-link">Home</a>
-      <a href="events.html" class="nav-link">Events</a>
-      <a href="marketplace.html" class="nav-link is-current active" aria-current="page">Marketplace</a>
-      <a href="affiliates.html" class="nav-link">Affiliates</a>
-      <a href="blog.html" class="nav-link">Blog</a>
+      <a href="/" class="nav-link">Home</a>
+      <a href="/events" class="nav-link">Events</a>
+      <a href="/marketplace" class="nav-link is-current active" aria-current="page">Marketplace</a>
+      <a href="/affiliates" class="nav-link">Affiliates</a>
+      <a href="/blog" class="nav-link">Blog</a>
     </nav>
   </header>
 
@@ -410,7 +410,7 @@
 
       <p class="key-hint">
         Don't have a Performance Key yet?
-        <a href="marketplace.html">List something</a> — you'll receive one automatically.<br><br>
+        <a href="/marketplace">List something</a> — you'll receive one automatically.<br><br>
         Lost your key? <a href="mailto:info@performanceconnect.ca?subject=Performance Key Recovery">Contact us</a>.
       </p>
     </div>
@@ -654,7 +654,7 @@
     document.getElementById('dash-ig').textContent      = seller.instagram ? '@' + seller.instagram : '';
 
     // Update URL without reload
-    history.replaceState(null,'','manage.html?key='+encodeURIComponent(perfKey));
+    history.replaceState(null,'','/manage?key='+encodeURIComponent(perfKey));
 
     // Load listings, part-out vehicles, and part-out counts in parallel
     var loads = await Promise.all([
@@ -756,7 +756,7 @@
       '</div>' +
       '<div class="manage-actions">' +
         '<button class="act-btn parts-btn" data-po-action="manage" data-vid="'+v.id+'">Manage parts</button>' +
-        '<a class="act-btn view-btn" href="partout.html?id='+v.id+'" target="_blank">View</a>' +
+        '<a class="act-btn view-btn" href="/partout?id='+v.id+'" target="_blank">View</a>' +
         (v.status === 'active'
           ? '<button class="act-btn" data-po-action="complete" data-vid="'+v.id+'">Mark Complete</button>'
           : '<button class="act-btn" data-po-action="reactivate" data-vid="'+v.id+'">Reactivate</button>') +
@@ -795,7 +795,7 @@
         '<div class="manage-price">'+esc(priceStr)+'</div>' +
       '</div>' +
       '<div class="manage-actions">' +
-        '<a class="act-btn view-btn" href="listing.html?id='+l.id+'" target="_blank">View</a>' +
+        '<a class="act-btn view-btn" href="/listing?id='+l.id+'" target="_blank">View</a>' +
         (l.status === 'active'
           ? '<button class="act-btn sold-btn" data-action="sold" data-id="'+l.id+'">Mark Sold</button>'
           : l.status === 'sold'
@@ -939,7 +939,7 @@
 
     var title = [pmVehicle.year,pmVehicle.make,pmVehicle.model,pmVehicle.trim].filter(Boolean).join(' ');
     document.getElementById('pm-title').textContent = title + ' Part Out';
-    document.getElementById('pm-view-public').href = 'partout.html?id=' + pmVehicle.id;
+    document.getElementById('pm-view-public').href = '/partout?id=' + pmVehicle.id;
 
     document.getElementById('pm-parts-list').innerHTML = '<div class="state-msg">Loading parts...</div>';
 

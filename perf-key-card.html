@@ -349,7 +349,7 @@
 
   // ── QR download ──
   document.getElementById('btn-qr').addEventListener('click', function(){
-    var cardUrl = window.location.origin + '/perf-key-card.html?key=' + encodeURIComponent(key);
+    var cardUrl = window.location.origin + '/perf-key-card?key=' + encodeURIComponent(key);
     var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&bgcolor=070808&color=3DC9F0&margin=20&data=' + encodeURIComponent(cardUrl);
     var a = document.createElement('a');
     a.href = qrUrl; a.download = key + '-QR.png'; a.target = '_blank';

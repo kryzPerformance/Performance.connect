@@ -397,7 +397,7 @@ window.PC = window.PC || {};
 
     var mListings = document.createElement('a');
     mListings.className = 'pc-acct-item'; mListings.textContent = 'Manage listings';
-    mListings.href = 'manage.html';
+    mListings.href = '/manage';
 
     var mIg = document.createElement('button');
     mIg.className = 'pc-acct-item'; mIg.type = 'button';
