@@ -385,21 +385,33 @@
   });
 
   // ══════════ GEOCODING (shared) ══════════
+  // lookupCoords: address text -> {lat, lng, label} or null. Used by the
+  // "Look up" buttons, by Publish Event, and by Approve in the queue.
+  async function lookupCoords(addr){
+    if(!addr || /^\s*tba\b/i.test(addr)) return null;
+    try{
+      var url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ca&q=' + encodeURIComponent(addr);
+      var res = await fetch(url, { headers:{ 'Accept-Language':'en' }});
+      var data = await res.json();
+      if(!data || !data.length) return null;
+      return {
+        lat: parseFloat(parseFloat(data[0].lat).toFixed(4)),
+        lng: parseFloat(parseFloat(data[0].lon).toFixed(4)),
+        label: data[0].display_name.split(',').slice(0,3).join(',')
+      };
+    } catch(e){ return null; }
+  }
   async function geocode(addr, latId, lngId, statusId){
     if(!addr){ showGeo(statusId, 'Enter an address first.', false); return; }
     showGeo(statusId, 'Looking up...', true);
-    try{
-      var url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(addr);
-      var res = await fetch(url, { headers:{ 'Accept-Language':'en' }});
-      var data = await res.json();
-      if(data && data.length > 0){
-        document.getElementById(latId).value = parseFloat(data[0].lat).toFixed(4);
-        document.getElementById(lngId).value = parseFloat(data[0].lon).toFixed(4);
-        showGeo(statusId, '✓ Found: ' + data[0].display_name.split(',').slice(0,3).join(','), true);
-      } else {
-        showGeo(statusId, 'Not found. Enter coordinates manually.', false);
-      }
-    } catch(e){ showGeo(statusId, 'Lookup failed. Enter manually.', false); }
+    var hit = await lookupCoords(addr);
+    if(hit){
+      document.getElementById(latId).value = hit.lat.toFixed(4);
+      document.getElementById(lngId).value = hit.lng.toFixed(4);
+      showGeo(statusId, '✓ Found: ' + hit.label, true);
+    } else {
+      showGeo(statusId, 'Not found. Enter coordinates manually.', false);
+    }
   }
   function showGeo(id, msg, ok){
     var el = document.getElementById(id);
@@ -482,6 +494,14 @@
     if(!address){ showMsg('ev-msg','Enter an address.',false); return; }
 
     var btn = this; btn.disabled = true; btn.textContent = 'Publishing...';
+    // No coordinates entered? Look them up so the event gets a map pin.
+    if(!parseFloat(document.getElementById('ev-lat').value)){
+      var hit = await lookupCoords(address);
+      if(hit){
+        document.getElementById('ev-lat').value = hit.lat.toFixed(4);
+        document.getElementById('ev-lng').value = hit.lng.toFixed(4);
+      }
+    }
     var row = {
       title: title,
       event_type: evType,
@@ -534,11 +554,15 @@
     }
 
     list.innerHTML = '';
+    var byId = {};
     pending.forEach(function(ev){
+      byId[ev.id] = ev;
       var div = document.createElement('div');
       div.className = 'event-row pending';
       var when = ev.event_date + (ev.start_time ? ' · ' + ev.start_time : '');
       var loc = ev.venue_name ? ev.venue_name + ' — ' + (ev.address||'') : (ev.address||'');
+      var pin = (ev.lat && ev.lng) ? '🗺️ Map pin set'
+              : (ev.address ? '🗺️ No map pin yet (looked up on approve)' : '⚠️ No address, won\'t show on map');
       div.innerHTML =
         '<div class="event-row-top">'+
           '<div class="event-row-title">'+esc(ev.title)+'</div>'+
@@ -547,6 +571,7 @@
         '<div class="event-row-meta">'+
           '📅 '+esc(when)+'<br>'+
           (loc ? '📍 '+esc(loc)+'<br>' : '')+
+          esc(pin)+'<br>'+
           (ev.host ? '👤 '+esc(ev.host)+'<br>' : '')+
           (ev.description ? '<br>'+esc(ev.description) : '')+
         '</div>'+
@@ -561,7 +586,15 @@
     list.querySelectorAll('.btn-approve').forEach(function(b){
       b.addEventListener('click', async function(){
         b.disabled = true; b.textContent = 'Approving...';
-        var res = await sb.from('events').update({status:'approved'}).eq('id', b.dataset.id);
+        var ev = byId[b.dataset.id] || {};
+        var patch = {status:'approved'};
+        // Give the event a map pin if it has an address but no coordinates yet.
+        if(!(ev.lat && ev.lng) && ev.address){
+          b.textContent = 'Finding map pin...';
+          var hit = await lookupCoords(ev.address);
+          if(hit){ patch.lat = hit.lat; patch.lng = hit.lng; }
+        }
+        var res = await sb.from('events').update(patch).eq('id', b.dataset.id);
         if(res.error){ b.textContent = 'Error'; }
         else { loadQueue(); }
       });
