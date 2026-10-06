@@ -454,9 +454,9 @@
   var lastPts = [];
   function fitToPins(){
     if(!map || !document.getElementById('map').offsetWidth) return;
-    if(lastPts.length > 1) map.fitBounds(lastPts, { padding:[50,50], maxZoom:13 });
-    else if(lastPts.length === 1) map.setView(lastPts[0], 12);
-    else map.setView(GTA, 10);
+    if(lastPts.length > 1) map.fitBounds(lastPts, { padding:[50,50], maxZoom:13, animate:false });
+    else if(lastPts.length === 1) map.setView(lastPts[0], 12, { animate:false });
+    else map.setView(GTA, 10, { animate:false });
   }
 
   // ── Filter pills ──
