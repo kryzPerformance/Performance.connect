@@ -687,29 +687,60 @@
     line-height:1.6;
     margin-bottom:22px;
   }
-  .modal-photo-btn{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    width:100%;
-    font-family:'Rajdhani', sans-serif;
-    font-weight:700;
-    font-size:15px;
-    letter-spacing:0.06em;
-    text-transform:uppercase;
-    background:var(--cyan-bright);
-    color:#03171D;
-    border:none;
-    border-radius:6px;
-    padding:14px;
-    text-decoration:none;
-    transition:background 0.15s ease;
+  .field-row{ display:flex; gap:12px; }
+  .field-row .field-group{ flex:1; min-width:0; }
+  .field-group .opt{ color:var(--steel-dim); font-weight:400; }
+
+  /* photo picker */
+  .photo-drop{
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+    width:100%; padding:20px 14px;
+    border:1px dashed rgba(31,169,207,0.45); border-radius:8px;
+    background:rgba(31,169,207,0.04);
+    color:var(--cyan-bright);
+    font-family:'Inter', sans-serif; font-size:14px; font-weight:500;
+    cursor:pointer; transition:background 0.15s ease, border-color 0.15s ease;
   }
-  .modal-photo-btn:hover{ background:#62D6F5; }
-  .modal-photo-btn svg{ width:18px; height:18px; }
+  .photo-drop:hover{ background:rgba(31,169,207,0.09); border-color:var(--cyan-bright); }
+  .photo-drop svg{ width:22px; height:22px; }
+  .photo-drop small{ color:var(--steel-dim); font-size:12px; font-weight:400; }
+  .photo-thumbs{ display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; margin-top:10px; }
+  .photo-thumbs:empty{ display:none; }
+  .photo-thumb{ position:relative; aspect-ratio:1; border-radius:6px; overflow:hidden; background:#0C0F10; border:0.5px solid var(--line); }
+  .photo-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .photo-thumb button{
+    position:absolute; top:3px; right:3px; width:20px; height:20px; border-radius:50%;
+    border:none; background:rgba(7,8,8,0.8); color:var(--white); font-size:13px; line-height:20px;
+    cursor:pointer; padding:0;
+  }
+
+  /* series picker */
+  .series-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .series-opt{
+    display:flex; align-items:center; justify-content:center;
+    min-height:64px; padding:10px;
+    background:#0C0F10; border:0.5px solid var(--line); border-radius:8px;
+    cursor:pointer; transition:border-color 0.15s ease, background 0.15s ease;
+    font-family:'Inter', sans-serif; font-size:13px; color:var(--steel);
+  }
+  .series-opt img{ max-width:100%; max-height:40px; display:block; opacity:0.75; transition:opacity 0.15s ease; }
+  .series-opt[data-series="pull_up"] img{ max-height:52px; }
+  .series-opt:hover img, .series-opt.active img{ opacity:1; }
+  .series-opt.active{ border-color:var(--cyan-bright); background:rgba(31,169,207,0.08); color:var(--cyan-bright); }
+  .series-hint{ font-size:12px; color:var(--steel-dim); margin-top:7px; line-height:1.45; }
+
+  .feat-error{
+    display:none; margin-bottom:14px; padding:10px 12px; border-radius:6px;
+    background:rgba(220,70,70,0.1); border:0.5px solid rgba(220,70,70,0.45);
+    color:#F2A0A0; font-family:'Inter', sans-serif; font-size:13px; text-align:left;
+  }
+  .modal-submit:disabled{ opacity:0.6; cursor:default; transform:none; }
+  .feat-hp{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+  .feat-done{ text-align:center; padding:12px 0 4px; }
+  .feat-done .modal-title{ margin-top:6px; }
 
   @media (max-width: 520px){
+    .field-row{ flex-direction:column; gap:0; }
     .hero-ctas{ flex-direction:column; }
     .cta-primary, .cta-secondary{ width:100%; }
     .capture-row{ flex-direction:column; }
@@ -871,42 +902,86 @@
       <div class="modal-step" id="modal-step-1">
         <p class="modal-eyebrow">Feature my build</p>
         <h2 class="modal-title">Show us your whip</h2>
-        <p class="modal-sub">Tell us about your car. You'll add photos in the next step.</p>
+        <p class="modal-sub">Tell us about your car and add a few photos. If it's picked, we'll feature it on Performance Connect and tag you.</p>
 
-        <form id="feature-details-form">
-          <div class="field-group">
-            <label for="feat-name">Name / Instagram handle</label>
-            <input type="text" id="feat-name" required autocomplete="name">
+        <form id="feature-details-form" novalidate>
+          <div class="field-row">
+            <div class="field-group">
+              <label for="feat-name">Your name</label>
+              <input type="text" id="feat-name" maxlength="80" required autocomplete="name">
+            </div>
+            <div class="field-group">
+              <label for="feat-ig">Instagram <span class="opt">(so we can tag you)</span></label>
+              <input type="text" id="feat-ig" maxlength="40" placeholder="@yourhandle" autocomplete="off" autocapitalize="off">
+            </div>
           </div>
           <div class="field-group">
-            <label for="feat-email">Email address</label>
-            <input type="email" id="feat-email" required autocomplete="email">
+            <label for="feat-email">Email <span class="opt">(private, only used to reach you)</span></label>
+            <input type="email" id="feat-email" maxlength="120" required autocomplete="email">
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label for="feat-vehicle">Year, make &amp; model</label>
+              <input type="text" id="feat-vehicle" maxlength="120" placeholder="e.g. 1995 Nissan 240SX" required>
+            </div>
+            <div class="field-group">
+              <label for="feat-area">Area <span class="opt">(optional)</span></label>
+              <input type="text" id="feat-area" maxlength="60" placeholder="e.g. Mississauga">
+            </div>
           </div>
           <div class="field-group">
-            <label for="feat-vehicle">Vehicle make, model, year</label>
-            <input type="text" id="feat-vehicle" placeholder="e.g. 1995 Nissan 240SX" required>
+            <label for="feat-mods">Mods</label>
+            <textarea id="feat-mods" maxlength="2000" placeholder="Wheels, tires, suspension, power, aero... list what's done" required></textarea>
           </div>
           <div class="field-group">
-            <label for="feat-about">Tell us about your car</label>
-            <textarea id="feat-about" placeholder="What's been done to it? What's the story?" required></textarea>
+            <label for="feat-story">The story <span class="opt">(optional)</span></label>
+            <textarea id="feat-story" maxlength="2000" placeholder="How long you've had it, what's next, anything we should know"></textarea>
           </div>
+
+          <div class="field-group">
+            <label>Photos <span class="opt">(1–5)</span></label>
+            <input type="file" id="feat-photos" accept="image/*" multiple hidden>
+            <button type="button" class="photo-drop" id="feat-photo-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+              <span id="feat-photo-label">Add photos</span>
+              <small>Clean, well-lit shots work best</small>
+            </button>
+            <div class="photo-thumbs" id="feat-thumbs"></div>
+          </div>
+
+          <div class="field-group">
+            <label>Which series fits? <span class="opt">(optional)</span></label>
+            <div class="series-grid" id="feat-series">
+              <button type="button" class="series-opt" data-series="pull_up" aria-label="The Pull Up"><img src="/assets/series/pull-up.webp" alt="The Pull Up"></button>
+              <button type="button" class="series-opt" data-series="pristine" aria-label="Pristine"><img src="/assets/series/pristine.webp" alt="Pristine"></button>
+              <button type="button" class="series-opt" data-series="power_house" aria-label="Power House"><img src="/assets/series/power-house.webp" alt="Power House"></button>
+              <button type="button" class="series-opt" data-series="">Not sure, you pick</button>
+            </div>
+            <p class="series-hint">Pull Up: the people &amp; shops behind it. Pristine: show-quality looks. Power House: built for performance.</p>
+          </div>
+
+          <div class="feat-hp" aria-hidden="true">
+            <label for="feat-website">Leave this empty</label>
+            <input type="text" id="feat-website" tabindex="-1" autocomplete="off">
+          </div>
+
           <div class="checkbox-row">
             <input type="checkbox" id="feat-consent" required>
             <label for="feat-consent">I confirm I own these photos and give Performance Connect permission to repost with credit</label>
           </div>
-          <button type="submit" class="modal-submit">Continue to photos</button>
+          <div class="feat-error" id="feat-error" role="alert"></div>
+          <button type="submit" class="modal-submit" id="feat-submit">Submit my build</button>
         </form>
       </div>
 
-      <!-- Step 2: hand off to Google for photo upload -->
+      <!-- Step 2: confirmation -->
       <div class="modal-step hidden" id="modal-step-2">
-        <p class="modal-eyebrow">Almost done</p>
-        <h2 class="modal-title">Add your photos</h2>
-        <p class="modal-next-note">Your details are saved. Tap below to add 1–5 photos of your build — it'll open in a new tab, already filled in with what you just told us.</p>
-        <a href="#" target="_blank" rel="noopener" class="modal-photo-btn" id="photo-upload-link">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-          <span>Add photos &amp; submit</span>
-        </a>
+        <div class="feat-done">
+          <p class="modal-eyebrow">Submitted</p>
+          <h2 class="modal-title">You're in the queue</h2>
+          <p class="modal-next-note">Thanks! We review every build. If yours is picked, we'll tag you when it goes up. Keep an eye on <a href="https://www.instagram.com/performanceconnect.ca/" target="_blank" rel="noopener noreferrer" style="color:var(--cyan-bright);">@performanceconnect.ca</a>.</p>
+          <button type="button" class="modal-submit" id="feat-done-close">Done</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1040,16 +1115,18 @@
   })();
 
   // ---------- Feature My Car modal ----------
-  var FORM_ID = '1FAIpQLSfotoegdFpAmy-QgJz3ZY1rE30hJJn5t8gJ0B_qijSrQf3GaA';
-  var ENTRY_NAME = 'entry.961621343';
-  var ENTRY_EMAIL = 'entry.970319707';
-  var ENTRY_VEHICLE = 'entry.554243933';
-  var ENTRY_ABOUT = 'entry.770860172';
-  var ENTRY_CONSENT = 'entry.1069835717';
-  // This must match the exact text of the checkbox option in the live
-  // Google Form, since Google Forms checkboxes submit their visible label
-  // as the value.
-  var CONSENT_VALUE = 'I confirm I own these photos and give Performance Connect permission to repost with credit';
+  // Submissions go straight into Supabase (table feature_submissions,
+  // private bucket feature-photos). RLS lets the public INSERT pending
+  // rows and upload photos, but never read them back — only the admin
+  // account can see submissions (emails stay private).
+  var FEAT_SB_URL  = 'https://myapluhgfpnyjsfrflhd.supabase.co';
+  var FEAT_SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15YXBsdWhnZnBueWpzZnJmbGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwODcxNDYsImV4cCI6MjA5NzY2MzE0Nn0.j_Xe_J1uvBA-w4Sag1tl3Yp7zqlaEmkQzt2eO6xz1vg';
+  var FEAT_BUCKET  = 'feature-photos';
+  var FEAT_MAX_PHOTOS = 5;
+
+  var featSb = (window.supabase && window.supabase.createClient)
+    ? window.supabase.createClient(FEAT_SB_URL, FEAT_SB_ANON, { auth: { persistSession:false, autoRefreshToken:false, detectSessionInUrl:false } })
+    : null;
 
   var overlay = document.getElementById('feature-modal-overlay');
   var openBtn = document.getElementById('open-feature-form');
@@ -1057,7 +1134,16 @@
   var step1 = document.getElementById('modal-step-1');
   var step2 = document.getElementById('modal-step-2');
   var detailsForm = document.getElementById('feature-details-form');
-  var photoLink = document.getElementById('photo-upload-link');
+  var photoInput = document.getElementById('feat-photos');
+  var photoBtn = document.getElementById('feat-photo-btn');
+  var photoLabel = document.getElementById('feat-photo-label');
+  var thumbs = document.getElementById('feat-thumbs');
+  var seriesGrid = document.getElementById('feat-series');
+  var featErr = document.getElementById('feat-error');
+  var featSubmit = document.getElementById('feat-submit');
+
+  var featPhotos = [];   // File objects, max 5
+  var featSeries = null; // 'pull_up' | 'pristine' | 'power_house' | null
 
   function openModal(){
     overlay.classList.add('open');
@@ -1066,42 +1152,204 @@
   function closeModal(){
     overlay.classList.remove('open');
     document.body.style.overflow = '';
+    // After a successful submit, reset so the next open starts fresh
+    if(!step2.classList.contains('hidden')){
+      detailsForm.reset();
+      featPhotos = []; renderThumbs(); setSeries(null);
+      step2.classList.add('hidden');
+      step1.classList.remove('hidden');
+    }
   }
 
   openBtn.addEventListener('click', openModal);
   closeBtn.addEventListener('click', closeModal);
+  document.getElementById('feat-done-close').addEventListener('click', closeModal);
   overlay.addEventListener('click', function(e){
     if(e.target === overlay){ closeModal(); }
   });
 
-  detailsForm.addEventListener('submit', function(e){
+  // Deep link: performanceconnect.ca/?feature=1 opens the form directly
+  // (handy for Instagram bio / story links).
+  if(/[?&]feature=1\b/.test(window.location.search)){ openModal(); }
+
+  function showFeatError(msg){
+    featErr.textContent = msg;
+    featErr.style.display = 'block';
+  }
+  function clearFeatError(){ featErr.style.display = 'none'; featErr.textContent = ''; }
+
+  detailsForm.addEventListener('input', clearFeatError);
+  detailsForm.addEventListener('change', clearFeatError);
+
+  // ── photos ──
+  photoBtn.addEventListener('click', function(){ photoInput.click(); });
+  photoInput.addEventListener('change', function(){
+    var files = Array.prototype.slice.call(photoInput.files || []);
+    files.forEach(function(f){
+      if(featPhotos.length >= FEAT_MAX_PHOTOS) return;
+      if(f.type && f.type.indexOf('image/') !== 0) return;
+      featPhotos.push(f);
+    });
+    if(featPhotos.length) clearFeatError();
+    photoInput.value = ''; // allow re-picking the same file
+    renderThumbs();
+  });
+
+  function renderThumbs(){
+    thumbs.innerHTML = '';
+    featPhotos.forEach(function(f, i){
+      var cell = document.createElement('div');
+      cell.className = 'photo-thumb';
+      var img = document.createElement('img');
+      img.alt = 'Photo ' + (i + 1);
+      img.src = URL.createObjectURL(f);
+      img.onload = function(){ URL.revokeObjectURL(img.src); };
+      var rm = document.createElement('button');
+      rm.type = 'button';
+      rm.setAttribute('aria-label', 'Remove photo ' + (i + 1));
+      rm.textContent = '×';
+      rm.addEventListener('click', function(){ featPhotos.splice(i, 1); renderThumbs(); });
+      cell.appendChild(img); cell.appendChild(rm);
+      thumbs.appendChild(cell);
+    });
+    photoLabel.textContent = featPhotos.length
+      ? (featPhotos.length >= FEAT_MAX_PHOTOS ? '5 photos added (max)' : 'Add more (' + featPhotos.length + '/5)')
+      : 'Add photos';
+  }
+
+  // ── series ──
+  // val: 'pull_up' | 'pristine' | 'power_house' | '' ("not sure") | null (nothing picked)
+  function setSeries(val){
+    featSeries = val || null;
+    Array.prototype.forEach.call(seriesGrid.querySelectorAll('.series-opt'), function(b){
+      b.classList.toggle('active', val !== null && b.dataset.series === val);
+    });
+  }
+  seriesGrid.addEventListener('click', function(e){
+    var b = e.target.closest('.series-opt'); if(!b) return;
+    setSeries(b.dataset.series);
+  });
+
+  // Phone photos can be 5–10 MB and HEIC. Re-encode to max 2048px JPEG:
+  // faster upload on mobile data, still big enough for an IG post.
+  // If the browser can't decode it (e.g. HEIC on some Androids), upload
+  // the original file instead.
+  function shrinkPhoto(file){
+    return new Promise(function(resolve){
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function(){
+        try{
+          var MAX = 2048;
+          var scale = Math.min(1, MAX / Math.max(img.naturalWidth, img.naturalHeight));
+          var c = document.createElement('canvas');
+          c.width = Math.round(img.naturalWidth * scale);
+          c.height = Math.round(img.naturalHeight * scale);
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          c.toBlob(function(blob){
+            URL.revokeObjectURL(url);
+            resolve(blob ? { blob: blob, ext: 'jpg', type: 'image/jpeg' } : { blob: file, ext: fileExt(file), type: file.type });
+          }, 'image/jpeg', 0.88);
+        } catch(err){
+          URL.revokeObjectURL(url);
+          resolve({ blob: file, ext: fileExt(file), type: file.type });
+        }
+      };
+      img.onerror = function(){
+        URL.revokeObjectURL(url);
+        resolve({ blob: file, ext: fileExt(file), type: file.type });
+      };
+      img.src = url;
+    });
+  }
+  function fileExt(f){
+    var e = (f.name || '').split('.').pop().toLowerCase();
+    return /^(jpe?g|png|webp|heic|heif)$/.test(e) ? e : 'jpg';
+  }
+  function newId(){
+    if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){
+      var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+  }
+
+  detailsForm.addEventListener('submit', async function(e){
     e.preventDefault();
+    clearFeatError();
 
-    var name = document.getElementById('feat-name').value.trim();
-    var email = document.getElementById('feat-email').value.trim();
+    var name    = document.getElementById('feat-name').value.trim();
+    var ig      = document.getElementById('feat-ig').value.trim().replace(/^@+/, '').replace(/\s+/g, '');
+    var email   = document.getElementById('feat-email').value.trim();
     var vehicle = document.getElementById('feat-vehicle').value.trim();
-    var about = document.getElementById('feat-about').value.trim();
+    var area    = document.getElementById('feat-area').value.trim();
+    var mods    = document.getElementById('feat-mods').value.trim();
+    var story   = document.getElementById('feat-story').value.trim();
     var consent = document.getElementById('feat-consent').checked;
+    var honey   = document.getElementById('feat-website').value;
 
-    if(!name || !email || !vehicle || !about || !consent){ return; }
+    if(honey){ return; } // bot filled the hidden field
+    if(!name){ showFeatError('Please add your name.'); return; }
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showFeatError('Please enter a valid email address.'); return; }
+    if(ig && !/^[A-Za-z0-9._]{1,30}$/.test(ig)){ showFeatError("That Instagram handle doesn't look right. Letters, numbers, dots and underscores only."); return; }
+    if(vehicle.length < 2){ showFeatError('Please add the year, make and model.'); return; }
+    if(!mods){ showFeatError("Tell us what's been done to it (even if it's mostly stock)."); return; }
+    if(featPhotos.length === 0){ showFeatError('Add at least one photo of your build.'); return; }
+    if(!consent){ showFeatError('Please tick the box to confirm the photos are yours.'); return; }
+    if(!featSb){ showFeatError("Couldn't connect. Please refresh the page and try again."); return; }
 
-    // We intentionally do NOT submit to Google here. The actual submission
-    // happens once on Google's site after the photo upload step, using the
-    // pre-filled link below — this keeps each build to exactly one row in
-    // the responses sheet (text + photos together), instead of a duplicate
-    // partial entry from this step and a second complete one after upload.
-    var prefillUrl = 'https://docs.google.com/forms/d/e/' + FORM_ID + '/viewform'
-      + '?usp=pp_url'
-      + '&' + ENTRY_NAME + '=' + encodeURIComponent(name)
-      + '&' + ENTRY_EMAIL + '=' + encodeURIComponent(email)
-      + '&' + ENTRY_VEHICLE + '=' + encodeURIComponent(vehicle)
-      + '&' + ENTRY_ABOUT + '=' + encodeURIComponent(about)
-      + '&' + ENTRY_CONSENT + '=' + encodeURIComponent(CONSENT_VALUE);
+    featSubmit.disabled = true;
+    var id = newId();
+    var paths = [];
 
-    photoLink.href = prefillUrl;
+    try{
+      for(var i = 0; i < featPhotos.length; i++){
+        featSubmit.textContent = 'Uploading photo ' + (i + 1) + ' of ' + featPhotos.length + '...';
+        var out = await shrinkPhoto(featPhotos[i]);
+        var path = id + '/' + i + '.' + out.ext;
+        var up = await featSb.storage.from(FEAT_BUCKET).upload(path, out.blob, {
+          contentType: out.type || 'image/jpeg',
+          upsert: false
+        });
+        if(up.error) throw up.error;
+        paths.push(path);
+      }
 
-    step1.classList.add('hidden');
-    step2.classList.remove('hidden');
+      featSubmit.textContent = 'Saving...';
+      // No .select() here on purpose: the public can't read submissions
+      // back (RLS), so asking for the row would make the insert error out.
+      var ins = await featSb.from('feature_submissions').insert({
+        id: id,
+        name: name,
+        instagram: ig || null,
+        email: email,
+        vehicle: vehicle,
+        area: area || null,
+        mods: mods,
+        story: story || null,
+        series: featSeries,
+        photo_paths: paths,
+        consent: true
+      });
+      if(ins.error) throw ins.error;
+
+      if(window.clarity){ try{ window.clarity('event', 'feature_submitted'); }catch(_){} }
+      step1.classList.add('hidden');
+      step2.classList.remove('hidden');
+      overlay.scrollTop = 0;
+    } catch(err){
+      if(window.console) console.error('[feature submit]', err);
+      var msg = (err && err.message) ? String(err.message) : '';
+      if(/mime|type/i.test(msg)){
+        showFeatError("One of those photos is a format we can't take. Try JPG or PNG.");
+      } else if(/size|large/i.test(msg)){
+        showFeatError('One of those photos is too big (15 MB max). Try a smaller one.');
+      } else {
+        showFeatError('Something went wrong while sending. Check your connection and try again.');
+      }
+    } finally {
+      featSubmit.disabled = false;
+      featSubmit.textContent = 'Submit my build';
+    }
   });
 </script>
 
