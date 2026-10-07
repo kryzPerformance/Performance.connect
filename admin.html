@@ -148,7 +148,6 @@
   .feat-photos a{flex-shrink:0;}
   .feat-photos img{width:92px;height:92px;border-radius:8px;object-fit:cover;border:0.5px solid var(--line);background:var(--panel-2);display:block;}
   .feat-series{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:3px 8px;border-radius:5px;white-space:nowrap;background:rgba(31,169,207,0.12);color:var(--cyan-bright);}
-  .feat-series.none{background:rgba(255,255,255,0.05);color:var(--steel-dim);}
   .feat-block{font-size:12.5px;color:var(--steel);line-height:1.6;margin-bottom:10px;white-space:pre-wrap;}
   .feat-block b{color:var(--white);font-weight:600;}
   .feat-block a{color:var(--cyan-bright);}
@@ -700,8 +699,9 @@
       }).join('');
       var ig = r.instagram ? '<a href="https://www.instagram.com/'+encodeURIComponent(r.instagram)+'/" target="_blank" rel="noopener">@'+esc(r.instagram)+'</a>' : 'no Instagram';
       var when = new Date(r.created_at).toLocaleDateString('en-CA', { month:'short', day:'numeric', year:'numeric' });
-      var series = r.series ? '<span class="feat-series">'+esc(SERIES_LABEL[r.series] || r.series)+'</span>'
-                            : '<span class="feat-series none">No series</span>';
+      // Series is picked by the Sunday content task (stored in content_package)
+      var sKey = r.series || (r.content_package && r.content_package.series) || '';
+      var series = sKey ? '<span class="feat-series">'+esc(SERIES_LABEL[sKey] || sKey)+'</span>' : '';
 
       var pkg = '';
       if(r.content_package && r.content_package.caption){

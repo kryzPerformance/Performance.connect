@@ -714,21 +714,6 @@
     cursor:pointer; padding:0;
   }
 
-  /* series picker */
-  .series-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  .series-opt{
-    display:flex; align-items:center; justify-content:center;
-    min-height:64px; padding:10px;
-    background:#0C0F10; border:0.5px solid var(--line); border-radius:8px;
-    cursor:pointer; transition:border-color 0.15s ease, background 0.15s ease;
-    font-family:'Inter', sans-serif; font-size:13px; color:var(--steel);
-  }
-  .series-opt img{ max-width:100%; max-height:40px; display:block; opacity:0.75; transition:opacity 0.15s ease; }
-  .series-opt[data-series="pull_up"] img{ max-height:52px; }
-  .series-opt:hover img, .series-opt.active img{ opacity:1; }
-  .series-opt.active{ border-color:var(--cyan-bright); background:rgba(31,169,207,0.08); color:var(--cyan-bright); }
-  .series-hint{ font-size:12px; color:var(--steel-dim); margin-top:7px; line-height:1.45; }
-
   .feat-error{
     display:none; margin-bottom:14px; padding:10px 12px; border-radius:6px;
     background:rgba(220,70,70,0.1); border:0.5px solid rgba(220,70,70,0.45);
@@ -949,17 +934,6 @@
             <div class="photo-thumbs" id="feat-thumbs"></div>
           </div>
 
-          <div class="field-group">
-            <label>Which series fits? <span class="opt">(optional)</span></label>
-            <div class="series-grid" id="feat-series">
-              <button type="button" class="series-opt" data-series="pull_up" aria-label="The Pull Up"><img src="/assets/series/pull-up.webp" alt="The Pull Up"></button>
-              <button type="button" class="series-opt" data-series="pristine" aria-label="Pristine"><img src="/assets/series/pristine.webp" alt="Pristine"></button>
-              <button type="button" class="series-opt" data-series="power_house" aria-label="Power House"><img src="/assets/series/power-house.webp" alt="Power House"></button>
-              <button type="button" class="series-opt" data-series="">Not sure, you pick</button>
-            </div>
-            <p class="series-hint">Pull Up: the people &amp; shops behind it. Pristine: show-quality looks. Power House: built for performance.</p>
-          </div>
-
           <div class="feat-hp" aria-hidden="true">
             <label for="feat-website">Leave this empty</label>
             <input type="text" id="feat-website" tabindex="-1" autocomplete="off">
@@ -1138,12 +1112,10 @@
   var photoBtn = document.getElementById('feat-photo-btn');
   var photoLabel = document.getElementById('feat-photo-label');
   var thumbs = document.getElementById('feat-thumbs');
-  var seriesGrid = document.getElementById('feat-series');
   var featErr = document.getElementById('feat-error');
   var featSubmit = document.getElementById('feat-submit');
 
   var featPhotos = [];   // File objects, max 5
-  var featSeries = null; // 'pull_up' | 'pristine' | 'power_house' | null
 
   function openModal(){
     overlay.classList.add('open');
@@ -1155,7 +1127,7 @@
     // After a successful submit, reset so the next open starts fresh
     if(!step2.classList.contains('hidden')){
       detailsForm.reset();
-      featPhotos = []; renderThumbs(); setSeries(null);
+      featPhotos = []; renderThumbs();
       step2.classList.add('hidden');
       step1.classList.remove('hidden');
     }
@@ -1216,19 +1188,6 @@
       ? (featPhotos.length >= FEAT_MAX_PHOTOS ? '5 photos added (max)' : 'Add more (' + featPhotos.length + '/5)')
       : 'Add photos';
   }
-
-  // ── series ──
-  // val: 'pull_up' | 'pristine' | 'power_house' | '' ("not sure") | null (nothing picked)
-  function setSeries(val){
-    featSeries = val || null;
-    Array.prototype.forEach.call(seriesGrid.querySelectorAll('.series-opt'), function(b){
-      b.classList.toggle('active', val !== null && b.dataset.series === val);
-    });
-  }
-  seriesGrid.addEventListener('click', function(e){
-    var b = e.target.closest('.series-opt'); if(!b) return;
-    setSeries(b.dataset.series);
-  });
 
   // Phone photos can be 5–10 MB and HEIC. Re-encode to max 2048px JPEG:
   // faster upload on mobile data, still big enough for an IG post.
@@ -1326,7 +1285,6 @@
         area: area || null,
         mods: mods,
         story: story || null,
-        series: featSeries,
         photo_paths: paths,
         consent: true
       });
