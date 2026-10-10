@@ -1,2 +1,5 @@
 supabase
 .git
+worker.js
+wrangler.jsonc
+node_modules

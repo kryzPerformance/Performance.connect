@@ -1,9 +1,14 @@
-
 {
   "name": "performance-connect",
   "compatibility_date": "2026-07-08",
+  // worker.js only runs for the paths in run_worker_first (SEO tags +
+  // dynamic sitemap). Every other request is served straight from the
+  // static files, exactly as before.
+  "main": "worker.js",
   "assets": {
-    "directory": "."
+    "directory": ".",
+    "binding": "ASSETS",
+    "run_worker_first": ["/listing", "/listing.html", "/partout", "/partout.html", "/sitemap.xml"]
   },
   "preview_urls": true
 }

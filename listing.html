@@ -664,7 +664,8 @@
     if(res.error||!res.data){ showError("This listing couldn't be found. It may have been removed or sold."); return; }
     var l=res.data;
 
-    document.title=l.title+' — Performance Connect';
+    // Server (worker.js) already wrote an SEO title when a canonical tag exists
+    if(!document.querySelector('link[rel="canonical"]')) document.title=l.title+' — Performance Connect';
     document.getElementById('state-loading').style.display='none';
     document.getElementById('listing-page').style.display='grid';
 

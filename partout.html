@@ -966,7 +966,8 @@
     parts=pRes.data||[];
 
     var title=vehicleTitle();
-    document.title=title+' Part Out — Performance Connect';
+    // Server (worker.js) already wrote an SEO title when a canonical tag exists
+    if(!document.querySelector('link[rel="canonical"]')) document.title=title+' Part Out — Performance Connect';
     document.getElementById('state-loading').style.display='none';
     document.getElementById('listing-page').style.display='grid';
 
