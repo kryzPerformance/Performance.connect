@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  PERFORMANCE CONNECT — BLOG
+  PERFORMANCE CONNECT — NEWS
   =================================================
   TO ADD A NEW POST: you never need to touch this file.
   Just open posts.json and add a new entry to the array,
@@ -14,6 +14,8 @@
     excerpt     - 1-2 sentence summary shown in the post list
     tags        - array of short topic words, shown as pills
     body        - array of paragraphs. Wrap text in ** ** for bold.
+                  Start a paragraph with "## " to make it a subheading.
+                  Start every line with "- " (lines joined with \n) for a bullet list.
     sourceNote  - small italic credit line at the end of the post
 -->
 <html lang="en">
@@ -22,13 +24,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="/pc-loader.js" data-pageload></script>
 <script src="/pc-nav.js" defer></script>
-<title>Car Culture News, Builds &amp; Stories — Performance Connect Blog</title>
+<title>Car Culture News, Builds &amp; Stories — Performance Connect News</title>
 <meta name="description" content="News, build features and stories from the Toronto and GTA performance car scene and beyond.">
-<link rel="canonical" href="https://performanceconnect.ca/blog">
+<link rel="canonical" href="https://performanceconnect.ca/news">
 <!-- Link previews (iMessage, Instagram, Discord, Facebook) -->
-<meta property="og:title" content="Car Culture News, Builds &amp; Stories — Performance Connect Blog">
+<meta property="og:title" content="Car Culture News, Builds &amp; Stories — Performance Connect News">
 <meta property="og:description" content="News, build features and stories from the Toronto and GTA performance car scene and beyond.">
-<meta property="og:url" content="https://performanceconnect.ca/blog">
+<meta property="og:url" content="https://performanceconnect.ca/news">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Performance Connect">
 <meta property="og:image" content="https://performanceconnect.ca/og-image.jpg">
@@ -283,6 +285,26 @@
     margin-bottom:22px;
   }
   .post-body strong{ color:var(--white); }
+  .post-body h2{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-style:italic;
+    font-size:clamp(21px, 4vw, 26px);
+    text-transform:uppercase;
+    line-height:1.15;
+    color:var(--white);
+    margin:40px 0 16px;
+  }
+  .post-body ul{
+    margin:0 0 22px 20px;
+    color:#D7E0E2;
+  }
+  .post-body li{
+    font-size:16.5px;
+    line-height:1.7;
+    margin-bottom:6px;
+  }
+  .post-body li::marker{ color:var(--cyan); }
   .source-note{
     font-size:13px;
     color:var(--steel-dim);
@@ -323,7 +345,7 @@
         <a href="/events" class="nav-link">Events</a>
         <a href="/marketplace" class="nav-link">Marketplace</a>
         <a href="/affiliates" class="nav-link">Affiliates</a>
-        <a href="/blog" class="nav-link is-current active" aria-current="page">Blog</a>
+        <a href="/news" class="nav-link is-current active" aria-current="page">News</a>
       </nav>
       <a href="/" class="back-link" id="header-back-link" style="display:none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -398,6 +420,17 @@
     document.getElementById('pv-title').textContent = post.title;
     document.getElementById('pv-tags').innerHTML = renderTags(post.tags || []);
     document.getElementById('pv-body').innerHTML = post.body.map(function(p){
+      // "## Heading" -> subheading
+      if(p.indexOf('## ') === 0){
+        return '<h2>' + renderParagraph(p.slice(3)) + '</h2>';
+      }
+      // every line starts with "- " -> bullet list
+      var lines = p.split('\n');
+      if(lines.every(function(l){ return l.indexOf('- ') === 0; })){
+        return '<ul>' + lines.map(function(l){
+          return '<li>' + renderParagraph(l.slice(2)) + '</li>';
+        }).join('') + '</ul>';
+      }
       return '<p>' + renderParagraph(p) + '</p>';
     }).join('');
     document.getElementById('pv-source').textContent = post.sourceNote || '';

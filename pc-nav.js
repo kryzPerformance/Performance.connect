@@ -25,7 +25,7 @@
     { label: 'Events',      href: '/events',      match: ['events', 'event-submit'] },
     { label: 'Marketplace', href: '/marketplace', match: ['marketplace', 'listing', 'partout', 'manage'] },
     { label: 'Affiliates',  href: '/affiliates',  match: ['affiliates'] },
-    { label: 'Blog',        href: '/blog',        match: ['blog'] }
+    { label: 'News',        href: '/news',        match: ['news', 'blog'] }
   ];
 
   // "/events.html" -> "events", "/" -> ""  (also handles Cloudflare's extension-less URLs)
