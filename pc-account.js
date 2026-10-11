@@ -190,6 +190,8 @@ window.PC = window.PC || {};
       '.pc-acct-msg.ok{color:#3df08a;display:block;}',
       '.pc-acct-msg.err{color:#E84545;display:block;}',
       '.pc-acct-row{display:flex;gap:8px;margin-top:18px;}',
+      '.pc-acct-card .pc-acct-help{margin:16px 0 0;padding-top:14px;border-top:0.5px solid rgba(255,255,255,0.08);color:#8FA0A6;font-size:12.5px;line-height:1.5;text-align:center;}',
+      '.pc-acct-card .pc-acct-help a{color:' + ACCENT + ';text-decoration:none;font-weight:600;}',
       '.pc-acct-btn{flex:1;padding:11px 14px;border-radius:8px;border:none;cursor:pointer;',
       'font-size:13px;font-weight:700;font-family:inherit;}',
       '.pc-acct-btn.primary{background:' + ACCENT + ';color:#03171D;}',
@@ -238,6 +240,12 @@ window.PC = window.PC || {};
       card.appendChild(lbl); card.appendChild(input); card.appendChild(msg);
       var row = document.createElement('div'); row.className = 'pc-acct-row';
       row.appendChild(cancel); row.appendChild(go); card.appendChild(row);
+
+      // Forgot-key help: email or Instagram DM
+      var help = document.createElement('p'); help.className = 'pc-acct-help';
+      help.innerHTML = 'Forgot your key? Email <a href="mailto:info@performanceconnect.ca?subject=Forgot%20my%20Performance%20Key">info@performanceconnect.ca</a>' +
+        ' or DM us on Instagram <a href="https://instagram.com/performanceconnect.ca" target="_blank" rel="noopener">@performanceconnect.ca</a>.';
+      card.appendChild(help);
 
       input.addEventListener('input', function () {
         var c = this.value.replace(/[^A-Z0-9]/gi, '').toUpperCase();
