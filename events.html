@@ -161,7 +161,15 @@
   }
   .ev-dir:hover{background:rgba(31,169,207,0.18);border-color:var(--cyan);}
   .ev-dir svg{width:13px;height:13px;}
-  .leaflet-popup-content .ev-dir{margin-top:8px;}
+  .ev-cal{
+    display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-family:inherit;
+    font-size:11.5px;font-weight:600;padding:6px 12px;border-radius:7px;
+    background:transparent;border:0.5px solid var(--line);color:var(--steel);
+    transition:color .15s,border-color .15s;
+  }
+  .ev-cal:hover{color:var(--cyan-bright);border-color:var(--cyan);}
+  .ev-cal svg{width:13px;height:13px;}
+  .pop-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
 
   .dir-sheet{position:fixed;inset:0;z-index:2000;display:none;}
   .dir-sheet.open{display:block;}
@@ -367,8 +375,16 @@
       ' data-addr="'+escAttr(ev.address || '')+'" data-venue="'+escAttr(ev.venue_name || '')+'"'+
       ' data-title="'+escAttr(ev.title || 'Event')+'">'+DIR_ICON+'Directions</button>';
   }
+  var CAL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M12 14v4M10 16h4"/></svg>';
+  function calButton(ev){
+    if(!ev.event_date || ev.id == null) return '';
+    return '<button type="button" class="ev-cal" data-ev-id="'+escAttr(ev.id)+'">'+CAL_ICON+'Add to calendar</button>';
+  }
 
-  (function setupDirections(){
+  /* ── Action sheet (shared by Directions + Add to calendar) ─────────────────
+     openSheet(title, subtitle, options) shows a bottom sheet on phones or a
+     centred box on desktop. Each option: { label, icon, href, download?, onClick? } */
+  var openSheet = (function(){
     var sheet = document.createElement('div');
     sheet.className = 'dir-sheet';
     sheet.setAttribute('role','dialog');
@@ -380,9 +396,7 @@
         '<div class="dir-grab" aria-hidden="true"></div>'+
         '<div class="dir-title" id="dir-title"></div>'+
         '<div class="dir-addr" id="dir-addr"></div>'+
-        '<a class="dir-opt" id="dir-google" target="_blank" rel="noopener"><span class="ic" style="background:#1a73e822;color:#4F8DF5;">G</span>Google Maps<span class="go">›</span></a>'+
-        '<a class="dir-opt" id="dir-apple" target="_blank" rel="noopener"><span class="ic" style="background:#ffffff14;color:#F2F6F7;"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16.4 12.6c0-2.4 2-3.5 2-3.6-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.8-.9-3-.8C7 7.3 5.6 8.2 4.8 9.6c-1.6 2.8-.4 6.9 1.2 9.1.8 1.1 1.7 2.3 2.8 2.3s1.6-.7 3-.7 1.8.7 3 .7 2-1.1 2.8-2.2c.9-1.3 1.2-2.5 1.3-2.6-.1 0-2.5-.9-2.5-3.6zM14.1 5.6c.6-.8 1.1-1.8 1-2.9-.9 0-2.1.6-2.7 1.4-.6.7-1.1 1.8-1 2.8 1 .1 2-.5 2.7-1.3z"/></svg></span>Apple Maps<span class="go">›</span></a>'+
-        '<a class="dir-opt" id="dir-waze" target="_blank" rel="noopener"><span class="ic" style="background:#33ccff22;color:#33CCFF;">W</span>Waze<span class="go">›</span></a>'+
+        '<div id="dir-opts"></div>'+
         '<button type="button" class="dir-cancel" data-close>Cancel</button>'+
       '</div>';
     document.body.appendChild(sheet);
@@ -392,37 +406,166 @@
       sheet.classList.remove('open');
       if(lastFocus && lastFocus.focus) lastFocus.focus();
     }
-    function open(btn){
-      var lat = btn.getAttribute('data-lat'), lng = btn.getAttribute('data-lng');
-      var addr = btn.getAttribute('data-addr'), venue = btn.getAttribute('data-venue');
-      var pin = lat && lng;
-      // Coordinates are exact; the address is the fallback for events without a pin.
-      var dest = pin ? (lat + ',' + lng) : addr;
-      var q = encodeURIComponent(dest);
-
-      document.getElementById('dir-title').textContent = btn.getAttribute('data-title');
-      document.getElementById('dir-addr').textContent = [venue, addr].filter(Boolean).join(' · ');
-      document.getElementById('dir-google').href = 'https://www.google.com/maps/dir/?api=1&destination=' + q;
-      document.getElementById('dir-apple').href  = 'https://maps.apple.com/?daddr=' + q;
-      document.getElementById('dir-waze').href   = pin
-        ? 'https://waze.com/ul?ll=' + q + '&navigate=yes'
-        : 'https://waze.com/ul?q=' + q + '&navigate=yes';
-
-      lastFocus = btn;
-      sheet.classList.add('open');
-      document.getElementById('dir-google').focus();
-    }
-
-    document.addEventListener('click', function(e){
-      var btn = e.target.closest && e.target.closest('.ev-dir');
-      if(btn){ e.preventDefault(); e.stopPropagation(); open(btn); return; }
-      if(e.target.closest && e.target.closest('.dir-sheet [data-close]')) close();
-      else if(e.target.closest && e.target.closest('.dir-opt')) setTimeout(close, 300);  // close after the map app opens
+    sheet.addEventListener('click', function(e){
+      if(e.target.closest('[data-close]')) close();
+      else if(e.target.closest('.dir-opt')) setTimeout(close, 300);  // let the app/download start first
     });
     document.addEventListener('keydown', function(e){
       if(e.key === 'Escape' && sheet.classList.contains('open')) close();
     });
+
+    return function(title, sub, options, opener){
+      document.getElementById('dir-title').textContent = title;
+      document.getElementById('dir-addr').textContent = sub || '';
+      var wrap = document.getElementById('dir-opts');
+      wrap.innerHTML = '';
+      options.forEach(function(o){
+        var a = document.createElement('a');
+        a.className = 'dir-opt';
+        a.href = o.href;
+        if(o.download){ a.setAttribute('download', o.download); }
+        else { a.target = '_blank'; a.rel = 'noopener'; }
+        a.innerHTML = o.icon + '<span></span><span class="go">›</span>';
+        a.children[1].textContent = o.label;
+        wrap.appendChild(a);
+      });
+      lastFocus = opener || null;
+      sheet.classList.add('open');
+      if(wrap.firstChild) wrap.firstChild.focus();
+    };
   })();
+
+  var APPLE_SVG = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16.4 12.6c0-2.4 2-3.5 2-3.6-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.8-.9-3-.8C7 7.3 5.6 8.2 4.8 9.6c-1.6 2.8-.4 6.9 1.2 9.1.8 1.1 1.7 2.3 2.8 2.3s1.6-.7 3-.7 1.8.7 3 .7 2-1.1 2.8-2.2c.9-1.3 1.2-2.5 1.3-2.6-.1 0-2.5-.9-2.5-3.6zM14.1 5.6c.6-.8 1.1-1.8 1-2.9-.9 0-2.1.6-2.7 1.4-.6.7-1.1 1.8-1 2.8 1 .1 2-.5 2.7-1.3z"/></svg>';
+  function sheetIcon(inner, bg, fg){ return '<span class="ic" style="background:'+bg+';color:'+fg+';">'+inner+'</span>'; }
+
+  /* ── Directions ── */
+  function openDirections(btn){
+    var lat = btn.getAttribute('data-lat'), lng = btn.getAttribute('data-lng');
+    var addr = btn.getAttribute('data-addr'), venue = btn.getAttribute('data-venue');
+    var pin = lat && lng;
+    // Coordinates are exact; the address is the fallback for events without a pin.
+    var q = encodeURIComponent(pin ? (lat + ',' + lng) : addr);
+    openSheet(btn.getAttribute('data-title'), [venue, addr].filter(Boolean).join(' · '), [
+      { label:'Google Maps', icon:sheetIcon('G','#1a73e822','#4F8DF5'), href:'https://www.google.com/maps/dir/?api=1&destination=' + q },
+      { label:'Apple Maps',  icon:sheetIcon(APPLE_SVG,'#ffffff14','#F2F6F7'), href:'https://maps.apple.com/?daddr=' + q },
+      { label:'Waze',        icon:sheetIcon('W','#33ccff22','#33CCFF'), href: pin ? 'https://waze.com/ul?ll=' + q + '&navigate=yes' : 'https://waze.com/ul?q=' + q + '&navigate=yes' }
+    ], btn);
+  }
+
+  /* ── Add to calendar ───────────────────────────────────────────────────────
+     Event times are stored as Toronto wall-clock "HH:MM" text. We convert them
+     to UTC so every calendar app shows the right time wherever the phone is.
+     No start time  -> all-day event. No end time -> 2 hours after start.
+     End earlier than start (e.g. 22:00-01:00) -> ends the next day. */
+  var EVENT_TZ = 'America/Toronto';
+  var DEFAULT_HOURS = 2;
+
+  // Toronto wall time -> real Date (handles daylight saving automatically)
+  function torontoToDate(dateStr, timeStr){
+    var p = dateStr.split('-').map(Number), t = timeStr.split(':').map(Number);
+    var wall = Date.UTC(p[0], p[1]-1, p[2], t[0], t[1] || 0);
+    var guess = wall;
+    var fmt = new Intl.DateTimeFormat('en-US', { timeZone:EVENT_TZ, hourCycle:'h23',
+      year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+    for(var i = 0; i < 2; i++){
+      var parts = {};
+      fmt.formatToParts(new Date(guess)).forEach(function(x){ parts[x.type] = x.value; });
+      var seen = Date.UTC(+parts.year, +parts.month-1, +parts.day, +parts.hour, +parts.minute);
+      guess += wall - seen;
+    }
+    return new Date(guess);
+  }
+  function utcStamp(d){ return d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,''); }   // 20261018T140000Z
+  function dayStamp(dateStr, addDays){
+    var p = dateStr.split('-').map(Number);
+    return new Date(Date.UTC(p[0], p[1]-1, p[2] + (addDays||0))).toISOString().slice(0,10).replace(/-/g,'');
+  }
+  function validTime(t){ return /^\d{1,2}:\d{2}/.test(t || ''); }
+
+  function calTimes(ev){
+    if(!validTime(ev.start_time)) return { allDay:true, start:dayStamp(ev.event_date), end:dayStamp(ev.event_date, 1) };
+    var s = torontoToDate(ev.event_date, ev.start_time);
+    var e = validTime(ev.end_time) ? torontoToDate(ev.event_date, ev.end_time) : new Date(s.getTime() + DEFAULT_HOURS*3600000);
+    if(e <= s) e = new Date(e.getTime() + 24*3600000);
+    return { allDay:false, startDate:s, endDate:e, start:utcStamp(s), end:utcStamp(e) };
+  }
+  function calLocation(ev){ return [ev.venue_name, ev.address].filter(Boolean).join(', '); }
+  function calDetails(ev){
+    return [
+      ev.description || '',
+      ev.host ? 'Hosted by ' + ev.host : '',
+      ev.instagram ? 'Instagram: ' + ev.instagram : '',
+      ev.web ? 'Details: ' + ev.web : '',
+      'Found on Performance Connect: https://performanceconnect.ca/events'
+    ].filter(Boolean).join('\n\n');
+  }
+  function icsEscape(s){ return String(s).replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/([,;])/g,'\\$1'); }
+  function buildIcs(ev, t){
+    var lines = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Performance Connect//Events//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      'UID:' + (ev.id || Date.now()) + '@performanceconnect.ca',
+      'DTSTAMP:' + utcStamp(new Date()),
+      t.allDay ? 'DTSTART;VALUE=DATE:' + t.start : 'DTSTART:' + t.start,
+      t.allDay ? 'DTEND;VALUE=DATE:' + t.end : 'DTEND:' + t.end,
+      'SUMMARY:' + icsEscape(ev.title || 'Car event'),
+      calLocation(ev) ? 'LOCATION:' + icsEscape(calLocation(ev)) : '',
+      'DESCRIPTION:' + icsEscape(calDetails(ev)),
+      'URL:https://performanceconnect.ca/events',
+      // reminder 2 hours before (1 day before for all-day events)
+      'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsEscape(ev.title || 'Car event'),
+      'TRIGGER:' + (t.allDay ? '-P1D' : '-PT2H'), 'END:VALARM',
+      'END:VEVENT', 'END:VCALENDAR'
+    ].filter(Boolean);
+    return lines.join('\r\n');
+  }
+  function slug(s){ return String(s || 'event').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40) || 'event'; }
+
+  function openCalendar(btn){
+    var id = btn.getAttribute('data-ev-id');
+    var ev = allEvents.filter(function(x){ return String(x.id) === id; })[0];
+    if(!ev) return;
+    var t = calTimes(ev);
+    var title = ev.title || 'Car event', loc = calLocation(ev), details = calDetails(ev);
+
+    var google = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+      '&text=' + encodeURIComponent(title) +
+      '&dates=' + t.start + '/' + t.end +
+      '&details=' + encodeURIComponent(details) +
+      (loc ? '&location=' + encodeURIComponent(loc) : '');
+
+    var outlook = 'https://outlook.live.com/calendar/0/deeplink/compose?path=%2Fcalendar%2Faction%2Fcompose&rru=addevent' +
+      '&subject=' + encodeURIComponent(title) +
+      (t.allDay
+        ? '&allday=true&startdt=' + ev.event_date + '&enddt=' + ev.event_date
+        : '&startdt=' + encodeURIComponent(t.startDate.toISOString()) + '&enddt=' + encodeURIComponent(t.endDate.toISOString())) +
+      '&body=' + encodeURIComponent(details) +
+      (loc ? '&location=' + encodeURIComponent(loc) : '');
+
+    // .ics file: opens Apple Calendar on iPhone/Mac, and works with any other calendar app
+    var ics = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(buildIcs(ev, t));
+
+    var d = new Date(ev.event_date + 'T00:00:00');
+    var when = MONTHS_FULL[d.getMonth()] + ' ' + d.getDate() + (ev.start_time ? ' · ' + fmtTime(ev.start_time) + (ev.end_time ? ' – ' + fmtTime(ev.end_time) : '') : ' · All day');
+    var CAL_SVG = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
+    openSheet(title, when, [
+      { label:'Google Calendar', icon:sheetIcon('G','#1a73e822','#4F8DF5'), href:google },
+      { label:'Apple Calendar',  icon:sheetIcon(APPLE_SVG,'#ffffff14','#F2F6F7'), href:ics, download:slug(title) + '.ics' },
+      { label:'Outlook',         icon:sheetIcon('O','#0078d422','#3A96DD'), href:outlook },
+      { label:'Other calendar (.ics file)', icon:sheetIcon(CAL_SVG,'#ffffff0d','#8FA0A6'), href:ics, download:slug(title) + '.ics' }
+    ], btn);
+  }
+
+  // One listener for every Directions / Calendar button (cards and map popups).
+  // Capture phase (the `true`): Leaflet stops clicks inside map popups from
+  // bubbling up, so a normal listener would never hear the popup buttons.
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest && e.target.closest('.ev-dir, .ev-cal');
+    if(!btn) return;
+    e.preventDefault(); e.stopPropagation();
+    if(btn.classList.contains('ev-cal')) openCalendar(btn);
+    else openDirections(btn);
+  }, true);
   var TYPE_META = {
     meet:  {label:'Meet',           color:'#3DC9F0'},
     track: {label:'Track Day',      color:'#FF4DA6'},
@@ -510,7 +653,7 @@
 
       var webLink = ev.web ? '<a href="'+ev.web+'" target="_blank" rel="noopener" class="ev-link primary" onclick="event.stopPropagation()">Event details</a>' : '';
       var igLink  = ev.instagram ? '<a href="https://instagram.com/'+ev.instagram.replace('@','')+'" target="_blank" rel="noopener" class="ev-link" onclick="event.stopPropagation()">@'+ev.instagram.replace('@','')+'</a>' : '';
-      var mapLink = dirButton(ev);
+      var mapLink = dirButton(ev) + calButton(ev);
 
       var poster = ev.cover_photo ? '<div class="event-poster"><img src="'+ev.cover_photo+'" alt="'+(ev.title||'Event')+' poster" loading="lazy" onerror="this.parentNode.style.display=\'none\'"></div>' : '';
 
@@ -564,7 +707,7 @@
         '<div style="font-size:12px;color:'+meta.color+';font-weight:600;margin-bottom:6px;">'+meta.label+' &middot; '+MONTHS[d.getMonth()]+' '+d.getDate()+(timeStr?' &middot; '+timeStr:'')+'</div>'+
         (ev.venue_name?'<div style="font-size:12px;color:#8FA0A6;">'+ev.venue_name+'</div>':'')+
         (ev.web?'<a href="'+ev.web+'" target="_blank" style="font-size:12px;color:#3DC9F0;">Event details →</a>':'')+
-        '<div>'+dirButton(ev)+'</div>'+
+        '<div class="pop-acts">'+dirButton(ev)+calButton(ev)+'</div>'+
         '</div>';
       var m = L.marker([ev.lat, ev.lng], { icon: makeEvIcon(ev.event_type) })
         .bindPopup(popupHtml)
