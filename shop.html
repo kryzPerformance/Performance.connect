@@ -10,6 +10,9 @@
   - Visits, sign-ups and category picks are counted anonymously
     in `site_events` by pc-track.js (loaded via pc-nav.js).
   - The "Shop" link in the menu lives in pc-nav.js.
+  - Background video: bg-tools.mp4 (shared with the Marketplace),
+    with bg-tools-poster.jpg as the still frame. Same playback
+    logic as index.html. To swap clips, change both file names.
 
   To change the categories, edit the CATEGORIES list in the
   <script> at the bottom. The `id` is what gets saved.
@@ -56,6 +59,29 @@
     min-height:100vh;
   }
   a{color:inherit;}
+
+  /* ---------- video background (same approach as index.html) ----------
+   * Wrapper is fixed; the video's px size is set by JS at load so iOS
+   * Safari doesn't resize it when the address bar shows/hides. */
+  .bg-video-wrap{
+    position:fixed; top:0; left:0; right:0; bottom:0;
+    z-index:0; overflow:hidden; background:var(--black);
+  }
+  .bg-video-wrap video{
+    position:absolute; top:0; left:0;
+    width:100%; height:100%;            /* replaced with px by JS */
+    object-fit:cover; object-position:center;
+    opacity:0.6;
+    filter:grayscale(0.15) contrast(1.05);
+  }
+  /* darkens the video so text stays readable; heavier at the bottom */
+  .bg-scrim{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      linear-gradient(180deg, rgba(7,8,8,0.45) 0%, rgba(7,8,8,0.35) 35%, rgba(7,8,8,0.7) 70%, rgba(7,8,8,0.92) 100%),
+      radial-gradient(ellipse at center, rgba(7,8,8,0.05) 0%, rgba(7,8,8,0.6) 100%);
+  }
+  @media (prefers-reduced-motion: reduce){ .bg-video-wrap video{ display:none; } .bg-video-wrap{ background:var(--black) url('bg-tools-poster.jpg') center/cover no-repeat; } }
 
   .bg-grid{
     position:fixed; inset:0;
@@ -129,9 +155,13 @@
   .lede{ font-size:16px; color:var(--steel); line-height:1.65; max-width:560px; margin-bottom:44px; }
 
   /* ---------- signup card ---------- */
+  /* frosted glass so the video shows through softly */
   .card{
-    background:linear-gradient(180deg, rgba(17,20,21,0.92), rgba(11,13,14,0.92));
-    border:0.5px solid var(--line);
+    background:linear-gradient(180deg, rgba(17,20,21,0.62), rgba(11,13,14,0.72));
+    -webkit-backdrop-filter:blur(14px) saturate(1.2);
+    backdrop-filter:blur(14px) saturate(1.2);
+    border:0.5px solid rgba(255,255,255,0.08);
+    box-shadow:0 30px 80px rgba(0,0,0,0.45);
     border-radius:18px;
     padding:clamp(22px, 4vw, 34px);
   }
@@ -228,6 +258,12 @@
 </head>
 <body>
 
+  <div class="bg-video-wrap" aria-hidden="true">
+    <video autoplay muted loop playsinline preload="auto" poster="bg-tools-poster.jpg">
+      <source src="bg-tools.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="bg-scrim" aria-hidden="true"></div>
   <div class="bg-grid" aria-hidden="true"></div>
   <div class="bg-glow" aria-hidden="true"></div>
 
@@ -286,6 +322,61 @@
       <div class="footer-text">© 2026 Performance Connect</div>
     </footer>
   </div>
+
+<script>
+/* ── Background video (same logic as index.html) ───────────────────────── */
+(function(){
+  var bgVideo = document.querySelector('.bg-video-wrap video');
+  var bgWrap  = document.querySelector('.bg-video-wrap');
+  if (!bgVideo || !bgWrap) return;
+
+  // Missing/broken file: drop back to the poster image instead of a black box.
+  bgVideo.addEventListener('error', function(){
+    bgVideo.style.display = 'none';
+    bgWrap.style.background = "var(--black) url('bg-tools-poster.jpg') center/cover no-repeat";
+  }, true);
+
+  // iOS Low Power Mode, Data Saver and Instagram/Facebook's in-app browsers can
+  // block autoplay. Retry on the first tap/scroll; user-started play is always allowed.
+  function tryPlay(){
+    var p = bgVideo.play();
+    if (p && typeof p.catch === 'function') p.catch(function(){});
+  }
+  tryPlay();
+  function kickPlay(){
+    tryPlay();
+    window.removeEventListener('touchstart', kickPlay);
+    window.removeEventListener('click', kickPlay);
+    window.removeEventListener('scroll', kickPlay);
+  }
+  window.addEventListener('touchstart', kickPlay, { passive:true });
+  window.addEventListener('click', kickPlay, { passive:true });
+  window.addEventListener('scroll', kickPlay, { passive:true });
+
+  // iOS Safari resizes viewport-relative elements as the address bar moves.
+  // Lock the video to fixed pixel sizes so it never jumps while scrolling.
+  function setSize(){
+    var w = window.innerWidth, h = window.innerHeight;
+    bgWrap.style.width = w + 'px';
+    bgWrap.style.height = h + 'px';
+    var ratio = (bgVideo.videoWidth || 1920) / (bgVideo.videoHeight || 1080);
+    var vw, vh;
+    if (w / h > ratio) { vw = w; vh = Math.ceil(w / ratio); }
+    else               { vh = h; vw = Math.ceil(h * ratio); }
+    bgVideo.style.width  = vw + 'px';
+    bgVideo.style.height = vh + 'px';
+    bgVideo.style.top    = Math.floor((h - vh) / 2) + 'px';
+    bgVideo.style.left   = Math.floor((w - vw) / 2) + 'px';
+  }
+  setSize();
+  bgVideo.addEventListener('loadedmetadata', setSize);
+  window.addEventListener('orientationchange', function(){ setTimeout(setSize, 300); });
+  var lastWidth = window.innerWidth;   // ignore height-only changes (address bar)
+  window.addEventListener('resize', function(){
+    if (window.innerWidth !== lastWidth) { lastWidth = window.innerWidth; setSize(); }
+  });
+})();
+</script>
 
 <script>
 (function(){
