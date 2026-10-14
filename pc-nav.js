@@ -24,6 +24,8 @@
     { label: 'Home',        href: '/',       match: ['', 'index'] },
     { label: 'Events',      href: '/events',      match: ['events', 'event-submit'] },
     { label: 'Marketplace', href: '/marketplace', match: ['marketplace', 'listing', 'partout', 'manage'] },
+    // `track` = click is counted by pc-track.js (anonymous, see that file)
+    { label: 'Shop',        href: '/shop',        match: ['shop'], track: 'shop_nav_click' },
     { label: 'Affiliates',  href: '/affiliates',  match: ['affiliates'] },
     { label: 'News',        href: '/news',        match: ['news', 'blog'] }
   ];
@@ -69,6 +71,7 @@
       a.href = l.href;
       a.textContent = l.label;
       a.className = linkClass;
+      if (l.track) a.setAttribute('data-track', l.track);
       if (isCurrent(l)) {
         a.className += ' is-current active';   // pages use one or the other
         a.setAttribute('aria-current', 'page');
@@ -110,7 +113,18 @@
     fill(bar, 'pcn-link');
   }
 
+  // Load the click counter once, so every page with the nav counts Shop
+  // clicks without each page needing its own <script> tag.
+  function loadTracker() {
+    if (PC.Track || document.querySelector('script[src="/pc-track.js"]')) return;
+    var s = document.createElement('script');
+    s.src = '/pc-track.js';
+    s.defer = true;
+    document.head.appendChild(s);
+  }
+
   function buildAndDock() {
+    loadTracker();
     build();
     if (PC.account && PC.account.dock) PC.account.dock();
     document.querySelectorAll('nav.site-nav, nav.pcn-bar').forEach(centerCurrent);
