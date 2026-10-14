@@ -169,7 +169,42 @@
   }
   .ev-cal:hover{color:var(--cyan-bright);border-color:var(--cyan);}
   .ev-cal svg{width:13px;height:13px;}
-  .pop-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+  /* ── Map pin popup: same card design as affiliates.html ─────────────────── */
+  .leaflet-popup-content-wrapper{
+    background:var(--panel)!important;border:1px solid var(--line)!important;
+    border-radius:12px!important;box-shadow:0 12px 40px rgba(0,0,0,0.5)!important;
+    color:var(--white)!important;padding:0!important;overflow:hidden;
+  }
+  .leaflet-popup-tip{background:var(--panel)!important;}
+  .leaflet-popup-content{margin:0!important;width:auto!important;}
+  .leaflet-container a.leaflet-popup-close-button{color:var(--steel)!important;top:10px!important;right:12px!important;font-size:18px!important;z-index:2;}
+
+  .popup-card{min-width:230px;max-width:290px;padding:16px 18px 14px;font-family:'Inter',sans-serif;}
+  .popup-poster{display:block;width:100%;height:110px;object-fit:cover;border-bottom:1px solid var(--line);}
+  .popup-cat-tag{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+    padding:3px 9px;border-radius:999px;margin-bottom:9px;
+  }
+  .popup-cat-tag .dot{width:6px;height:6px;border-radius:50%;}
+  .popup-name{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;
+    font-size:19px;text-transform:uppercase;line-height:1.1;color:var(--white);margin-bottom:5px;
+    padding-right:14px; /* room for the close X */
+  }
+  .popup-when{font-size:12px;color:var(--white);font-weight:600;margin-bottom:3px;}
+  .popup-address{font-size:12px;color:var(--steel);margin-bottom:11px;line-height:1.4;}
+  .popup-links{display:flex;gap:7px;flex-wrap:wrap;}
+  .popup-link{font-size:11px;font-weight:600;padding:5px 11px;border-radius:6px;text-decoration:none;transition:background 0.15s,color 0.15s,border-color 0.15s;}
+  .popup-link.primary{background:var(--cyan-bright);color:#03171D;}
+  .popup-link.primary:hover{background:#62D6F5;}
+  .popup-link.secondary{background:transparent;border:0.5px solid var(--line);color:var(--steel);}
+  .popup-link.secondary:hover{color:var(--cyan-bright);border-color:var(--cyan);}
+  /* Directions / Calendar buttons wear the popup-link look inside the card */
+  .popup-card .ev-dir,.popup-card .ev-cal{font-size:11px;padding:5px 11px;border-radius:6px;gap:5px;}
+  .popup-card .ev-dir{background:var(--cyan-bright);border:none;color:#03171D;}
+  .popup-card .ev-dir:hover{background:#62D6F5;}
+  .popup-card .ev-dir svg,.popup-card .ev-cal svg{width:12px;height:12px;}
 
   .dir-sheet{position:fixed;inset:0;z-index:2000;display:none;}
   .dir-sheet.open{display:block;}
@@ -701,13 +736,24 @@
       var meta = TYPE_META[eventTypeKey(ev.event_type)];
       var d = new Date(ev.event_date + 'T00:00:00');
       var timeStr = ev.start_time ? fmtTime(ev.start_time) : '';
-      var popupHtml = '<div style="font-family:Inter,sans-serif;min-width:180px;">'+
-        (ev.cover_photo?'<img src="'+ev.cover_photo+'" alt="" style="width:100%;height:90px;object-fit:cover;border-radius:6px;margin-bottom:8px;" onerror="this.style.display=\'none\'">':'')+
-        '<div style="font-family:Rajdhani,sans-serif;font-weight:700;font-size:16px;color:#F2F6F7;margin-bottom:4px;">'+ev.title+'</div>'+
-        '<div style="font-size:12px;color:'+meta.color+';font-weight:600;margin-bottom:6px;">'+meta.label+' &middot; '+MONTHS[d.getMonth()]+' '+d.getDate()+(timeStr?' &middot; '+timeStr:'')+'</div>'+
-        (ev.venue_name?'<div style="font-size:12px;color:#8FA0A6;">'+ev.venue_name+'</div>':'')+
-        (ev.web?'<a href="'+ev.web+'" target="_blank" style="font-size:12px;color:#3DC9F0;">Event details →</a>':'')+
-        '<div class="pop-acts">'+dirButton(ev)+calButton(ev)+'</div>'+
+      // Same card layout as the Affiliates map: category pill, italic name,
+      // details, then buttons (solid cyan = main action, outlined = the rest).
+      var endStr = ev.end_time ? ' – ' + fmtTime(ev.end_time) : '';
+      var where = [ev.venue_name, ev.address].filter(Boolean).join(' · ');
+      var popupHtml =
+        (ev.cover_photo ? '<img class="popup-poster" src="'+escAttr(ev.cover_photo)+'" alt="" onerror="this.style.display=\'none\'">' : '')+
+        '<div class="popup-card">'+
+          '<div class="popup-cat-tag" style="background:'+meta.color+'18;color:'+meta.color+'">'+
+            '<span class="dot" style="background:'+meta.color+'"></span>'+meta.label+
+          '</div>'+
+          '<div class="popup-name">'+escAttr(ev.title || 'Event')+'</div>'+
+          '<div class="popup-when">'+MONTHS_FULL[d.getMonth()]+' '+d.getDate()+(timeStr ? ' · '+timeStr+endStr : ' · All day')+'</div>'+
+          (where ? '<div class="popup-address">'+escAttr(where)+'</div>' : '<div style="height:8px"></div>')+
+          '<div class="popup-links">'+
+            dirButton(ev)+
+            calButton(ev)+
+            (ev.web ? '<a href="'+escAttr(ev.web)+'" target="_blank" rel="noopener" class="popup-link secondary">Event details</a>' : '')+
+          '</div>'+
         '</div>';
       var m = L.marker([ev.lat, ev.lng], { icon: makeEvIcon(ev.event_type) })
         .bindPopup(popupHtml)
