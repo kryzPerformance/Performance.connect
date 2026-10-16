@@ -194,6 +194,10 @@ window.PC = window.PC || {};
       '.pc-acct-row{display:flex;gap:8px;margin-top:18px;}',
       '.pc-acct-card .pc-acct-help{margin:16px 0 0;padding-top:14px;border-top:0.5px solid rgba(255,255,255,0.08);color:#8FA0A6;font-size:12.5px;line-height:1.5;text-align:center;}',
       '.pc-acct-card .pc-acct-help a{color:' + ACCENT + ';text-decoration:none;font-weight:600;}',
+      '.pc-acct-card .pc-acct-getkey{text-align:left;}',
+      '.pc-acct-card .pc-acct-getkey strong{color:#F2F6F7;font-weight:600;}',
+      '.pc-acct-card .pc-acct-getkey a{display:inline-block;margin-top:4px;}',
+      '.pc-acct-card .pc-acct-getkey + .pc-acct-help{margin-top:12px;}',
       '.pc-acct-btn{flex:1;padding:11px 14px;border-radius:8px;border:none;cursor:pointer;',
       'font-size:13px;font-weight:700;font-family:inherit;}',
       '.pc-acct-btn.primary{background:' + ACCENT + ';color:#03171D;}',
@@ -242,6 +246,12 @@ window.PC = window.PC || {};
       card.appendChild(lbl); card.appendChild(input); card.appendChild(msg);
       var row = document.createElement('div'); row.className = 'pc-acct-row';
       row.appendChild(cancel); row.appendChild(go); card.appendChild(row);
+
+      // No key yet: keys are created automatically with a seller's first listing (marketplace.html)
+      var getKey = document.createElement('p'); getKey.className = 'pc-acct-help pc-acct-getkey';
+      getKey.innerHTML = '<strong>Don’t have a key?</strong> You get one automatically the first time you post a listing or part-out — ' +
+        'it’s shown once you submit, so save it somewhere safe. <a href="/marketplace?list=true">Post your first listing →</a>';
+      card.appendChild(getKey);
 
       // Forgot-key help: email or Instagram DM
       var help = document.createElement('p'); help.className = 'pc-acct-help';
