@@ -8,9 +8,7 @@
  * browser only ever sees this function's URL; the key is stored as a
  * Supabase secret (Dashboard → Edge Functions → Secrets → OPENAI_API_KEY).
  *
- * Originally extracted from the Replit `flyer-parser.ts` (same prompt and
- * field normalisation), then moved from a Cloudflare Worker plan to a
- * Supabase Edge Function so it sits next to the database.
+ * Runs as a Supabase Edge Function so it sits next to the database.
  *
  * Request:  POST { "image": "data:image/jpeg;base64,...." }
  * Response: { confidenceScore, extractedFields, rawText }
