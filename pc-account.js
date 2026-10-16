@@ -154,8 +154,10 @@ window.PC = window.PC || {};
       '-webkit-mask:url(/assets/icons/pc-key.png) center/contain no-repeat;mask:url(/assets/icons/pc-key.png) center/contain no-repeat;}',
       /* docked: lives at the end of the site menu row instead of floating over the page */
       '.pc-acct.docked{position:sticky;top:auto;right:0;z-index:3;flex:0 0 auto;display:flex;',
-      'margin-left:4px;padding-left:6px;background:linear-gradient(to right,rgba(7,8,8,0),rgba(7,8,8,0.92) 6px);}',
-      '.pc-acct.docked .pc-acct-pill{padding:7px 13px;border-color:rgba(61,201,240,0.35);max-width:48vw;}',
+      /* no backing on the wrapper itself: a square backing showed as a black box around the
+         round pill. The pill is near-opaque instead, so menu links scrolling under it stay hidden. */
+      'margin-left:10px;background:none;border-radius:999px;}',
+      '.pc-acct.docked .pc-acct-pill{padding:7px 13px;border-color:rgba(61,201,240,0.35);max-width:48vw;background:rgba(7,8,8,0.96);}',
       '@media (max-width:640px){.pc-acct.docked .pc-acct-pill{padding:6px 11px;font-size:12.5px;gap:6px;}',
       '.pc-acct.docked .pc-acct-ico{width:36px;height:13px;}',
       '.pc-acct.docked .pc-acct-label{max-width:92px;}}',
