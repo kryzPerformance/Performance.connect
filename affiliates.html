@@ -425,7 +425,7 @@ function filterLabel(){
 function pinHTML(loc){
   var t = pcTypeFor(loc);
   var inner = loc.logo
-    ? '<img src="' + esc(loc.logo) + '" alt="" loading="lazy">'
+    ? '<img src="' + esc(loc.logo) + '" alt="">'
     : '<span class="initials">' + esc(initials(loc.name)) + '</span>';
   return '<div class="pc-pin" style="--ring:' + t.color + '">' + inner + '</div>';
 }
