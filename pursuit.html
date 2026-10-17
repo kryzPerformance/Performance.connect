@@ -416,7 +416,7 @@
 <script>
 /* Performance Pursuit hub — live leaderboard read + play toggle (client-side, anon key) */
 (function(){
-  var sb = supabase.createClient('https://myapluhgfpnyjsfrflhd.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15YXBsdWhnZnBueWpzZnJmbGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwODcxNDYsImV4cCI6MjA5NzY2MzE0Nn0.j_Xe_J1uvBA-w4Sag1tl3Yp7zqlaEmkQzt2eO6xz1vg', { auth: { persistSession:false, autoRefreshToken:false, detectSessionInUrl:false } });
+  var sb = supabase.createClient('https://myapluhgfpnyjsfrflhd.supabase.co', 'sb_publishable_yfHWon3pr30Z8do9QW9tSQ_wqlkzDxc', { auth: { persistSession:false, autoRefreshToken:false, detectSessionInUrl:false } });
   var board = document.getElementById('board');
 
   function getSession(){ try{ return JSON.parse(localStorage.getItem('pc_session')||'null'); }catch(e){ return null; } }

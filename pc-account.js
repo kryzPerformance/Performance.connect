@@ -33,7 +33,7 @@ window.PC = window.PC || {};
 
   /* ── Supabase client (same inline anon pattern as every page) ────────────── */
   var SB_URL  = 'https://myapluhgfpnyjsfrflhd.supabase.co';
-  var SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15YXBsdWhnZnBueWpzZnJmbGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwODcxNDYsImV4cCI6MjA5NzY2MzE0Nn0.j_Xe_J1uvBA-w4Sag1tl3Yp7zqlaEmkQzt2eO6xz1vg';
+  var SB_ANON = 'sb_publishable_yfHWon3pr30Z8do9QW9tSQ_wqlkzDxc';
   var sb = (window.supabase && window.supabase.createClient)
     ? window.supabase.createClient(SB_URL, SB_ANON)
     : null;

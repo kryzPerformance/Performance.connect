@@ -1,0 +1,7 @@
+# Per-function settings used when deploying Supabase Edge Functions.
+
+# The site calls flyer-parser with its publishable key (sb_publishable_...),
+# which the gateway's built-in JWT check doesn't understand. The function
+# limits who can call it with its own origin check instead.
+[functions.flyer-parser]
+verify_jwt = false

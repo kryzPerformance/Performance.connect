@@ -9,6 +9,9 @@
  * Supabase secret (Dashboard → Edge Functions → Secrets → OPENAI_API_KEY).
  *
  * Runs as a Supabase Edge Function so it sits next to the database.
+ * Deployed with verify_jwt = false: the site uses a publishable key
+ * (sb_publishable_...), which the gateway's JWT check doesn't understand.
+ * Access is limited by the origin check below instead.
  *
  * Request:  POST { "image": "data:image/jpeg;base64,...." }
  * Response: { confidenceScore, extractedFields, rawText }

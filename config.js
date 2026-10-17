@@ -27,14 +27,14 @@
 
   var PRODUCTION = {
     SUPABASE_URL: 'https://myapluhgfpnyjsfrflhd.supabase.co',
-    SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15YXBsdWhnZnBueWpzZnJmbGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwODcxNDYsImV4cCI6MjA5NzY2MzE0Nn0.j_Xe_J1uvBA-w4Sag1tl3Yp7zqlaEmkQzt2eO6xz1vg',
-    SERVICE_ROLE_KEY: 'PASTE_PRODUCTION_SERVICE_ROLE_KEY_HERE'
+    SUPABASE_ANON_KEY: 'sb_publishable_yfHWon3pr30Z8do9QW9tSQ_wqlkzDxc'
   };
 
+  // Only ever put PUBLISHABLE keys (sb_publishable_...) in this file. It is served
+  // to every visitor. Secret / service-role keys must never appear in site code.
   var STAGING = {
     SUPABASE_URL: 'PASTE_STAGING_PROJECT_URL_HERE',
-    SUPABASE_ANON_KEY: 'PASTE_STAGING_ANON_KEY_HERE',
-    SERVICE_ROLE_KEY: 'PASTE_STAGING_SERVICE_ROLE_KEY_HERE'
+    SUPABASE_ANON_KEY: 'PASTE_STAGING_PUBLISHABLE_KEY_HERE'
   };
 
   window.PC_CONFIG = isStaging ? STAGING : PRODUCTION;

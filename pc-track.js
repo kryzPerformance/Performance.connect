@@ -25,7 +25,7 @@
 
   var URL_ = 'https://myapluhgfpnyjsfrflhd.supabase.co';
   // Public anon key (same one every page already uses). RLS protects data.
-  var KEY_ = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15YXBsdWhnZnBueWpzZnJmbGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwODcxNDYsImV4cCI6MjA5NzY2MzE0Nn0.j_Xe_J1uvBA-w4Sag1tl3Yp7zqlaEmkQzt2eO6xz1vg';
+  var KEY_ = 'sb_publishable_yfHWon3pr30Z8do9QW9tSQ_wqlkzDxc';
 
   var host = location.hostname;
   var live = host === 'performanceconnect.ca' || host === 'www.performanceconnect.ca';
