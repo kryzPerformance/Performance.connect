@@ -196,7 +196,11 @@
     box-shadow:0 2px 10px rgba(0,0,0,0.6);
     transition:transform .18s ease, opacity .18s ease, filter .18s ease, box-shadow .18s ease;
   }
-  .pc-pin img{max-width:30px;max-height:26px;display:block;}
+  /* Leaflet forces max-width/height:none on marker images, so size the logo box explicitly */
+  .leaflet-container .leaflet-marker-pane .pc-pin img{
+    width:30px !important;height:30px !important;max-width:30px !important;max-height:30px !important;
+    object-fit:contain;display:block;
+  }
   .pc-pin .initials{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;color:var(--ring,#3DC9F0);}
   .pc-pin:hover{transform:scale(1.12);}
   .pc-pin.is-match{transform:scale(1.15);box-shadow:0 0 0 3px rgba(0,0,0,0.35),0 0 18px var(--ring,#3DC9F0);}
