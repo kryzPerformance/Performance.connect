@@ -114,6 +114,21 @@
   .filter-pill:focus{outline:none;}
   .filter-pill:focus-visible{outline:2px solid var(--cyan-bright);outline-offset:2px;border-radius:999px;}
   .filter-pill:active{outline:none;}
+  /* Service pills (built from pc-services.js) — one cyan active state */
+  .filter-pill[data-svc].active{background:rgba(61,201,240,0.1);border-color:rgba(61,201,240,0.5);color:var(--white);}
+  .filter-pill .svc-count{font-size:10px;font-weight:700;color:var(--steel-dim);letter-spacing:0;}
+  .filter-pill.active .svc-count{color:var(--cyan-bright);}
+  /* Phones: one swipeable row instead of many wrapped rows, so the map stays on screen */
+  @media(max-width:640px){
+    .filter-bar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+      -webkit-mask-image:linear-gradient(90deg,#000 85%,transparent);mask-image:linear-gradient(90deg,#000 85%,transparent);}
+    .filter-bar::-webkit-scrollbar{display:none;}
+    .filter-pill{flex:0 0 auto;white-space:nowrap;}
+  }
+
+  /* Service chips inside the shop popup */
+  .popup-svcs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:11px;}
+  .popup-svc{font-size:10px;font-weight:600;letter-spacing:0.04em;padding:3px 8px;border-radius:999px;border:0.5px solid var(--line);color:var(--steel);background:rgba(255,255,255,0.03);}
 
   .map-count{
     padding:0 clamp(16px,5vw,56px) 12px;
@@ -274,18 +289,12 @@
   <div class="page-hero">
     <p class="eyebrow">GTA Partners</p>
     <h1>Find your <span class="accent">people.</span></h1>
-    <p>Performance shops, OEM dealers, tire specialists, and tool stores across the GTA — vetted and onboarded by Performance Connect.</p>
+    <p>Tuning, repairs, body and paint, audio, parts and more across the GTA — trusted businesses, vetted and onboarded by Performance Connect. Pick a service to see who offers it.</p>
   </div>
 
-  <div class="filter-bar" id="filter-bar">
-    <button class="filter-pill active" data-cat="oem"><span class="dot"></span>OEM Dealers</button>
-    <button class="filter-pill active" data-cat="tire"><span class="dot"></span>Tire Shops</button>
-    <button class="filter-pill active" data-cat="tool"><span class="dot"></span>Tool Stores</button>
-    <button class="filter-pill active" data-cat="perf"><span class="dot"></span>Performance Shops</button>
-    <button class="filter-pill active" data-cat="after"><span class="dot"></span>Aftermarket Parts</button>
-    <button class="filter-pill active" data-cat="body"><span class="dot"></span>Body Shops</button>
-    <button class="filter-pill active" data-cat="spec"><span class="dot"></span>Specialty Services</button>
-    <button class="filter-pill active" data-cat="dealer"><span class="dot"></span>Vehicle Sales</button>
+  <!-- Filled in by buildFilterPills() from pc-services.js: one pill per service that at least one shop offers -->
+  <div class="filter-bar" id="filter-bar" role="group" aria-label="Filter by service">
+    <button class="filter-pill active" data-svc="all" aria-pressed="true">All services</button>
   </div>
 
   <div class="map-count" id="map-count">&nbsp;</div>
@@ -318,6 +327,7 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="pc-services.js"></script>
 <script>
 // ============================================================
 // CATEGORY CONFIG
@@ -404,9 +414,18 @@ function makePopupHTML(loc){
     '</div>' +
     '<div class="popup-name">' + loc.name + '</div>' +
     '<div class="popup-address">' + loc.address + '</div>' +
-    notes +
+    notes + svcChipsHTML(loc) +
     '<div class="popup-links">' + webBtn + phoneBtn + igBtn + '</div>' +
   '</div>';
+}
+
+// Service chips for a shop's popup (labels come from pc-services.js)
+function svcChipsHTML(loc){
+  var svcs = pcServicesFor(loc);
+  if(!svcs.length) return '';
+  return '<div class="popup-svcs">' + svcs.map(function(id){
+    return '<span class="popup-svc">' + pcServiceLabel(id) + '</span>';
+  }).join('') + '</div>';
 }
 
 // ============================================================
@@ -415,15 +434,13 @@ function makePopupHTML(loc){
 var state = {
   selectedIdx:      null,   // index into locations[], or null
   popupOpen:        false,
-  activeCats:       {}      // cat -> boolean
+  activeSvcs:       {}      // service id -> true. Empty = show every shop ("All services")
 };
-Object.keys(catConfig).forEach(function(c){ state.activeCats[c] = true; });
 
 // ============================================================
 // LOAD AFFILIATES FROM JSON
 // ============================================================
-var allMarkers = {};
-Object.keys(catConfig).forEach(function(c){ allMarkers[c] = []; });
+var _markers   = [];  // _markers[idx] = the Leaflet marker for _locations[idx]
 
 var popup      = document.getElementById('float-popup');
 var popupInner = document.getElementById('float-popup-inner');
@@ -431,17 +448,20 @@ var _locations = [];  // full locations array, set after fetch
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 function getMarkerObj(idx){
-  var found = null;
-  Object.keys(allMarkers).forEach(function(cat){
-    allMarkers[cat].forEach(function(m){ if(m._idx === idx) found = m; });
-  });
-  return found;
+  return _markers[idx] || null;
+}
+
+// A shop shows when no service is picked, or when it offers ANY picked service
+function shopMatches(loc){
+  var picked = Object.keys(state.activeSvcs);
+  if(!picked.length) return true;
+  return pcServicesFor(loc).some(function(s){ return state.activeSvcs[s]; });
 }
 
 function isMarkerVisible(idx){
   var loc = _locations[idx];
   if(!loc) return false;
-  return !!state.activeCats[loc.cat || 'oem'];
+  return shopMatches(loc);
 }
 
 // ── Highlight — derived from state.selectedIdx only ───────────────────────
@@ -556,7 +576,7 @@ function openPopupFor(idx){
     '</div>'+
     '<div class="popup-name">'+loc.name+'</div>'+
     '<div class="popup-address">'+loc.address+'</div>'+
-    notes+
+    notes+svcChipsHTML(loc)+
     '<div class="popup-links">'+webBtn+phoneBtn+igBtn+'</div>';
 
   state.popupOpen = true;
@@ -635,11 +655,8 @@ popup.addEventListener('click', function(e){ e.stopPropagation(); });
 
 // ── Count + bounds ────────────────────────────────────────────────────────
 function updateCount(){
-  var visible = 0, total = 0;
-  Object.keys(allMarkers).forEach(function(c){
-    total += allMarkers[c].length;
-    if(state.activeCats[c]) visible += allMarkers[c].length;
-  });
+  var total = _locations.length;
+  var visible = _locations.filter(shopMatches).length;
   var el = document.getElementById('map-count');
   if(total === 0){
     el.innerHTML = 'No partners added yet — <a href="mailto:info@performanceconnect.ca" style="color:var(--cyan)">be the first</a>.';
@@ -652,9 +669,8 @@ function updateCount(){
 
 function fitVisibleBounds(){
   var pts = [];
-  Object.keys(allMarkers).forEach(function(cat){
-    if(!state.activeCats[cat]) return;
-    allMarkers[cat].forEach(function(m){ pts.push(m.getLatLng()); });
+  _markers.forEach(function(m, idx){
+    if(m && shopMatches(_locations[idx])) pts.push(m.getLatLng());
   });
   if(pts.length === 0) return;
   if(pts.length === 1){
@@ -677,7 +693,7 @@ fetch('affiliates.json?t=' + Date.now())
       var cat = (loc.cat && catConfig[loc.cat]) ? loc.cat : 'oem';
       var marker = L.marker([loc.lat, loc.lng], { icon: makeIcon(cat) }).addTo(map);
       marker._idx = idx;
-      allMarkers[cat].push(marker);
+      _markers[idx] = marker;
       marker.on('click', function(e){
         L.DomEvent.stopPropagation(e);
         selectMarker(idx);
@@ -688,6 +704,7 @@ fetch('affiliates.json?t=' + Date.now())
     if(allPts.length > 1) map.fitBounds(allPts, { padding:[40,40] });
     else if(allPts.length === 1) map.setView(allPts[0], 14);
 
+    buildFilterPills();
     updateCount();
   })
   .catch(function(err){
@@ -697,17 +714,46 @@ fetch('affiliates.json?t=' + Date.now())
   });
 
 // ── Filter pills (Bug 7) ──────────────────────────────────────────────────
+// One pill per service that at least one shop offers, in pc-services.js order,
+// with how many shops offer it. "All services" is already in the HTML.
+function buildFilterPills(){
+  var bar = document.getElementById('filter-bar');
+  PC_SERVICES.forEach(function(svc){
+    var n = _locations.filter(function(l){ return pcServicesFor(l).indexOf(svc.id) !== -1; }).length;
+    if(!n) return;
+    var b = document.createElement('button');
+    b.className = 'filter-pill';
+    b.dataset.svc = svc.id;
+    b.setAttribute('aria-pressed','false');
+    b.innerHTML = svc.label + ' <span class="svc-count">' + n + '</span>';
+    bar.appendChild(b);
+  });
+}
+
+function syncPills(){
+  var none = !Object.keys(state.activeSvcs).length;
+  document.querySelectorAll('#filter-bar .filter-pill').forEach(function(p){
+    var on = p.dataset.svc === 'all' ? none : !!state.activeSvcs[p.dataset.svc];
+    p.classList.toggle('active', on);
+    p.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+
 document.getElementById('filter-bar').addEventListener('click', function(e){
   var pill = e.target.closest('.filter-pill');
   if(!pill) return;
-  var cat = pill.dataset.cat;
+  var svc = pill.dataset.svc;
 
-  state.activeCats[cat] = !state.activeCats[cat];
-  pill.classList.toggle('active', state.activeCats[cat]);
+  // "All services" clears the picks; any other pill toggles on/off (several can be on)
+  if(svc === 'all'){ state.activeSvcs = {}; }
+  else if(state.activeSvcs[svc]){ delete state.activeSvcs[svc]; }
+  else { state.activeSvcs[svc] = true; }
+  syncPills();
 
   // Add/remove markers without recreating them
-  allMarkers[cat].forEach(function(m){
-    if(state.activeCats[cat]){ m.addTo(map); } else { map.removeLayer(m); }
+  _markers.forEach(function(m, idx){
+    if(!m) return;
+    if(shopMatches(_locations[idx])){ m.addTo(map); } else { map.removeLayer(m); }
   });
 
   // Bug 7: if selected marker filtered out → close; if still visible → reposition

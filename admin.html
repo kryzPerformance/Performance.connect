@@ -71,6 +71,12 @@
   .cat-btn{padding:10px 8px;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--steel-dim);cursor:pointer;transition:all 0.15s;text-align:center;}
   .cat-btn:hover{border-color:var(--steel);color:var(--steel);}
   .cat-btn.active{color:#03171D !important;border-color:transparent !important;}
+  /* Affiliate services — pick several (list comes from pc-services.js) */
+  .svc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  @media(max-width:480px){.svc-grid{grid-template-columns:repeat(2,1fr);}}
+  .svc-btn{padding:10px 8px;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);font-size:11px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--steel-dim);cursor:pointer;transition:all 0.15s;text-align:center;}
+  .svc-btn:hover{border-color:var(--steel);color:var(--steel);}
+  .svc-btn.active{background:#3DC9F0;color:#03171D;border-color:transparent;}
   .cat-btn[data-cat="oem"].active{background:#00D9FF;}
   .cat-btn[data-cat="tire"].active{background:#FFC107;}
   .cat-btn[data-cat="tool"].active{background:#39FF88;}
@@ -196,7 +202,7 @@
     <p class="intro">Adds directly to the affiliates map. Generates a JSON entry to paste into <code>affiliates.json</code>.</p>
 
     <div class="card">
-      <div class="card-title">Category</div>
+      <div class="card-title">Main type (sets the pin icon &amp; colour)</div>
       <div class="cat-grid" id="aff-cat-grid">
         <button class="cat-btn" data-cat="oem">OEM Dealer</button>
         <button class="cat-btn" data-cat="tire">Tire Shop</button>
@@ -207,6 +213,11 @@
         <button class="cat-btn" data-cat="spec">Specialty</button>
         <button class="cat-btn" data-cat="dealer">Vehicle Sales</button>
       </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Services offered (pick all that apply)</div>
+      <div class="svc-grid" id="aff-svc-grid"></div>
     </div>
 
     <div class="card">
@@ -364,6 +375,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/pc-services.js"></script>
 <script>
   // ===== CONFIG =====
   // Public anon key (same project as marketplace/events). Safe to expose:
@@ -466,6 +478,19 @@
     document.querySelectorAll('#aff-cat-grid .cat-btn').forEach(function(x){ x.classList.remove('active'); });
     b.classList.add('active'); affCat = b.dataset.cat;
   });
+  // Services: one toggle button per entry in pc-services.js
+  var affSvcGrid = document.getElementById('aff-svc-grid');
+  PC_SERVICES.forEach(function(s){
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'svc-btn'; b.dataset.svc = s.id; b.textContent = s.label;
+    affSvcGrid.appendChild(b);
+  });
+  affSvcGrid.addEventListener('click', function(e){
+    var b = e.target.closest('.svc-btn'); if(b) b.classList.toggle('active');
+  });
+  function affPickedSvcs(){
+    return Array.prototype.map.call(affSvcGrid.querySelectorAll('.svc-btn.active'), function(b){ return b.dataset.svc; });
+  }
   document.getElementById('aff-geocode').addEventListener('click', function(){
     geocode(document.getElementById('aff-address').value.trim(), 'aff-lat','aff-lng','aff-geo-status');
   });
@@ -474,11 +499,13 @@
     var address = document.getElementById('aff-address').value.trim();
     var lat = parseFloat(document.getElementById('aff-lat').value);
     var lng = parseFloat(document.getElementById('aff-lng').value);
-    if(!affCat){ showMsg('aff-msg','Select a category.',false); return; }
+    var svcs = affPickedSvcs();
+    if(!affCat){ showMsg('aff-msg','Select a main type.',false); return; }
+    if(!svcs.length){ showMsg('aff-msg','Pick at least one service.',false); return; }
     if(!name){ showMsg('aff-msg','Enter a shop name.',false); return; }
     if(!address){ showMsg('aff-msg','Enter an address.',false); return; }
     if(isNaN(lat)||isNaN(lng)){ showMsg('aff-msg','Look up or enter coordinates.',false); return; }
-    var entry = { cat: affCat, name: name, address: address };
+    var entry = { cat: affCat, services: svcs, name: name, address: address };
     var phone = document.getElementById('aff-phone').value.trim();
     var web = document.getElementById('aff-web').value.trim();
     var ig = document.getElementById('aff-instagram').value.trim().replace(/^@/,'');
@@ -500,7 +527,7 @@
     var self = this; setTimeout(function(){ self.textContent = 'Copy JSON'; }, 2000);
   });
   document.getElementById('aff-reset').addEventListener('click', function(){
-    document.querySelectorAll('#aff-cat-grid .cat-btn').forEach(function(x){ x.classList.remove('active'); });
+    document.querySelectorAll('#aff-cat-grid .cat-btn, #aff-svc-grid .svc-btn').forEach(function(x){ x.classList.remove('active'); });
     affCat = null;
     ['aff-name','aff-phone','aff-web','aff-instagram','aff-notes','aff-address','aff-lat','aff-lng'].forEach(function(id){ document.getElementById(id).value=''; });
     document.getElementById('aff-geo-status').style.display='none';

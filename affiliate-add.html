@@ -69,6 +69,17 @@
   }
   .cat-btn:hover{border-color:var(--steel);color:var(--steel);}
   .cat-btn.active{color:#03171D !important;border-color:transparent !important;}
+  /* Services — pick several (list comes from pc-services.js) */
+  .svc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px;}
+  @media(max-width:480px){.svc-grid{grid-template-columns:repeat(2,1fr);}}
+  .svc-btn{
+    padding:10px 8px;border-radius:8px;border:1px solid var(--line);
+    background:var(--panel-2);font-size:11px;font-weight:700;
+    letter-spacing:0.04em;text-transform:uppercase;
+    color:var(--steel-dim);cursor:pointer;transition:all 0.15s;text-align:center;
+  }
+  .svc-btn:hover{border-color:var(--steel);color:var(--steel);}
+  .svc-btn.active{background:#3DC9F0;color:#03171D;border-color:transparent;}
   .cat-btn[data-cat="oem"].active   {background:#3DC9F0;}
   .cat-btn[data-cat="tire"].active  {background:#F0B83D;}
   .cat-btn[data-cat="tool"].active  {background:#3DF08A;}
@@ -161,7 +172,7 @@
 
   <!-- CATEGORY -->
   <div class="card">
-    <div class="card-title">Category</div>
+    <div class="card-title">Main type (sets the pin icon &amp; colour)</div>
     <div class="cat-grid" id="cat-grid">
       <button class="cat-btn" data-cat="oem">OEM Dealer</button>
       <button class="cat-btn" data-cat="tire">Tire Shop</button>
@@ -172,7 +183,14 @@
       <button class="cat-btn" data-cat="spec">Specialty</button>
       <button class="cat-btn" data-cat="dealer">Vehicle Sales</button>
     </div>
-    <div class="validation-msg" id="cat-err">Please select a category.</div>
+    <div class="validation-msg" id="cat-err">Please select a main type.</div>
+  </div>
+
+  <!-- SERVICES -->
+  <div class="card">
+    <div class="card-title">Services offered (pick all that apply)</div>
+    <div class="svc-grid" id="svc-grid"></div>
+    <div class="validation-msg" id="svc-err">Please pick at least one service.</div>
   </div>
 
   <!-- SHOP INFO -->
@@ -264,8 +282,25 @@
 
 </div>
 
+<script src="/pc-services.js"></script>
 <script>
   var selectedCat = null;
+
+  // ── Services: one toggle button per entry in pc-services.js ──
+  var svcGrid = document.getElementById('svc-grid');
+  PC_SERVICES.forEach(function(s){
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'svc-btn'; b.dataset.svc = s.id; b.textContent = s.label;
+    svcGrid.appendChild(b);
+  });
+  svcGrid.addEventListener('click', function(e){
+    var b = e.target.closest('.svc-btn'); if(!b) return;
+    b.classList.toggle('active');
+    document.getElementById('svc-err').style.display = 'none';
+  });
+  function pickedSvcs(){
+    return Array.prototype.map.call(svcGrid.querySelectorAll('.svc-btn.active'), function(b){ return b.dataset.svc; });
+  }
 
   // ── Category selection ──
   document.getElementById('cat-grid').addEventListener('click', function(e){
@@ -330,15 +365,18 @@
     var lng       = parseFloat(document.getElementById('f-lng').value);
 
     // Validation
+    var svcs = pickedSvcs();
     if(!selectedCat){ document.getElementById('cat-err').style.display='block'; return; }
+    if(!svcs.length){ document.getElementById('svc-err').style.display='block'; return; }
     if(!name)  { showErr('Please enter a shop name.'); return; }
     if(!address){ showErr('Please enter an address.'); return; }
     if(isNaN(lat) || isNaN(lng)){ showErr('Please look up or enter coordinates.'); return; }
 
     // Build entry — only include fields that have values
     var entry = {};
-    entry.cat     = selectedCat;
-    entry.name    = name;
+    entry.cat      = selectedCat;
+    entry.services = svcs;
+    entry.name     = name;
     entry.address = address;
     if(phone)     entry.phone     = phone;
     if(web)       entry.web       = web;
@@ -373,8 +411,9 @@
 
   // ── Reset ──
   document.getElementById('btn-reset').addEventListener('click', function(){
-    document.querySelectorAll('.cat-btn').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelectorAll('.cat-btn, .svc-btn').forEach(function(b){ b.classList.remove('active'); });
     selectedCat = null;
+    document.getElementById('svc-err').style.display = 'none';
     ['f-name','f-phone','f-web','f-instagram','f-notes','f-address','f-lat','f-lng'].forEach(function(id){
       document.getElementById(id).value = '';
     });

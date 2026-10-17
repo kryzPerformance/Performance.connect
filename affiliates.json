@@ -1,6 +1,7 @@
 [
 {
 "cat": "perf",
+  "services": ["tuning", "protect", "ev"],
   "name": "MGMT Autoworks",
   "address": "2006 Hwy 7, Unit 5, Concord, ON L4K 1W6",
   "phone": "(289) 955-6468",
@@ -12,6 +13,7 @@
 },
 {
   "cat": "dealer",
+  "services": ["sales"],
   "name": "Auto City",
   "address": "260 Dundas St W, Mississauga, ON L5B 1J2",
   "phone": "(905) 279-9990",
@@ -23,6 +25,7 @@
 },
 {
   "cat": "body",
+  "services": ["collision"],
   "name": "Royal Auto Collision",
   "address": "1725 Sismet Rd, Mississauga, ON L4W 1P9",
   "phone": "(905) 282-1622",
@@ -34,6 +37,7 @@
 },
 {
   "cat": "spec",
+  "services": ["audio", "electrical"],
   "name": "Illumitronics",
   "address": "Brampton",
   "phone": "6472267265",
@@ -45,6 +49,7 @@
 },
 {
   "cat": "perf",
+  "services": ["tuning", "repair", "truck"],
   "name": "Johns United Auto Clinic",
   "address": "7195 tranmere drive unit 5",
   "phone": "9056725927",
@@ -56,6 +61,7 @@
 },
 {
   "cat": "body",
+  "services": ["collision", "paint"],
   "name": "Turbo Tony Paintworkz and Collision",
   "address": "Halton Hills",
   "web": "https://www.instagram.com/turbotony.paintworkz?igsh=YWZpMzkzY2lvdWtr",
@@ -66,6 +72,7 @@
 },
 {
   "cat": "spec",
+  "services": ["repair", "truck"],
   "name": "Srp Automotive and Truck Repair",
   "address": "1135 speers road oakville",
   "phone": "905-629-1020",
@@ -76,6 +83,7 @@
 },
 {
   "cat": "perf",
+  "services": ["tuning", "diag"],
   "name": "VPX Performance",
   "address": "3485 Harvester rd Burlington, Ont L7N3T3",
   "phone": "(416) 246-1810",
@@ -87,6 +95,7 @@
 },
 {
   "cat": "after",
+  "services": ["parts"],
   "name": "Euro Sport Tuning",
   "address": "4126 S Service Rd Burlington ontario",
   "phone": "905-825-9334",
