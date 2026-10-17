@@ -11,7 +11,7 @@
      listing (and future gated actions) never requires re-typing the key.
 
    LOAD ORDER — put this AFTER the Supabase CDN on every page:
-     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
      <script src="pc-account.js"></script>
 
    SECURITY MODEL (read before extending):

@@ -382,7 +382,7 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 <script src="pc-account.js"></script>
 <script>
   // ── Supabase client (same project/pattern as marketplace.html) ──
@@ -399,7 +399,17 @@
      The details ride along in data- attributes; one click listener below opens
      the picker, so it works on cards AND map popups without extra wiring. */
   function escAttr(s){
-    return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  // Event details come from public submissions, so anything a visitor typed
+  // must be escaped before it goes into the page — otherwise text like
+  // <img onerror=...> would run as code for everyone who views the event.
+  var esc = escAttr;
+  // Links/images from submissions: only allow normal web addresses, never
+  // "javascript:" or other schemes that could run code when clicked.
+  function safeUrl(u){
+    u = String(u == null ? '' : u).trim();
+    return /^https?:\/\//i.test(u) ? escAttr(u) : '';
   }
   var DIR_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg>';
   function dirButton(ev){
@@ -647,7 +657,7 @@
     return h12 + ':' + m + ' ' + ampm;
   }
 
-  function eventTypeKey(t){ return TYPE_META[t] ? t : 'other'; }
+  function eventTypeKey(t){ return Object.prototype.hasOwnProperty.call(TYPE_META, t) ? t : 'other'; }
 
   function render(){
     var list = document.getElementById('events-list');
@@ -686,23 +696,24 @@
       var timeStr = ev.start_time ? fmtTime(ev.start_time) + (ev.end_time ? ' – ' + fmtTime(ev.end_time) : '') : '';
       var loc = ev.venue_name || ev.address || '';
 
-      var webLink = ev.web ? '<a href="'+ev.web+'" target="_blank" rel="noopener" class="ev-link primary" onclick="event.stopPropagation()">Event details</a>' : '';
-      var igLink  = ev.instagram ? '<a href="https://instagram.com/'+ev.instagram.replace('@','')+'" target="_blank" rel="noopener" class="ev-link" onclick="event.stopPropagation()">@'+ev.instagram.replace('@','')+'</a>' : '';
+      var webLink = safeUrl(ev.web) ? '<a href="'+safeUrl(ev.web)+'" target="_blank" rel="noopener" class="ev-link primary" onclick="event.stopPropagation()">Event details</a>' : '';
+      var igHandle = ev.instagram ? String(ev.instagram).replace(/^@/,'').replace(/[^A-Za-z0-9._]/g,'') : '';
+      var igLink  = igHandle ? '<a href="https://instagram.com/'+igHandle+'" target="_blank" rel="noopener" class="ev-link" onclick="event.stopPropagation()">@'+igHandle+'</a>' : '';
       var mapLink = dirButton(ev) + calButton(ev);
 
-      var poster = ev.cover_photo ? '<div class="event-poster"><img src="'+ev.cover_photo+'" alt="'+(ev.title||'Event')+' poster" loading="lazy" onerror="this.parentNode.style.display=\'none\'"></div>' : '';
+      var poster = safeUrl(ev.cover_photo) ? '<div class="event-poster"><img src="'+safeUrl(ev.cover_photo)+'" alt="'+esc(ev.title||'Event')+' poster" loading="lazy" onerror="this.parentNode.style.display=\'none\'"></div>' : '';
 
-      return '<div class="event-card'+(ev.cover_photo?' has-poster':'')+'">'+
+      return '<div class="event-card'+(poster?' has-poster':'')+'">'+
         '<div class="event-date-badge"><span class="month">'+MONTHS[d.getMonth()]+'</span><span class="day">'+d.getDate()+'</span></div>'+
         '<div class="event-body">'+
           '<span class="event-type-tag" style="background:'+meta.color+'18;color:'+meta.color+'"><span class="dot" style="background:'+meta.color+'"></span>'+meta.label+'</span>'+
-          '<div class="event-title">'+ev.title+'</div>'+
+          '<div class="event-title">'+esc(ev.title)+'</div>'+
           '<div class="event-meta">'+
             (timeStr ? '<span class="m"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'+timeStr+'</span>' : '')+
-            (loc ? '<span class="m"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>'+loc+'</span>' : '')+
-            (ev.host ? '<span class="m">by '+ev.host+'</span>' : '')+
+            (loc ? '<span class="m"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>'+esc(loc)+'</span>' : '')+
+            (ev.host ? '<span class="m">by '+esc(ev.host)+'</span>' : '')+
           '</div>'+
-          (ev.description ? '<div class="event-desc">'+ev.description+'</div>' : '')+
+          (ev.description ? '<div class="event-desc">'+esc(ev.description)+'</div>' : '')+
           '<div class="event-links">'+webLink+igLink+mapLink+'</div>'+
         '</div>'+
         poster+
@@ -741,7 +752,7 @@
       var endStr = ev.end_time ? ' – ' + fmtTime(ev.end_time) : '';
       var where = [ev.venue_name, ev.address].filter(Boolean).join(' · ');
       var popupHtml =
-        (ev.cover_photo ? '<img class="popup-poster" src="'+escAttr(ev.cover_photo)+'" alt="" onerror="this.style.display=\'none\'">' : '')+
+        (safeUrl(ev.cover_photo) ? '<img class="popup-poster" src="'+safeUrl(ev.cover_photo)+'" alt="" onerror="this.style.display=\'none\'">' : '')+
         '<div class="popup-card">'+
           '<div class="popup-cat-tag" style="background:'+meta.color+'18;color:'+meta.color+'">'+
             '<span class="dot" style="background:'+meta.color+'"></span>'+meta.label+
@@ -752,7 +763,7 @@
           '<div class="popup-links">'+
             dirButton(ev)+
             calButton(ev)+
-            (ev.web ? '<a href="'+escAttr(ev.web)+'" target="_blank" rel="noopener" class="popup-link secondary">Event details</a>' : '')+
+            (safeUrl(ev.web) ? '<a href="'+safeUrl(ev.web)+'" target="_blank" rel="noopener" class="popup-link secondary">Event details</a>' : '')+
           '</div>'+
         '</div>';
       var m = L.marker([ev.lat, ev.lng], { icon: makeEvIcon(ev.event_type) })
@@ -875,7 +886,7 @@
       dayEvents.slice(0,2).forEach(function(ev){
         var meta = TYPE_META[eventTypeKey(ev.event_type)];
         html += '<div class="cal-event" style="background:'+meta.color+'22;color:'+meta.color+'" '+
-                'data-evid="'+ev.id+'" title="'+ev.title+'">'+ev.title+'</div>';
+                'data-evid="'+esc(ev.id)+'" title="'+esc(ev.title)+'">'+esc(ev.title)+'</div>';
       });
       if(dayEvents.length > 2){
         html += '<div class="cal-more">+'+(dayEvents.length-2)+' more</div>';

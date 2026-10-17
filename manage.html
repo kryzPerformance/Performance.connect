@@ -544,7 +544,7 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 <script src="pc-account.js"></script>
 <script>
   var SUPABASE_URL = 'https://myapluhgfpnyjsfrflhd.supabase.co';
@@ -571,10 +571,21 @@
     if(e.key === 'Enter') document.getElementById('btn-lookup').click();
   });
 
-  // ── pre-fill from URL ?key=, else from stored pseudo-login (no key in URL) ──
+  // ── where the key comes from (never kept in the address bar) ──
+  //  1. an old-style link with ?key=... → read it, then wipe it from the URL
+  //  2. a hand-off from the marketplace (just posted, link clicked < 30 min ago)
+  //  3. the seller is signed in on this device (pc-account.js)
   var params = new URLSearchParams(window.location.search);
   var urlKey = params.get('key');
   var autoLoad = false;
+  if(urlKey){ history.replaceState(null,'','/manage'); }
+  if(!urlKey){
+    try {
+      var ho = JSON.parse(localStorage.getItem('pc_key_handoff') || 'null');
+      localStorage.removeItem('pc_key_handoff');   // one use only
+      if(ho && ho.k && Date.now() - ho.t < 30*60*1000){ urlKey = ho.k; autoLoad = true; }
+    } catch(e){}
+  }
   if(!urlKey && window.PC && PC.account && PC.account.key && PC.account.key()){
     urlKey = PC.account.key();   // signed in on this device — load their garage
     autoLoad = true;
@@ -653,8 +664,7 @@
     document.getElementById('dash-key').textContent     = perfKey;
     document.getElementById('dash-ig').textContent      = seller.instagram ? '@' + seller.instagram : '';
 
-    // Update URL without reload
-    history.replaceState(null,'','/manage?key='+encodeURIComponent(perfKey));
+    // (The key is deliberately NOT put back in the address bar.)
 
     // Load listings, part-out vehicles, and part-out counts in parallel
     var loads = await Promise.all([

@@ -299,10 +299,6 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             Copy Key
           </button>
-          <button class="save-btn secondary" id="btn-qr">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3M17 17h3v3M14 20h3"/></svg>
-            Download QR
-          </button>
           <button class="save-btn secondary" id="btn-img">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Save Image
@@ -328,9 +324,24 @@
 </div>
 
 <script>
-  // ── read key from URL ──
+  // ── find the key (never kept in the address bar) ──
+  //  1. an old-style link with ?key=... → read it, then wipe it from the URL
+  //  2. a hand-off from the marketplace (link clicked < 30 min ago)
+  //  3. the seller is signed in on this device (pc-account.js storage)
   var params = new URLSearchParams(window.location.search);
-  var key = params.get('key') || 'PC-XXXX-XXXX';
+  var key = params.get('key');
+  if(key){ history.replaceState(null,'','/perf-key-card'); }
+  try {
+    if(!key){
+      var ho = JSON.parse(localStorage.getItem('pc_key_handoff') || 'null');
+      if(ho && ho.k && Date.now() - ho.t < 30*60*1000) key = ho.k;
+    }
+    if(!key){
+      var me = JSON.parse(localStorage.getItem('pc_identity_v1') || 'null');
+      if(me && me.key) key = me.key;
+    }
+  } catch(e){}
+  key = key || 'PC-XXXX-XXXX';
   document.getElementById('key-display').textContent = key;
 
   // ── video fallback ──
@@ -345,15 +356,6 @@
       btn.textContent = '✓ Copied!';
       setTimeout(function(){ btn.innerHTML = orig; }, 2000);
     });
-  });
-
-  // ── QR download ──
-  document.getElementById('btn-qr').addEventListener('click', function(){
-    var cardUrl = window.location.origin + '/perf-key-card?key=' + encodeURIComponent(key);
-    var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&bgcolor=070808&color=3DC9F0&margin=20&data=' + encodeURIComponent(cardUrl);
-    var a = document.createElement('a');
-    a.href = qrUrl; a.download = key + '-QR.png'; a.target = '_blank';
-    a.click();
   });
 
   // ── save as image ──
