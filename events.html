@@ -407,9 +407,14 @@
   var esc = escAttr;
   // Links/images from submissions: only allow normal web addresses, never
   // "javascript:" or other schemes that could run code when clicked.
+  // A bare address like "importexpo.net" gets https:// added (before, it was
+  // treated as a page on our own site and the link went nowhere).
   function safeUrl(u){
     u = String(u == null ? '' : u).trim();
-    return /^https?:\/\//i.test(u) ? escAttr(u) : '';
+    if(!u) return '';
+    if(/^\/\//.test(u)) u = 'https:' + u;
+    else if(!/^[a-z][a-z0-9+.-]*:/i.test(u)) u = 'https://' + u;
+    return /^https?:\/\/[^\s]/i.test(u) ? escAttr(u) : '';
   }
   var DIR_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg>';
   function dirButton(ev){
