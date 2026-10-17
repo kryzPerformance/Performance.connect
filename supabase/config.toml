@@ -5,3 +5,8 @@
 # limits who can call it with its own origin check instead.
 [functions.flyer-parser]
 verify_jwt = false
+
+# "Message the seller" relay — same reason as above; it checks the origin,
+# validates input and rate-limits itself.
+[functions.contact-relay]
+verify_jwt = false
