@@ -172,24 +172,15 @@
 
   <!-- CATEGORY -->
   <div class="card">
-    <div class="card-title">Main type (sets the pin icon &amp; colour)</div>
-    <div class="cat-grid" id="cat-grid">
-      <button class="cat-btn" data-cat="oem">OEM Dealer</button>
-      <button class="cat-btn" data-cat="tire">Tire Shop</button>
-      <button class="cat-btn" data-cat="tool">Tool Store</button>
-      <button class="cat-btn" data-cat="perf">Perf Shop</button>
-      <button class="cat-btn" data-cat="after">Aftermarket</button>
-      <button class="cat-btn" data-cat="body">Body Shop</button>
-      <button class="cat-btn" data-cat="spec">Specialty</button>
-      <button class="cat-btn" data-cat="dealer">Vehicle Sales</button>
-    </div>
-    <div class="validation-msg" id="cat-err">Please select a main type.</div>
+    <div class="card-title">Business type (sets the pin ring colour)</div>
+    <div class="cat-grid" id="cat-grid"></div>
+    <div class="validation-msg" id="cat-err">Please select a business type.</div>
   </div>
 
   <!-- SERVICES -->
   <div class="card">
     <div class="card-title">Services offered (pick all that apply)</div>
-    <div class="svc-grid" id="svc-grid"></div>
+    <div id="svc-grid"></div>
     <div class="validation-msg" id="svc-err">Please pick at least one service.</div>
   </div>
 
@@ -286,12 +277,27 @@
 <script>
   var selectedCat = null;
 
-  // ── Services: one toggle button per entry in pc-services.js ──
+  // ── Services: one block per group, one toggle per service (pc-services.js) ──
   var svcGrid = document.getElementById('svc-grid');
-  PC_SERVICES.forEach(function(s){
+  PC_SERVICE_GROUPS.forEach(function(g){
+    var head = document.createElement('div');
+    head.style.cssText = 'margin:14px 0 8px;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--steel-dim);';
+    head.textContent = g.label;
+    svcGrid.appendChild(head);
+    var grid = document.createElement('div');
+    grid.className = 'svc-grid';
+    g.services.forEach(function(s){
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'svc-btn'; b.dataset.svc = s.id; b.textContent = s.label;
+      grid.appendChild(b);
+    });
+    svcGrid.appendChild(grid);
+  });
+  // Business types (pc-services.js)
+  PC_BUSINESS_TYPES.forEach(function(t){
     var b = document.createElement('button');
-    b.type = 'button'; b.className = 'svc-btn'; b.dataset.svc = s.id; b.textContent = s.label;
-    svcGrid.appendChild(b);
+    b.type = 'button'; b.className = 'cat-btn'; b.dataset.type = t.id; b.dataset.color = t.color; b.textContent = t.label;
+    document.getElementById('cat-grid').appendChild(b);
   });
   svcGrid.addEventListener('click', function(e){
     var b = e.target.closest('.svc-btn'); if(!b) return;
@@ -306,9 +312,15 @@
   document.getElementById('cat-grid').addEventListener('click', function(e){
     var btn = e.target.closest('.cat-btn');
     if(!btn) return;
-    document.querySelectorAll('.cat-btn').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelectorAll('.cat-btn').forEach(function(b){ b.classList.remove('active'); b.style.background=''; });
     btn.classList.add('active');
-    selectedCat = btn.dataset.cat;
+    btn.style.background = btn.dataset.color;
+    selectedCat = btn.dataset.type;
+    // Almost every shop/garage does general repairs — pre-tick it (untick if not)
+    if(selectedCat === 'garage'){
+      var m = svcGrid.querySelector('.svc-btn[data-svc="mechanical"]');
+      if(m) m.classList.add('active');
+    }
     document.getElementById('cat-err').style.display = 'none';
   });
 
@@ -374,9 +386,9 @@
 
     // Build entry — only include fields that have values
     var entry = {};
-    entry.cat      = selectedCat;
-    entry.services = svcs;
     entry.name     = name;
+    entry.type     = selectedCat;
+    entry.services = svcs;
     entry.address = address;
     if(phone)     entry.phone     = phone;
     if(web)       entry.web       = web;
@@ -411,7 +423,7 @@
 
   // ── Reset ──
   document.getElementById('btn-reset').addEventListener('click', function(){
-    document.querySelectorAll('.cat-btn, .svc-btn').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelectorAll('.cat-btn, .svc-btn').forEach(function(b){ b.classList.remove('active'); b.style.background=''; });
     selectedCat = null;
     document.getElementById('svc-err').style.display = 'none';
     ['f-name','f-phone','f-web','f-instagram','f-notes','f-address','f-lat','f-lng'].forEach(function(id){

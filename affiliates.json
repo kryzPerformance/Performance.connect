@@ -1,108 +1,155 @@
 [
-{
-"cat": "perf",
-  "services": ["tuning", "protect", "ev"],
-  "name": "MGMT Autoworks",
-  "address": "2006 Hwy 7, Unit 5, Concord, ON L4K 1W6",
-  "phone": "(289) 955-6468",
-  "web": "https://mgmtautoworks.com",
-  "instagram": "@mgmtautoworks",
-  "lat": 43.8030,
-  "lng": -79.4916,
-  "notes": "Performance tuning, EV/Tesla specialists, wraps, PPF, and ceramic coatings"
-},
-{
-  "cat": "dealer",
-  "services": ["sales"],
-  "name": "Auto City",
-  "address": "260 Dundas St W, Mississauga, ON L5B 1J2",
-  "phone": "(905) 279-9990",
-  "web": "https://autocitygta.ca",
-  "instagram": "@autocity.gta",
-  "lat": 43.5905,
-  "lng": -79.6441,
-  "notes": "Buy, sell, trade, finance and wholesale — serving Mississauga since 1995"
-},
-{
-  "cat": "body",
-  "services": ["collision"],
-  "name": "Royal Auto Collision",
-  "address": "1725 Sismet Rd, Mississauga, ON L4W 1P9",
-  "phone": "(905) 282-1622",
-  "web": "https://royalautocollision.ca/",
-  "instagram": "@royalautocollision",
-  "lat": 43.6457,
-  "lng": -79.6215,
-  "notes": "5 Star rated body shop approved by multiple OEM brands"
-},
-{
-  "cat": "spec",
-  "services": ["audio", "electrical"],
-  "name": "Illumitronics",
-  "address": "Brampton",
-  "phone": "6472267265",
-"web": "https://www.instagram.com/illumitronics/",
-  "instagram": "@Illumitronics",
-  "lat": 43.6858,
-  "lng": -79.7599,
-  "notes": "Remote starters, alarms, Sound Systems. All things electrical"
-},
-{
-  "cat": "perf",
-  "services": ["tuning", "repair", "truck"],
-  "name": "Johns United Auto Clinic",
-  "address": "7195 tranmere drive unit 5",
-  "phone": "9056725927",
-  "web": "https://www.instagram.com/juac_performance?igsh=czZwbmc0djBsa2cw",
-  "instagram": "@juac_performance",
-  "lat": 43.6813,
-  "lng": -79.6745,
-  "notes": "Performance Tuning , Fleet Repair"
-},
-{
-  "cat": "body",
-  "services": ["collision", "paint"],
-  "name": "Turbo Tony Paintworkz and Collision",
-  "address": "Halton Hills",
-  "web": "https://www.instagram.com/turbotony.paintworkz?igsh=YWZpMzkzY2lvdWtr",
-  "instagram": "@Turbotony.paintworkz",
-  "lat": 43.6513,
-  "lng": -79.9142,
-  "notes": "Appointment only -  Body and paint,  Collision Insurance work, Restorations, Paint tech specialist, Color retrieval"
-},
-{
-  "cat": "spec",
-  "services": ["repair", "truck"],
-  "name": "Srp Automotive and Truck Repair",
-  "address": "1135 speers road oakville",
-  "phone": "905-629-1020",
-  "instagram": "@Srpautomotiveandtruckrepair",
-  "lat": 43.4211,
-  "lng": -79.715,
-  "notes": "Automotive and Truck Repair, 310T Certified"
-},
-{
-  "cat": "perf",
-  "services": ["tuning", "diag"],
-  "name": "VPX Performance",
-  "address": "3485 Harvester rd Burlington, Ont L7N3T3",
-  "phone": "(416) 246-1810",
-  "web": "https://www.vpxperformance.com",
-  "instagram": "@vpxperformance",
-  "lat": 43.3629,
-  "lng": -79.7837,
-  "notes": "Performance Tuning, Upgrades, Diagnostic services"
-},
-{
-  "cat": "after",
-  "services": ["parts"],
-  "name": "Euro Sport Tuning",
-  "address": "4126 S Service Rd Burlington ontario",
-  "phone": "905-825-9334",
-  "web": "www.eurosporttuning.com",
-  "instagram": "@eurosporttuning",
-  "lat": 43.3691,
-  "lng": -79.7842,
-  "notes": "Aftermarket Performance Parts for European Brands"
-}
+  {
+    "name": "MGMT Autoworks",
+    "type": "garage",
+    "services": [
+      "ecu",
+      "evperf",
+      "mechanical",
+      "ppf",
+      "wrap",
+      "ceramic"
+    ],
+    "logo": "assets/affiliates/mgmt-autoworks.webp",
+    "address": "2006 Hwy 7, Unit 5, Concord, ON L4K 1W6",
+    "phone": "(289) 955-6468",
+    "web": "https://mgmtautoworks.com",
+    "instagram": "@mgmtautoworks",
+    "lat": 43.803,
+    "lng": -79.4916,
+    "notes": "Performance tuning, EV/Tesla specialists, wraps, PPF, and ceramic coatings"
+  },
+  {
+    "name": "Auto City",
+    "type": "dealer",
+    "services": [
+      "dealer",
+      "finance"
+    ],
+    "logo": "assets/affiliates/auto-city.webp",
+    "address": "260 Dundas St W, Mississauga, ON L5B 1J2",
+    "phone": "(905) 279-9990",
+    "web": "https://autocitygta.ca",
+    "instagram": "@autocity.gta",
+    "lat": 43.5905,
+    "lng": -79.6441,
+    "notes": "Buy, sell, trade, finance and wholesale — serving Mississauga since 1995"
+  },
+  {
+    "name": "Royal Auto Collision",
+    "type": "body",
+    "services": [
+      "collision"
+    ],
+    "logo": "assets/affiliates/royal-auto-collision.webp",
+    "address": "1725 Sismet Rd, Mississauga, ON L4W 1P9",
+    "phone": "(905) 282-1622",
+    "web": "https://royalautocollision.ca/",
+    "instagram": "@royalautocollision",
+    "lat": 43.6457,
+    "lng": -79.6215,
+    "notes": "5 Star rated body shop approved by multiple OEM brands"
+  },
+  {
+    "name": "Illumitronics",
+    "type": "studio",
+    "services": [
+      "electrical",
+      "audio",
+      "remote",
+      "security",
+      "lighting",
+      "dashcam",
+      "headunit"
+    ],
+    "logo": "assets/affiliates/illumitronics.webp",
+    "address": "Brampton",
+    "phone": "6472267265",
+    "web": "https://www.instagram.com/illumitronics/",
+    "instagram": "@Illumitronics",
+    "lat": 43.6858,
+    "lng": -79.7599,
+    "notes": "Remote starters, alarms, Sound Systems. All things electrical"
+  },
+  {
+    "name": "Johns United Auto Clinic",
+    "type": "garage",
+    "services": [
+      "ecu",
+      "mechanical",
+      "fleet"
+    ],
+    "logo": "assets/affiliates/johns-united-auto-clinic.webp",
+    "address": "7195 tranmere drive unit 5",
+    "phone": "9056725927",
+    "web": "https://www.instagram.com/juac_performance?igsh=czZwbmc0djBsa2cw",
+    "instagram": "@juac_performance",
+    "lat": 43.6813,
+    "lng": -79.6745,
+    "notes": "Performance Tuning , Fleet Repair"
+  },
+  {
+    "name": "Turbo Tony Paintworkz and Collision",
+    "type": "body",
+    "services": [
+      "collision",
+      "paint",
+      "resto"
+    ],
+    "logo": "assets/affiliates/turbo-tony-paintworkz.webp",
+    "address": "Halton Hills",
+    "web": "https://www.instagram.com/turbotony.paintworkz?igsh=YWZpMzkzY2lvdWtr",
+    "instagram": "@Turbotony.paintworkz",
+    "lat": 43.6513,
+    "lng": -79.9142,
+    "notes": "Appointment only -  Body and paint,  Collision Insurance work, Restorations, Paint tech specialist, Color retrieval"
+  },
+  {
+    "name": "Srp Automotive and Truck Repair",
+    "type": "garage",
+    "services": [
+      "mechanical",
+      "truck",
+      "collision"
+    ],
+    "logo": "assets/affiliates/srp-automotive.webp",
+    "address": "1135 speers road oakville",
+    "phone": "905-629-1020",
+    "instagram": "@Srpautomotiveandtruckrepair",
+    "lat": 43.4211,
+    "lng": -79.715,
+    "notes": "Automotive and Truck Repair, 310T Certified"
+  },
+  {
+    "name": "VPX Performance",
+    "type": "garage",
+    "services": [
+      "ecu",
+      "diag",
+      "mechanical"
+    ],
+    "logo": "assets/affiliates/vpx-performance.webp",
+    "address": "3485 Harvester rd Burlington, Ont L7N3T3",
+    "phone": "(416) 246-1810",
+    "web": "https://www.vpxperformance.com",
+    "instagram": "@vpxperformance",
+    "lat": 43.3629,
+    "lng": -79.7837,
+    "notes": "Performance Tuning, Upgrades, Diagnostic services"
+  },
+  {
+    "name": "Euro Sport Tuning",
+    "type": "retail",
+    "services": [
+      "perfparts"
+    ],
+    "logo": "assets/affiliates/euro-sport-tuning.webp",
+    "address": "4126 S Service Rd Burlington ontario",
+    "phone": "905-825-9334",
+    "web": "www.eurosporttuning.com",
+    "instagram": "@eurosporttuning",
+    "lat": 43.3691,
+    "lng": -79.7842,
+    "notes": "Aftermarket Performance Parts for European Brands"
+  }
 ]

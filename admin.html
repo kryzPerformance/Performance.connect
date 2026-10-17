@@ -202,22 +202,15 @@
     <p class="intro">Adds directly to the affiliates map. Generates a JSON entry to paste into <code>affiliates.json</code>.</p>
 
     <div class="card">
-      <div class="card-title">Main type (sets the pin icon &amp; colour)</div>
-      <div class="cat-grid" id="aff-cat-grid">
-        <button class="cat-btn" data-cat="oem">OEM Dealer</button>
-        <button class="cat-btn" data-cat="tire">Tire Shop</button>
-        <button class="cat-btn" data-cat="tool">Tool Store</button>
-        <button class="cat-btn" data-cat="perf">Perf Shop</button>
-        <button class="cat-btn" data-cat="after">Aftermarket</button>
-        <button class="cat-btn" data-cat="body">Body Shop</button>
-        <button class="cat-btn" data-cat="spec">Specialty</button>
-        <button class="cat-btn" data-cat="dealer">Vehicle Sales</button>
-      </div>
+      <div class="card-title">Business type (sets the pin ring colour)</div>
+      <!-- Built from PC_BUSINESS_TYPES in pc-services.js -->
+      <div class="cat-grid" id="aff-cat-grid"></div>
     </div>
 
     <div class="card">
       <div class="card-title">Services offered (pick all that apply)</div>
-      <div class="svc-grid" id="aff-svc-grid"></div>
+      <!-- Built from PC_SERVICE_GROUPS in pc-services.js, one block per group -->
+      <div id="aff-svc-grid"></div>
     </div>
 
     <div class="card">
@@ -229,6 +222,8 @@
       </div>
       <div class="fgroup"><label>Instagram (without @)</label><input type="text" id="aff-instagram" placeholder="shophandle"></div>
       <div class="fgroup"><label>One-line note</label><input type="text" id="aff-notes" placeholder="e.g. Performance tuning, wraps, ceramic coatings"></div>
+      <div class="fgroup"><label>Logo file (in assets/affiliates/)</label><input type="text" id="aff-logo" placeholder="filled in from the shop name, e.g. mgmt-autoworks.webp"></div>
+      <p class="hint" style="margin-top:-4px;">Send Claude the logo and it'll be cleaned up for dark backgrounds and added with this file name. Leave blank and the pin shows the shop's initials.</p>
     </div>
 
     <div class="card">
@@ -472,19 +467,47 @@
   }
 
   // ══════════ AFFILIATE TOOL ══════════
-  var affCat = null;
-  document.getElementById('aff-cat-grid').addEventListener('click', function(e){
-    var b = e.target.closest('.cat-btn'); if(!b) return;
-    document.querySelectorAll('#aff-cat-grid .cat-btn').forEach(function(x){ x.classList.remove('active'); });
-    b.classList.add('active'); affCat = b.dataset.cat;
-  });
-  // Services: one toggle button per entry in pc-services.js
-  var affSvcGrid = document.getElementById('aff-svc-grid');
-  PC_SERVICES.forEach(function(s){
+  var affCat = null;   // business type id
+  var affCatGrid = document.getElementById('aff-cat-grid');
+  PC_BUSINESS_TYPES.forEach(function(t){
     var b = document.createElement('button');
-    b.type = 'button'; b.className = 'svc-btn'; b.dataset.svc = s.id; b.textContent = s.label;
-    affSvcGrid.appendChild(b);
+    b.type = 'button'; b.className = 'cat-btn'; b.dataset.type = t.id; b.textContent = t.label;
+    b.dataset.color = t.color;
+    affCatGrid.appendChild(b);
   });
+  affCatGrid.addEventListener('click', function(e){
+    var b = e.target.closest('.cat-btn'); if(!b) return;
+    affCatGrid.querySelectorAll('.cat-btn').forEach(function(x){ x.classList.remove('active'); x.style.background = ''; });
+    b.classList.add('active'); b.style.background = b.dataset.color; affCat = b.dataset.type;
+    // Almost every shop/garage does general repairs — pre-tick it (untick if not)
+    if(affCat === 'garage'){
+      var m = affSvcGrid.querySelector('.svc-btn[data-svc="mechanical"]');
+      if(m) m.classList.add('active');
+    }
+  });
+  // Services: one block per group, one toggle button per service (pc-services.js)
+  var affSvcGrid = document.getElementById('aff-svc-grid');
+  PC_SERVICE_GROUPS.forEach(function(g){
+    var head = document.createElement('div');
+    head.className = 'hint';
+    head.style.cssText = 'margin:14px 0 8px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;font-size:11px;';
+    head.textContent = g.label;
+    affSvcGrid.appendChild(head);
+    var grid = document.createElement('div');
+    grid.className = 'svc-grid';
+    g.services.forEach(function(s){
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'svc-btn'; b.dataset.svc = s.id; b.textContent = s.label;
+      grid.appendChild(b);
+    });
+    affSvcGrid.appendChild(grid);
+  });
+  function affSlug(name){ return String(name).toLowerCase().replace(/&/g,' and ').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+  document.getElementById('aff-name').addEventListener('input', function(){
+    var logo = document.getElementById('aff-logo');
+    if(!logo.dataset.touched) logo.value = this.value.trim() ? affSlug(this.value) + '.webp' : '';
+  });
+  document.getElementById('aff-logo').addEventListener('input', function(){ this.dataset.touched = '1'; });
   affSvcGrid.addEventListener('click', function(e){
     var b = e.target.closest('.svc-btn'); if(b) b.classList.toggle('active');
   });
@@ -500,12 +523,15 @@
     var lat = parseFloat(document.getElementById('aff-lat').value);
     var lng = parseFloat(document.getElementById('aff-lng').value);
     var svcs = affPickedSvcs();
-    if(!affCat){ showMsg('aff-msg','Select a main type.',false); return; }
+    if(!affCat){ showMsg('aff-msg','Select a business type.',false); return; }
     if(!svcs.length){ showMsg('aff-msg','Pick at least one service.',false); return; }
     if(!name){ showMsg('aff-msg','Enter a shop name.',false); return; }
     if(!address){ showMsg('aff-msg','Enter an address.',false); return; }
     if(isNaN(lat)||isNaN(lng)){ showMsg('aff-msg','Look up or enter coordinates.',false); return; }
-    var entry = { cat: affCat, services: svcs, name: name, address: address };
+    var entry = { name: name, type: affCat, services: svcs };
+    var logoFile = document.getElementById('aff-logo').value.trim().replace(/^.*\//,'');
+    if(logoFile) entry.logo = 'assets/affiliates/' + logoFile;
+    entry.address = address;
     var phone = document.getElementById('aff-phone').value.trim();
     var web = document.getElementById('aff-web').value.trim();
     var ig = document.getElementById('aff-instagram').value.trim().replace(/^@/,'');
@@ -527,9 +553,10 @@
     var self = this; setTimeout(function(){ self.textContent = 'Copy JSON'; }, 2000);
   });
   document.getElementById('aff-reset').addEventListener('click', function(){
-    document.querySelectorAll('#aff-cat-grid .cat-btn, #aff-svc-grid .svc-btn').forEach(function(x){ x.classList.remove('active'); });
+    document.querySelectorAll('#aff-cat-grid .cat-btn, #aff-svc-grid .svc-btn').forEach(function(x){ x.classList.remove('active'); x.style.background=''; });
     affCat = null;
-    ['aff-name','aff-phone','aff-web','aff-instagram','aff-notes','aff-address','aff-lat','aff-lng'].forEach(function(id){ document.getElementById(id).value=''; });
+    ['aff-name','aff-phone','aff-web','aff-instagram','aff-notes','aff-logo','aff-address','aff-lat','aff-lng'].forEach(function(id){ document.getElementById(id).value=''; });
+    delete document.getElementById('aff-logo').dataset.touched;
     document.getElementById('aff-geo-status').style.display='none';
     document.getElementById('aff-output-card').style.display='none';
     document.getElementById('aff-msg').className='msg';
