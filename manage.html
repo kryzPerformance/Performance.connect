@@ -597,6 +597,9 @@
   }
 
   // ── state ──
+  // Every change below goes through a database function (pc_*) that checks
+  // this key itself, so only the key's owner can edit or delete their items.
+  var currentKey     = null;
   var currentSeller  = null;
   var allListings    = [];
   var allPartouts    = [];
@@ -643,22 +646,26 @@
     this.textContent = 'Loading...';
     this.disabled = true;
 
-    var sellerRes = await sb.from('sellers').select('*').eq('performance_key', perfKey).single();
+    // One call returns the seller, their listings, part-outs and part counts
+    // (including archived items) — only if the key is right.
+    var dash = await sb.rpc('pc_dashboard', { p_key: perfKey });
 
     this.textContent = 'Load my listings';
     this.disabled = false;
 
-    if(sellerRes.error || !sellerRes.data){
+    if(dash.error || !dash.data){
       errEl.textContent = 'Performance Key not found. Check the key and try again.';
       errEl.style.display = 'block';
       return;
     }
 
-    currentSeller = sellerRes.data;
-    await loadDashboard(perfKey, currentSeller);
+    currentKey    = perfKey;
+    currentSeller = dash.data.seller;
+    loadDashboard(perfKey, dash.data);
   });
 
-  async function loadDashboard(perfKey, seller){
+  function loadDashboard(perfKey, dash){
+    var seller = dash.seller || {};
     document.getElementById('key-entry').style.display  = 'none';
     document.getElementById('dashboard').style.display  = 'block';
     document.getElementById('dash-key').textContent     = perfKey;
@@ -666,26 +673,11 @@
 
     // (The key is deliberately NOT put back in the address bar.)
 
-    // Load listings, part-out vehicles, and part-out counts in parallel
-    var loads = await Promise.all([
-      sb.from('listings').select('*').eq('seller_id', seller.seller_id).order('created_at',{ascending:false}),
-      sb.from('partout_vehicles').select('*').eq('seller_id', seller.seller_id).order('created_at',{ascending:false}),
-      sb.from('partout_summary').select('*').eq('seller_id', seller.seller_id)
-    ]);
-    var lRes = loads[0], vRes = loads[1], sRes = loads[2];
-
-    if(lRes.error || !lRes.data){
-      document.getElementById('manage-grid').innerHTML = '<div class="state-msg">Could not load listings.</div>';
-      return;
-    }
-
-    allListings  = lRes.data;
-    allPartouts  = (vRes && vRes.data) ? vRes.data : [];
+    allListings  = dash.listings || [];
+    allPartouts  = dash.partouts || [];
     // Index summary counts by vehicle_id for quick card lookup
     partoutSummary = {};
-    if(sRes && sRes.data){
-      sRes.data.forEach(function(row){ partoutSummary[row.vehicle_id] = row; });
-    }
+    (dash.summary || []).forEach(function(row){ partoutSummary[row.vehicle_id] = row; });
 
     renderStats();
     renderListings();
@@ -858,7 +850,7 @@
   }
 
   async function updateStatus(listingId, newStatus){
-    var res = await sb.from('listings').update({ status: newStatus }).eq('id', listingId).select();
+    var res = await sb.rpc('pc_update_listing', { p_key: currentKey, p_id: Number(listingId), p_patch: { status: newStatus } });
     if(res.error){ alert('Could not update listing. Please try again.'); return; }
     // Update local state and re-render
     allListings = allListings.map(function(l){
@@ -874,7 +866,7 @@
   }
 
   async function deleteListingById(listingId){
-    var res = await sb.from('listings').delete().eq('id', listingId);
+    var res = await sb.rpc('pc_delete_listing', { p_key: currentKey, p_id: Number(listingId) });
     if(res.error){ alert('Could not delete listing. Please try again.'); return; }
     allListings = allListings.filter(function(l){ return String(l.id) !== String(listingId); });
     document.getElementById('stat-total').textContent = allListings.length;
@@ -905,7 +897,7 @@
   }
 
   async function updatePartoutStatus(vehicleId, status){
-    var res = await sb.from('partout_vehicles').update({status:status}).eq('id', vehicleId).select();
+    var res = await sb.rpc('pc_update_partout', { p_key: currentKey, p_id: vehicleId, p_patch: { status: status } });
     if(res.error){ alert('Could not update part out. Please try again.'); return; }
     allPartouts = allPartouts.map(function(v){
       if(String(v.id) === String(vehicleId)) v.status = status;
@@ -917,7 +909,7 @@
 
   async function deletePartout(vehicleId){
     // Parts cascade-delete via FK, so deleting the vehicle is enough
-    var res = await sb.from('partout_vehicles').delete().eq('id', vehicleId);
+    var res = await sb.rpc('pc_delete_partout', { p_key: currentKey, p_id: vehicleId });
     if(res.error){ alert('Could not delete part out. Please try again.'); return; }
     allPartouts = allPartouts.filter(function(v){ return String(v.id) !== String(vehicleId); });
     delete partoutSummary[vehicleId];
@@ -953,7 +945,7 @@
 
     document.getElementById('pm-parts-list').innerHTML = '<div class="state-msg">Loading parts...</div>';
 
-    var res = await sb.from('partout_parts').select('*').eq('vehicle_id', vehicleId);
+    var res = await sb.rpc('pc_parts_for', { p_key: currentKey, p_vehicle_id: vehicleId });
     if(res.error){
       document.getElementById('pm-parts-list').innerHTML = '<div class="state-msg">Could not load parts.</div>';
       return;
@@ -1078,9 +1070,9 @@
   }
 
   async function setPmPartStatus(partId, status){
-    var res = await sb.from('partout_parts').update({status:status}).eq('id', partId).select().single();
-    if(res.error || !res.data){ alert('Could not update part. Please try again.'); return; }
-    for(var i=0;i<pmParts.length;i++){ if(pmParts[i].id === partId){ pmParts[i] = res.data; break; } }
+    var res = await sb.rpc('pc_update_parts', { p_key: currentKey, p_ids: [partId], p_patch: { status: status } });
+    if(res.error || !res.data || !res.data.length){ alert('Could not update part. Please try again.'); return; }
+    for(var i=0;i<pmParts.length;i++){ if(pmParts[i].id === partId){ pmParts[i] = res.data[0]; break; } }
     renderPmCounts();
     renderPmParts();
   }
@@ -1093,21 +1085,21 @@
     if(!name){ document.getElementById('man-name').focus(); return; }
 
     this.disabled = true; this.textContent = 'Adding...';
-    var payload = { vehicle_id: pmVehicle.id, name: name, category: cat };
+    var payload = { name: name, category: cat };
     if(priceRaw !== '') payload.price = Number(priceRaw);
 
-    var res = await sb.from('partout_parts').insert([payload]).select().single();
+    var res = await sb.rpc('pc_add_parts', { p_key: currentKey, p_vehicle_id: pmVehicle.id, p_parts: [payload] });
     this.disabled = false; this.textContent = 'Add part';
-    if(res.error || !res.data){ alert('Could not add part. Please try again.'); return; }
+    if(res.error || !res.data || !res.data.length){ alert('Could not add part. Please try again.'); return; }
 
-    pmParts.push(res.data);
+    pmParts.push(res.data[0]);
     document.getElementById('man-name').value = '';
     document.getElementById('man-price').value = '';
     renderPmCounts();
     renderPmParts();
   });
 
-  // ── Add: bulk paste (uses bulk_create_parts RPC) ──
+  // ── Add: bulk paste ──
   document.getElementById('bulk-add-btn').addEventListener('click', async function(){
     var cat = document.getElementById('bulk-cat').value.trim() || 'Uncategorized';
     var lines = document.getElementById('bulk-names').value.split('\n')
@@ -1115,7 +1107,8 @@
     if(!lines.length){ document.getElementById('bulk-names').focus(); return; }
 
     this.disabled = true; this.textContent = 'Creating...';
-    var res = await sb.rpc('bulk_create_parts', { p_vehicle_id: pmVehicle.id, p_names: lines, p_category: cat });
+    var res = await sb.rpc('pc_add_parts', { p_key: currentKey, p_vehicle_id: pmVehicle.id,
+      p_parts: lines.map(function(n){ return { name: n, category: cat }; }) });
     this.disabled = false; this.textContent = 'Create parts';
     if(res.error){ alert('Could not create parts. Please try again.'); return; }
 
@@ -1177,7 +1170,7 @@
   });
 
   async function bulkSetStatus(ids, status){
-    var res = await sb.from('partout_parts').update({status:status}).in('id', ids).select();
+    var res = await sb.rpc('pc_update_parts', { p_key: currentKey, p_ids: ids, p_patch: { status: status } });
     if(res.error){ alert('Could not update parts. Please try again.'); return; }
     var map = {}; (res.data||[]).forEach(function(r){ map[r.id] = r; });
     pmParts = pmParts.map(function(p){ return map[p.id] || p; });
@@ -1185,7 +1178,7 @@
   }
 
   async function bulkSetPrice(ids, price){
-    var res = await sb.from('partout_parts').update({price:price}).in('id', ids).select();
+    var res = await sb.rpc('pc_update_parts', { p_key: currentKey, p_ids: ids, p_patch: { price: price } });
     if(res.error){ alert('Could not update prices. Please try again.'); return; }
     var map = {}; (res.data||[]).forEach(function(r){ map[r.id] = r; });
     pmParts = pmParts.map(function(p){ return map[p.id] || p; });
@@ -1193,7 +1186,7 @@
   }
 
   async function deletePmParts(ids){
-    var res = await sb.from('partout_parts').delete().in('id', ids);
+    var res = await sb.rpc('pc_delete_parts', { p_key: currentKey, p_ids: ids });
     if(res.error){ alert('Could not delete part(s). Please try again.'); return; }
     var gone = {}; ids.forEach(function(id){ gone[id] = true; });
     pmParts = pmParts.filter(function(p){ return !gone[p.id]; });

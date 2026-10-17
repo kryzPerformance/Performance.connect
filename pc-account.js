@@ -18,11 +18,9 @@
    - The Performance Key is a PRIVATE CREDENTIAL, like a car key. It is stored
      so the owner's own device can act as them, but it is NEVER rendered — not
      in the pill, not in the DOM, not in a URL. The public label is the @handle.
-   - Contact edits update the sellers row by seller_id with the anon key,
-     matching the existing site. A client-side key re-verify is done first as a
-     stopgap, but this is NOT true server-side ownership auth. The hardened
-     version must route writes through a Cloudflare Worker that validates the
-     key server-side. Tracked in DECISIONS.md.
+   - Sign-in and contact edits go through database functions
+     (pc_seller_by_key, pc_update_seller) that check the key server-side.
+     The sellers table itself never exposes keys or emails to the public.
    ========================================================================== */
 window.PC = window.PC || {};
 (function () {
@@ -84,31 +82,28 @@ window.PC = window.PC || {};
     var norm = normaliseKey(rawKey);
     if (!norm) return { ok: false, reason: 'format' };
     if (!sb)   return { ok: false, reason: 'offline' };
-    var res = await sb.from('sellers')
-      .select('seller_id,instagram,email')
-      .eq('performance_key', norm).single();
+    // pc_seller_by_key checks the key inside the database and returns only
+    // this seller's own details. Nobody can list other sellers' keys or emails.
+    var res = await sb.rpc('pc_seller_by_key', { p_key: norm });
     if (res.error || !res.data) return { ok: false, reason: 'notfound' };
     save({ key: norm, seller_id: res.data.seller_id, instagram: res.data.instagram, email: res.data.email });
     return { ok: true };
   };
 
-  /* Update this account's contact info.
-     Stopgap client-side re-verify — NOT server-side auth (see SECURITY MODEL). */
+  /* Update this account's contact info. The database checks the key
+     (pc_update_seller) — only the key's owner can change these details. */
   acct.updateContact = async function (instagram, email) {
     var id = acct.get();
     if (!id || !id.key) return { ok: false, reason: 'not_logged_in' };
     if (!sb) return { ok: false, reason: 'offline' };
-    var chk = await sb.from('sellers').select('seller_id')
-      .eq('performance_key', id.key).single();
-    if (chk.error || !chk.data || chk.data.seller_id !== id.seller_id) {
-      return { ok: false, reason: 'verify' };
-    }
     var ig = ((instagram || '').trim().replace(/^@/, '')) || null;
     var em = ((email || '').trim()) || null;
-    var res = await sb.from('sellers').update({
-      instagram: ig, email: em, updated_at: new Date().toISOString()
-    }).eq('seller_id', id.seller_id);
-    if (res.error) return { ok: false, reason: 'db', message: res.error.message };
+    var res = await sb.rpc('pc_update_seller', { p_key: id.key, p_instagram: ig, p_email: em });
+    if (res.error) {
+      var m = res.error.message || '';
+      if (m.indexOf('invalid_key') !== -1) return { ok: false, reason: 'verify' };
+      return { ok: false, reason: 'db', message: m };
+    }
     save({ key: id.key, seller_id: id.seller_id, instagram: ig, email: em });
     return { ok: true };
   };
@@ -318,8 +313,13 @@ window.PC = window.PC || {};
         if (r.ok) { msg.className = 'pc-acct-msg ok'; msg.textContent = 'Saved.'; setTimeout(function () { close(ov); }, 700); }
         else {
           save.disabled = false; msg.className = 'pc-acct-msg err';
+          var m = r.message || '';
           msg.textContent = r.reason === 'verify'
             ? 'Could not verify this account. Sign in again.'
+            : m.indexOf('contact_taken:email') !== -1 ? 'That email is already used by another seller.'
+            : m.indexOf('contact_taken:instagram') !== -1 ? 'That Instagram handle is already used by another seller.'
+            : m.indexOf('bad_email') !== -1 ? 'Please enter a valid email address.'
+            : m.indexOf('contact_required') !== -1 ? 'Add an Instagram handle or an email.'
             : 'Couldn\u2019t save right now. Try again.';
         }
       });

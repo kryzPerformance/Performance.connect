@@ -611,8 +611,8 @@
 
 </div>
 
-<!-- CONTACT SELLER MODAL — same Web3Forms relay as listing.html;
-     seller email injected at modal-open time only, never in static HTML. -->
+<!-- CONTACT SELLER MODAL — sent through our contact-relay function (pc-contact.js).
+     The seller's email never reaches this page. -->
 <div class="contact-modal-overlay" id="contact-modal-overlay">
   <div class="contact-modal">
     <div class="contact-modal-head">
@@ -624,11 +624,10 @@
     <p class="contact-modal-sub" id="contact-modal-sub">Your message goes straight to the seller — their email stays private.</p>
 
     <form id="contact-form">
-      <input type="hidden" name="access_key" value="cf7b7a3e-5ebe-49ca-8d2a-d1c74357929c">
-      <input type="hidden" name="to_email" id="contact-to-email" value="">
-      <input type="hidden" name="subject" id="contact-subject" value="">
-      <input type="hidden" name="from_name" value="Performance Connect Buyer">
-      <input type="checkbox" name="botcheck" style="display:none">
+      <!-- Spam trap: hidden from people, bots fill it in. -->
+      <div style="position:absolute;left:-9999px;" aria-hidden="true">
+        <input type="text" name="website" tabindex="-1" autocomplete="off">
+      </div>
 
       <div class="fgroup">
         <label>Your name</label>
@@ -658,6 +657,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 <script src="pc-account.js"></script>
+<script src="pc-contact.js"></script>
 <script>
   var SUPABASE_URL = 'https://myapluhgfpnyjsfrflhd.supabase.co';
   var SUPABASE_KEY = 'sb_publishable_yfHWon3pr30Z8do9QW9tSQ_wqlkzDxc';
@@ -815,7 +815,7 @@
     if(cbtn){
       cbtn.addEventListener('click',function(e){
         e.stopPropagation();
-        openContactModal(vehicle.email, p.name+' — '+vehicleTitle(), vehicle.id, p.name);
+        PCContact.open({ kind: 'partout', id: vehicle.id, part: p.name });
       });
     }
 
@@ -850,7 +850,7 @@
       html+='</div>';
     }
 
-    if(vehicle&&vehicle.email&&p.status!=='sold'){
+    if(sellerInfo.has_email&&p.status!=='sold'){
       html+='<button type="button" class="part-contact-btn">'+
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>'+
         'Ask about this part</button>';
@@ -941,6 +941,8 @@
     return [vehicle.year,vehicle.make,vehicle.model,vehicle.trim].filter(Boolean).join(' ');
   }
 
+  var sellerInfo = {};   // { display_name, has_email } — public columns only
+
   /* ── MAIN ── */
   (async function(){
     var params=new URLSearchParams(window.location.search);
@@ -964,6 +966,13 @@
     if(vRes.error||!vRes.data){ showError("This part out couldn't be found. It may have been removed."); return; }
     vehicle=vRes.data;
     parts=pRes.data||[];
+
+    /* Public seller info only: name to show + whether they accept email.
+       The email address itself never comes to the browser. */
+    if(vehicle.seller_id!=null){
+      var sRes=await sb.from('sellers').select('display_name,has_email').eq('seller_id',vehicle.seller_id).maybeSingle();
+      if(sRes.data) sellerInfo=sRes.data;
+    }
 
     var title=vehicleTitle();
     // Server (worker.js) already wrote an SEO title when a canonical tag exists
@@ -992,9 +1001,9 @@
         : 'No description provided for this build.';
 
     /* Seller strip */
-    var handle=vehicle.instagram||vehicle.email||'seller';
-    document.getElementById('seller-avatar').textContent=handle.charAt(0).toUpperCase();
-    document.getElementById('seller-handle').textContent=vehicle.instagram?'@'+vehicle.instagram:(vehicle.email||'Anonymous seller');
+    var sellerName=vehicle.instagram?'@'+vehicle.instagram:(sellerInfo.display_name||'Seller');
+    document.getElementById('seller-avatar').textContent=sellerName.replace(/^@/,'').charAt(0).toUpperCase();
+    document.getElementById('seller-handle').textContent=sellerName;
 
     /* Instagram CTA */
     var ig=document.getElementById('cta-ig');
@@ -1038,62 +1047,6 @@
     });
   })();
 
-  /* ── CONTACT SELLER MODAL — email injected only at open time ── */
-  function openContactModal(sellerEmail, subjectTitle, vehicleId, partName){
-    document.getElementById('contact-to-email').value = sellerEmail;
-    document.getElementById('contact-subject').value = 'Re: ' + subjectTitle + ' (Part Out #' + vehicleId + ') on Performance Connect';
-    document.getElementById('contact-modal-sub').textContent =
-      'Asking about: ' + partName + '. Your message goes straight to the seller — their email stays private.';
-    document.getElementById('contact-form').style.display = 'block';
-    document.getElementById('contact-success').style.display = 'none';
-    document.getElementById('contact-form-error').style.display = 'none';
-    document.getElementById('contact-modal-overlay').classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-  function closeContactModal(){
-    document.getElementById('contact-modal-overlay').classList.remove('open');
-    document.body.style.overflow = '';
-  }
-  document.getElementById('contact-modal-close').addEventListener('click', closeContactModal);
-  document.getElementById('contact-modal-overlay').addEventListener('click', function(e){
-    if(e.target === this) closeContactModal();
-  });
-  document.getElementById('contact-close-success').addEventListener('click', closeContactModal);
-
-  document.getElementById('contact-form').addEventListener('submit', async function(e){
-    e.preventDefault();
-    var btn = document.getElementById('contact-submit-btn');
-    var errEl = document.getElementById('contact-form-error');
-    errEl.style.display = 'none';
-    btn.textContent = 'Sending...';
-    btn.disabled = true;
-
-    var formData = new FormData(this);
-
-    try{
-      var res = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Accept': 'application/json' },
-        body: formData
-      });
-      var json = await res.json();
-
-      if(json.success){
-        document.getElementById('contact-form').style.display = 'none';
-        document.getElementById('contact-success').style.display = 'block';
-        document.getElementById('contact-form').reset();
-      } else {
-        errEl.textContent = 'Could not send your message. Please try again.';
-        errEl.style.display = 'block';
-      }
-    } catch(err){
-      errEl.textContent = 'Network error — please check your connection and try again.';
-      errEl.style.display = 'block';
-    }
-
-    btn.textContent = 'Send Message';
-    btn.disabled = false;
-  });
 </script>
 </body>
 </html>

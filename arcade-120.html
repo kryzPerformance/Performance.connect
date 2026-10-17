@@ -4127,8 +4127,10 @@ boot();
     return c.length===8 ? 'PC-'+c.slice(0,4)+'-'+c.slice(4,8) : null;
   }
   function likeEsc(s){ return String(s).replace(/[\\%_]/g, '\\$&'); }
+  // Key checks happen in the database (pc_seller_by_key / pc_create_seller);
+  // the game never reads other players' keys.
   async function lookupSeller(k){
-    var r = await sb.from('sellers').select('*').eq('performance_key', k).single();
+    var r = await sb.rpc('pc_seller_by_key', { p_key: k });
     return (r.error || !r.data) ? null : r.data;
   }
   async function lookupByContact(ig){
@@ -4136,10 +4138,10 @@ boot();
     var r = await sb.from('sellers').select('seller_id').ilike('instagram', likeEsc(ig)).limit(1);
     return (!r.error && r.data && r.data.length) ? { field:'instagram' } : null;
   }
-  async function createSeller(k, ig){
-    var r = await sb.from('sellers').insert([{ performance_key:k, instagram: ig||null }]).select().single();
+  async function createSeller(ig){
+    var r = await sb.rpc('pc_create_seller', { p_instagram: ig||null, p_email: null });
     if(r.error) throw new Error((r.error.code?('['+r.error.code+'] '):'')+(r.error.message||r.error.details||r.error.hint||'seller create failed'));
-    return r.data;
+    return r.data;   // includes performance_key
   }
 
   // Shared pseudo-login session (same object the name-pill widget will use)
@@ -4191,8 +4193,8 @@ boot();
       } else if(ig){
         var dup = await lookupByContact(ig);
         if(dup){ err('That handle already has a key — enter it above to claim your score.'); busy(false); return; }
-        var newk = generateKey(); if(await lookupSeller(newk)) newk = generateKey();
-        var s2 = await createSeller(newk, ig);
+        var s2 = await createSeller(ig);
+        var newk = s2.performance_key;
         var nm2 = '@' + ig;
         var rank2 = await doInsert(s2.seller_id, nm2, LAST);
         setSession({ key:newk, seller_id:s2.seller_id, name:nm2, instagram: ig });

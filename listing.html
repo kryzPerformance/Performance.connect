@@ -453,12 +453,8 @@
 
 </div>
 
-<!-- ============================================================
-     CONTACT SELLER MODAL
-     Sends via Web3Forms — seller's email never appears in page
-     HTML, never rendered as visible/clickable text. Protects
-     against scraping while still relaying the message.
-     ============================================================ -->
+<!-- CONTACT SELLER MODAL — sent through our contact-relay function (pc-contact.js).
+     The seller's email never reaches this page. -->
 <div class="contact-modal-overlay" id="contact-modal-overlay">
   <div class="contact-modal">
     <div class="contact-modal-head">
@@ -470,14 +466,10 @@
     <p class="contact-modal-sub">Your message goes straight to the seller — their email stays private.</p>
 
     <form id="contact-form">
-      <!-- Web3Forms access key — replace with your own free key from web3forms.com -->
-      <input type="hidden" name="access_key" value="cf7b7a3e-5ebe-49ca-8d2a-d1c74357929c">
-      <!-- Seller's real email — hidden field, never rendered as visible text -->
-      <input type="hidden" name="to_email" id="contact-to-email" value="">
-      <input type="hidden" name="subject" id="contact-subject" value="">
-      <input type="hidden" name="from_name" value="Performance Connect Buyer">
-      <!-- honeypot spam trap -->
-      <input type="checkbox" name="botcheck" style="display:none">
+      <!-- Spam trap: hidden from people, bots fill it in. -->
+      <div style="position:absolute;left:-9999px;" aria-hidden="true">
+        <input type="text" name="website" tabindex="-1" autocomplete="off">
+      </div>
 
       <div class="fgroup">
         <label>Your name</label>
@@ -507,6 +499,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 <script src="pc-account.js"></script>
+<script src="pc-contact.js"></script>
 <script>
   var SUPABASE_URL = 'https://myapluhgfpnyjsfrflhd.supabase.co';
   var SUPABASE_KEY = 'sb_publishable_yfHWon3pr30Z8do9QW9tSQ_wqlkzDxc';
@@ -687,11 +680,18 @@
       ig.innerHTML=ig.innerHTML.replace('Contact Seller on Instagram','Contact @'+esc(l.instagram)+' on Instagram');
     }
 
+    // Public seller info only: name to show + whether they accept email.
+    // The email address itself never comes to the browser.
+    var sellerInfo={};
+    if(l.seller_id!=null){
+      var sRes=await sb.from('sellers').select('display_name,has_email').eq('seller_id',l.seller_id).maybeSingle();
+      if(sRes.data) sellerInfo=sRes.data;
+    }
     var emailEl=document.getElementById('cta-email');
-    if(l.email){
+    if(sellerInfo.has_email){
       emailEl.style.display='flex';
       emailEl.addEventListener('click', function(){
-        openContactModal(l.email, l.title, l.id);
+        PCContact.open({ kind: 'listing', id: l.id });
       });
     }
 
@@ -705,9 +705,9 @@
     }
 
     // Seller
-    var handle=l.instagram||l.email||'seller';
-    document.getElementById('seller-avatar').textContent=handle.charAt(0).toUpperCase();
-    document.getElementById('seller-handle').textContent=l.instagram?'@'+l.instagram:l.email||'Anonymous seller';
+    var sellerName=l.instagram?'@'+l.instagram:(sellerInfo.display_name||'Seller');
+    document.getElementById('seller-avatar').textContent=sellerName.replace(/^@/,'').charAt(0).toUpperCase();
+    document.getElementById('seller-handle').textContent=sellerName;
 
     // Posted date
     document.getElementById('det-posted').textContent='Posted '+fmtDate(l.created_at);
@@ -732,63 +732,6 @@
     loadRelated(l.category,l.id);
   })();
 
-  /* ── CONTACT SELLER MODAL ──────────────────────────────────────
-     The seller's email is injected into a hidden form field only
-     at the moment the modal opens — it is never written into the
-     page's static HTML, so it can't be scraped from page source. */
-  function openContactModal(sellerEmail, listingTitle, listingId){
-    document.getElementById('contact-to-email').value = sellerEmail;
-    document.getElementById('contact-subject').value = 'Re: ' + listingTitle + ' (Listing #' + listingId + ') on Performance Connect';
-    document.getElementById('contact-form').style.display = 'block';
-    document.getElementById('contact-success').style.display = 'none';
-    document.getElementById('contact-form-error').style.display = 'none';
-    document.getElementById('contact-modal-overlay').classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-  function closeContactModal(){
-    document.getElementById('contact-modal-overlay').classList.remove('open');
-    document.body.style.overflow = '';
-  }
-  document.getElementById('contact-modal-close').addEventListener('click', closeContactModal);
-  document.getElementById('contact-modal-overlay').addEventListener('click', function(e){
-    if(e.target === this) closeContactModal();
-  });
-  document.getElementById('contact-close-success').addEventListener('click', closeContactModal);
-
-  document.getElementById('contact-form').addEventListener('submit', async function(e){
-    e.preventDefault();
-    var btn = document.getElementById('contact-submit-btn');
-    var errEl = document.getElementById('contact-form-error');
-    errEl.style.display = 'none';
-    btn.textContent = 'Sending...';
-    btn.disabled = true;
-
-    var formData = new FormData(this);
-
-    try{
-      var res = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Accept': 'application/json' },
-        body: formData
-      });
-      var json = await res.json();
-
-      if(json.success){
-        document.getElementById('contact-form').style.display = 'none';
-        document.getElementById('contact-success').style.display = 'block';
-        document.getElementById('contact-form').reset();
-      } else {
-        errEl.textContent = 'Could not send your message. Please try again.';
-        errEl.style.display = 'block';
-      }
-    } catch(err){
-      errEl.textContent = 'Network error — please check your connection and try again.';
-      errEl.style.display = 'block';
-    }
-
-    btn.textContent = 'Send Message';
-    btn.disabled = false;
-  });
 </script>
 </body>
 </html>

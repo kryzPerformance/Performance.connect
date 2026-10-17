@@ -2690,18 +2690,7 @@
   // PERFORMANCE KEY SYSTEM
   // ============================================================
 
-  // Generate a cryptographically secure Performance Key
-  // Format: PC-XXXX-XXXX (alpha-numeric, uppercase, no ambiguous chars)
-  function generatePerformanceKey(){
-    var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no I,O,0,1 to avoid confusion
-    var crypto = window.crypto || window.msCrypto;
-    var arr = new Uint8Array(8);
-    crypto.getRandomValues(arr);
-    var part1 = '', part2 = '';
-    for(var i = 0; i < 4; i++) part1 += chars[arr[i] % chars.length];
-    for(var i = 4; i < 8; i++) part2 += chars[arr[i] % chars.length];
-    return 'PC-' + part1 + '-' + part2;
-  }
+  // New keys are made by the database (pc_create_seller), never in the browser.
 
   // Format user-entered key to PC-XXXX-XXXX
   function normaliseKey(raw){
@@ -2711,50 +2700,50 @@
     return null;
   }
 
-  // Lookup an existing seller by Performance Key
+  /* ── Seller accounts ───────────────────────────────────────────────────
+     Every change goes through a database function that checks the
+     Performance Key itself (pc_* functions). The page never reads other
+     sellers' keys or emails — the database won't hand them out. */
+
+  // Turn a database error code into a message for the seller.
+  function sellerErrorMessage(err){
+    var m = (err && err.message) || '';
+    if(m.indexOf('contact_taken:email') !== -1)     return 'That email address is already registered to another seller. Enter your Performance Key above to post under your account.';
+    if(m.indexOf('contact_taken:instagram') !== -1) return 'That Instagram handle is already registered to another seller. Enter your Performance Key above to post under your account.';
+    if(m.indexOf('bad_email') !== -1)               return 'Please enter a valid email address.';
+    if(m.indexOf('contact_required') !== -1)        return 'Please add an Instagram handle or email so buyers can reach you.';
+    if(m.indexOf('invalid_key') !== -1)             return 'Performance Key not found. Check the key and try again.';
+    return 'Something went wrong. Please try again.';
+  }
+  function SellerError(err){ var e = new Error(sellerErrorMessage(err)); e.userFacing = true; return e; }
+
+  // Look up your own seller details with your Performance Key (null if not found)
   async function lookupSeller(perfKey){
-    var res = await sb.from('sellers').select('*').eq('performance_key', perfKey).single();
+    var res = await sb.rpc('pc_seller_by_key', { p_key: perfKey });
     if(res.error || !res.data) return null;
     return res.data;
   }
 
-  // Create a new seller row
-  async function createSeller(perfKey, instagram, email){
-    var res = await sb.from('sellers')
-      .insert([{ performance_key: perfKey, instagram: instagram || null, email: email || null }])
-      .select().single();
-    if(res.error) throw new Error('Could not create seller record: ' + res.error.message);
+  // Create a new seller. The database makes the key and returns it once.
+  async function createSeller(instagram, email){
+    var res = await sb.rpc('pc_create_seller', { p_instagram: instagram || null, p_email: email || null });
+    if(res.error || !res.data) throw SellerError(res.error);
+    return res.data;   // includes performance_key
+  }
+
+  // Update your contact info (key is checked by the database)
+  async function updateSellerContact(perfKey, instagram, email){
+    var res = await sb.rpc('pc_update_seller', { p_key: perfKey, p_instagram: instagram || null, p_email: email || null });
+    if(res.error) throw SellerError(res.error);
     return res.data;
   }
 
-  // Update seller contact info if key matches and details changed
-  async function updateSellerContact(sellerId, instagram, email){
-    await sb.from('sellers').update({
-      instagram: instagram || null,
-      email: email || null,
-      updated_at: new Date().toISOString()
-    }).eq('seller_id', sellerId);
-  }
-
-  // Escape LIKE wildcards so handles/emails with _ or % match literally
-  function likeEscape(s){ return String(s).replace(/[\\%_]/g, '\\$&'); }
-
-  // Look up a seller by contact info — used to detect a returning seller who
-  // posted without their key. Email is checked first (more unique), then the
-  // Instagram handle. Both are matched case-insensitively. Returns which field
-  // matched so we can notify the user precisely (never reveals the key).
+  // Is this contact info already registered to a seller? Returns which field
+  // matched so we can tell the user precisely (never reveals the key).
   async function lookupSellerByContact(instagram, email){
-    var ig = (instagram || '').trim();
-    var em = (email || '').trim();
-    if(em){
-      var r1 = await sb.from('sellers').select('seller_id').ilike('email', likeEscape(em)).limit(1);
-      if(!r1.error && r1.data && r1.data.length) return { field: 'email' };
-    }
-    if(ig){
-      var r2 = await sb.from('sellers').select('seller_id').ilike('instagram', likeEscape(ig)).limit(1);
-      if(!r2.error && r2.data && r2.data.length) return { field: 'instagram' };
-    }
-    return null;
+    var res = await sb.rpc('pc_contact_taken', { p_instagram: instagram || null, p_email: email || null });
+    if(res.error || !res.data) return null;
+    return { field: res.data };
   }
 
   // Prefill the Step 3 contact fields from a seller record
@@ -2885,8 +2874,8 @@
         btn.textContent = 'Verifying key...';
         seller = await lookupSeller(perfKey);
         if(!seller){ poError('Performance Key not found. Check the key and try again, or leave it blank to generate a new one.'); return; }
-        if(seller.instagram !== igVal || (seller.email || '') !== emailVal){
-          await updateSellerContact(seller.seller_id, igVal, emailVal);
+        if((seller.instagram || '') !== igVal || (seller.email || '') !== emailVal){
+          await updateSellerContact(perfKey, igVal, emailVal);
           seller.instagram = igVal; seller.email = emailVal;
         }
       } else {
@@ -2898,18 +2887,15 @@
           poError('That ' + (dup.field === 'email' ? 'email address' : 'Instagram handle') + ' is already registered to a seller. Enter your Performance Key above to post under your account.');
           return;
         }
-        btn.textContent = 'Generating key...';
-        perfKey = generatePerformanceKey();
-        var collision = await lookupSeller(perfKey);
-        if(collision){ perfKey = generatePerformanceKey(); }
-        seller = await createSeller(perfKey, igVal, emailVal);
+        btn.textContent = 'Creating your key...';
+        seller = await createSeller(igVal, emailVal);
+        perfKey = seller.performance_key;
         isNewSeller = true;
       }
 
       // 2. Insert the part-out vehicle row
       btn.textContent = 'Saving part out...';
       var vehiclePayload = {
-        seller_id:      seller.seller_id,
         year:           parseInt(year, 10),
         make:           make,
         model:          model,
@@ -2922,13 +2908,10 @@
         interior_color: document.getElementById('po-int').value.trim() || null,
         location:       document.getElementById('po-location').value.trim() || null,
         description:    document.getElementById('po-desc').value.trim() || null,
-        instagram:      igVal || null,
-        email:          emailVal || null,
-        photos:         [],
-        status:         'active'
+        photos:         []
       };
 
-      var insertRes = await sb.from('partout_vehicles').insert([vehiclePayload]).select().single();
+      var insertRes = await sb.rpc('pc_create_partout', { p_key: perfKey, p_vehicle: vehiclePayload });
       if(insertRes.error || !insertRes.data){
         throw new Error('Could not save your part out. Please try again.');
       }
@@ -2941,7 +2924,7 @@
         btn.textContent = 'Uploading photos...';
         var photoUrls = await uploadPhotos(photoFiles, 'po-' + vehicle.id);
         if(photoUrls.length > 0){
-          await sb.from('partout_vehicles').update({ photos: photoUrls }).eq('id', vehicle.id);
+          await sb.rpc('pc_update_partout', { p_key: perfKey, p_id: vehicle.id, p_patch: { photos: photoUrls } });
         }
       }
 
@@ -2949,7 +2932,6 @@
       //     Vehicle is already saved, so failures here never block the part-out;
       //     more parts can still be added later from the Manage page.
       var partEls = Array.prototype.slice.call(document.querySelectorAll('#po-parts-rows .po-part'));
-      var vehicleDisplay = [vehicle.year, vehicle.make, vehicle.model, vehicle.trim].filter(Boolean).join(' ');
       var partsToInsert = [];
       for(var pi=0; pi<partEls.length; pi++){
         var pEl      = partEls[pi];
@@ -2966,17 +2948,15 @@
           catch(e){ pPhotos = []; }
         }
         partsToInsert.push({
-          vehicle_id:      vehicle.id,
           name:            pName,
           price:           pPrice,
           photos:          pPhotos,
-          status:          'available',
-          vehicle_display: vehicleDisplay
+          status:          'available'
         });
       }
       if(partsToInsert.length){
         btn.textContent = 'Saving parts...';
-        var partsRes = await sb.from('partout_parts').insert(partsToInsert);
+        var partsRes = await sb.rpc('pc_add_parts', { p_key: perfKey, p_vehicle_id: vehicle.id, p_parts: partsToInsert });
         if(partsRes && partsRes.error){ dbgError('[partout] parts insert failed: ' + partsRes.error.message); }
       }
 
@@ -2990,7 +2970,8 @@
       }
 
     } catch(err){
-      var msg = (DEBUG && err && err.message) ? 'Error: ' + err.message
+      var msg = (err && err.userFacing) ? err.message
+        : (DEBUG && err && err.message) ? 'Error: ' + err.message
         : 'Something went wrong while posting your part out. Please try again.';
       poError(msg);
     }
@@ -3071,8 +3052,8 @@
         }
 
         // Key found — check Instagram handle
-        if(seller.instagram !== igVal || (seller.email || '') !== emailVal){
-          await updateSellerContact(seller.seller_id, igVal, emailVal);
+        if((seller.instagram || '') !== igVal || (seller.email || '') !== emailVal){
+          await updateSellerContact(perfKey, igVal, emailVal);
           seller.instagram = igVal;
           seller.email = emailVal;
           dbg('[perf-key] Contact info updated for seller', seller.seller_id);
@@ -3089,11 +3070,9 @@
           showError('That ' + (dup.field === 'email' ? 'email address' : 'Instagram handle') + ' is already registered to a seller. Enter your Performance Key above to post under your account.');
           return;
         }
-        btn.textContent = 'Generating key...';
-        perfKey = generatePerformanceKey();
-        var collision = await lookupSeller(perfKey);
-        if(collision){ perfKey = generatePerformanceKey(); }
-        seller = await createSeller(perfKey, igVal, emailVal);
+        btn.textContent = 'Creating your key...';
+        seller = await createSeller(igVal, emailVal);
+        perfKey = seller.performance_key;
         isNewSeller = true;
         dbg('[perf-key] New seller created:', seller.seller_id, perfKey);
       }
@@ -3102,20 +3081,16 @@
       btn.textContent = 'Saving listing...';
       dbg('[submit] Inserting listing...');
 
-      var insertRes = await sb.from('listings').insert([{
+      var insertRes = await sb.rpc('pc_create_listing', { p_key: perfKey, p_listing: {
         category:    formData.category,
         title:       formData.title,
         price:       formData.price,
         condition:   formData.condition,
         location:    formData.location,
         description: formData.description,
-        instagram:   igVal || null,
-        email:       emailVal || null,
         details:     formData.details,
-        photo_urls:  [],
-        status:      'active',
-        seller_id:   seller.seller_id
-      }]).select().single();
+        photo_urls:  []
+      }});
 
       dbg('[submit] Insert response:', JSON.stringify(insertRes, null, 2));
 
@@ -3146,7 +3121,8 @@
       if(photoUrls.length > 0){
         var updatePayload = { photo_urls: photoUrls };
         dbg('[submit] Updating photo_urls...');
-        var updateRes = await sb.from('listings').update(updatePayload).eq('id', listing.id).select();
+        var updateRes = await sb.rpc('pc_update_listing', { p_key: perfKey, p_id: listing.id, p_patch: updatePayload });
+        updateRes.data = updateRes.data ? [updateRes.data] : updateRes.data;
         dbgAlert({ step:'UPDATE photo_urls', listing_id:listing.id, error:updateRes.error, rows_updated:updateRes.data?updateRes.data.length:0 });
         dbg('[submit] Update response:', JSON.stringify(updateRes, null, 2));
         if(updateRes.error){ dbgError('[submit] UPDATE FAILED:', updateRes.error); }
@@ -3169,7 +3145,8 @@
 
     } catch(err){
       dbgError('[submit] Caught exception:', err);
-      var userMsg = (DEBUG && err && err.message)
+      var userMsg = (err && err.userFacing) ? err.message
+        : (DEBUG && err && err.message)
         ? 'Error: ' + err.message
         : 'Something went wrong while uploading your listing. Please try again.';
       showError(userMsg);
