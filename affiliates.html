@@ -276,8 +276,18 @@
     transition:opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0s;
   }
   .float-popup-inner{ padding:16px 18px 14px; max-height:340px; overflow-y:auto; overscroll-behavior:contain; }
+  /* Themed scrollbar: thin cyan thumb on a dark track (Chrome/Safari/Edge) */
+  .float-popup-inner::-webkit-scrollbar{ width:6px; }
+  .float-popup-inner::-webkit-scrollbar-track{ background:transparent; margin:10px 0; }
+  .float-popup-inner::-webkit-scrollbar-thumb{ background:rgba(31,169,207,0.45); border-radius:999px; }
+  .float-popup-inner::-webkit-scrollbar-thumb:hover{ background:var(--cyan-bright); }
+  .float-popup-inner::-webkit-scrollbar-button{ display:none; height:0; }
+  /* Firefox */
+  @supports not selector(::-webkit-scrollbar){
+    .float-popup-inner{ scrollbar-width:thin; scrollbar-color:rgba(31,169,207,0.45) transparent; }
+  }
   .float-popup-close{
-    position:absolute;top:10px;right:10px;
+    position:absolute;top:10px;right:20px;z-index:1;
     width:22px;height:22px;border-radius:6px;
     background:rgba(255,255,255,0.05);border:0.5px solid var(--line);
     color:var(--steel);cursor:pointer;
