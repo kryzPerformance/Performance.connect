@@ -82,9 +82,13 @@
     position:relative;z-index:1;
     max-width:1280px;margin:0 auto;
     padding:32px clamp(16px,5vw,48px) 80px;
+  }
+  /* Gallery + details sit in their own grid, so the sticky gallery stops at the end
+     of this block and never slides over "More like this" below it. */
+  .listing-top{
     display:grid;
     grid-template-columns:minmax(0,1fr) 440px;
-    grid-template-areas:"gallery details" "related related";
+    grid-template-areas:"gallery details";
     gap:40px 48px;align-items:start;
   }
 
@@ -236,7 +240,7 @@
   .report-btn svg{width:13px;height:13px;}
 
   /* RELATED */
-  .related{grid-area:related;padding-top:40px;border-top:0.5px solid var(--line);}
+  .related{position:relative;margin-top:56px;padding-top:40px;border-top:0.5px solid var(--line);}
   .related-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px;}
   .related-head h2{
     font-family:'Rajdhani',sans-serif;font-weight:700;font-style:italic;
@@ -262,11 +266,9 @@
 
   /* MOBILE */
   @media(max-width:900px){
-    .listing-page{
-      grid-template-columns:minmax(0,1fr);
-      grid-template-areas:"gallery" "details" "related";
-      gap:24px;padding:20px clamp(12px,4vw,24px) 60px;
-    }
+    .listing-page{padding:20px clamp(12px,4vw,24px) 60px;}
+    .listing-top{grid-template-columns:minmax(0,1fr);grid-template-areas:"gallery" "details";gap:24px;}
+    .related{margin-top:32px;}
     .gallery{position:static;top:auto;}
     .wordmark{display:none;}
   }
@@ -374,6 +376,7 @@
 
 <div class="listing-page" id="listing-page" style="display:none;">
 
+  <div class="listing-top">
   <div class="gallery" id="gallery">
     <div class="gallery-main" id="gallery-main">
       <div class="no-photo">
@@ -447,6 +450,7 @@
       </a>
     </div>
   </div>
+  </div><!-- /.listing-top -->
 
   <div class="related" id="related">
     <div class="related-head">
@@ -667,7 +671,7 @@
     // Server (worker.js) already wrote an SEO title when a canonical tag exists
     if(!document.querySelector('link[rel="canonical"]')) document.title=l.title+' — Performance Connect';
     document.getElementById('state-loading').style.display='none';
-    document.getElementById('listing-page').style.display='grid';
+    document.getElementById('listing-page').style.display='block';
 
     // Gallery
     if(l.photo_urls&&l.photo_urls.length) buildGallery(l.photo_urls);
