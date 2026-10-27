@@ -78,6 +78,7 @@
   };
 
   var SHOW_DELAY = 180;   // ms before appearing (fast operations never flash)
+  var PAGE_DELAY = 400;   // later page loads: only show if the page is genuinely slow
   var MIN_VISIBLE = 700;  // ms minimum on screen once shown
   var FADE = 280;         // ms fade
 
@@ -215,7 +216,7 @@
     if (overlay && overlay.classList.contains('pcl-on')) return;
     if (showTimer) return;
     if (opts.immediate) reveal();
-    else showTimer = setTimeout(reveal, SHOW_DELAY);
+    else showTimer = setTimeout(reveal, opts.delay != null ? opts.delay : SHOW_DELAY);
   }
   function hide(opts) {
     opts = opts || {};
@@ -268,9 +269,19 @@
   PC.Loader = { show: show, hide: hide, wrap: wrap, inline: inline, src: SRC, variant: CHOSEN, variants: VARIANTS };
 
   // ---------- page-load mode ----------
+  // First page of a visit: the full car-collector screen, the brand moment.
+  // Every page after that: no cover; the loader only appears if loading runs
+  // past PAGE_DELAY, so fast pages show up instantly. Add ?loader=<id> to force it.
   if (script && script.hasAttribute('data-pageload')) {
-    document.documentElement.classList.add('pcl-boot');
-    show({ immediate: true });
+    var seen = false;
+    try { seen = sessionStorage.getItem('pcl-seen') === '1'; sessionStorage.setItem('pcl-seen', '1'); } catch (e) {}
+    if (/[?&]loader=/.test(location.search)) seen = false;
+    if (seen) {
+      show({ delay: PAGE_DELAY });
+    } else {
+      document.documentElement.classList.add('pcl-boot');
+      show({ immediate: true });
+    }
     var done = function () { hide(); };
     if (document.readyState === 'complete') done();
     else window.addEventListener('load', done, { once: true });

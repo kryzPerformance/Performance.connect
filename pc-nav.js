@@ -52,8 +52,10 @@
       '-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}' +
     '.pcn-bar .pcn-link{font-family:Inter,system-ui,sans-serif;font-size:13px;font-weight:600;letter-spacing:0.03em;' +
       'color:#8FA0A6;text-decoration:none;padding:7px 14px;border-radius:999px;border:0.5px solid #23292b;' +
-      'background:rgba(255,255,255,0.02);white-space:nowrap;transition:color .15s,border-color .15s,background .15s}' +
-    '.pcn-bar .pcn-link:hover{color:#3DC9F0;border-color:rgba(31,169,207,0.45);background:rgba(31,169,207,0.07)}' +
+      'background:rgba(255,255,255,0.02);white-space:nowrap;transition:color .15s,border-color .15s,background .15s,transform 160ms cubic-bezier(0.23,1,0.32,1)}' +
+    '.pcn-bar .pcn-link:active{transform:scale(0.97)}' +
+    // hover only where a real pointer hovers: taps on phones would leave it stuck on
+    '@media (hover:hover) and (pointer:fine){.pcn-bar .pcn-link:hover{color:#3DC9F0;border-color:rgba(31,169,207,0.45);background:rgba(31,169,207,0.07)}}' +
     '.pcn-bar .pcn-link.is-current{color:#3DC9F0;border-color:rgba(31,169,207,0.35);background:rgba(31,169,207,0.06)}';
 
   function addStyles() {
