@@ -163,6 +163,7 @@
   main{
     flex:1;
     display:flex;
+    flex-direction:column;
     align-items:center;
     justify-content:center;
     padding:60px clamp(20px, 6vw, 64px);
@@ -830,6 +831,82 @@
   @media (max-width: 400px){
     .jump-btn svg{ display:none; }
   }
+
+  /* ---------- home feed: events, listings, actions ----------
+     See-through glass cards over the video; they turn cyan on hover,
+     keyboard focus or tap. */
+  .feed{ width:100%; max-width:1100px; margin-top:72px; text-align:left; text-shadow:none; }
+  .feed[hidden]{ display:none; }
+  .feed-head{ display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:8px 16px; margin-bottom:16px; }
+  .feed-title{ font-family:'Rajdhani', sans-serif; font-weight:700; font-style:italic; font-size:clamp(26px, 3vw, 36px); line-height:1; text-transform:uppercase; color:var(--white); }
+  .feed-more{ font-size:14px; font-weight:600; color:var(--cyan-bright); text-decoration:none; }
+  .feed-more:focus-visible{ outline:2px solid var(--white); outline-offset:2px; }
+
+  .feed-glass{
+    color:var(--white);
+    background:rgba(17,20,21,0.36);
+    border:1px solid rgba(255,255,255,0.09);
+    border-radius:10px;
+    -webkit-backdrop-filter:blur(6px);
+    backdrop-filter:blur(6px);
+    text-decoration:none;
+    transition:background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s var(--ease-out);
+  }
+  .feed-glass:focus-visible{ outline:2px solid var(--white); outline-offset:2px; }
+  .feed-glass:active, .feed-glass:focus-visible, .feed-glass:has(:focus-visible){
+    background:rgba(61,201,240,0.88); border-color:var(--cyan-bright); color:#03171D;
+  }
+  @media (hover:hover) and (pointer:fine){
+    .feed-glass:hover{ background:rgba(61,201,240,0.88); border-color:var(--cyan-bright); color:#03171D; transform:translateY(-3px); }
+    .feed-more:hover{ color:#62D6F5; }
+  }
+  .feed-glass:hover *, .feed-glass:active *, .feed-glass:focus-visible *, .feed-glass:has(:focus-visible) *{ color:#03171D; }
+
+  /* events */
+  .ev-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:10px; }
+  .ev-tile{ display:flex; flex-direction:column; gap:8px; padding:18px 20px; }
+  .ev-top{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+  .ev-date{ font-family:'Rajdhani', sans-serif; font-weight:700; font-size:26px; line-height:1; letter-spacing:0.02em; }
+  .ev-type{ display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:#C7D0D2; white-space:nowrap; }
+  .ev-dot{ width:9px; height:9px; border-radius:50%; flex:0 0 auto; }
+  .ev-name{ font-family:'Rajdhani', sans-serif; font-weight:700; font-style:italic; font-size:19px; line-height:1.15; text-transform:uppercase; }
+  .ev-meta{ font-size:13.5px; color:var(--steel); }
+
+  /* listings */
+  .mk-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px; }
+  .mk-card{ display:block; overflow:hidden; }
+  .mk-photo{ aspect-ratio:4 / 3; overflow:hidden; background:#161B1C; }
+  .mk-photo img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.3s ease; }
+  @media (hover:hover) and (pointer:fine){ .mk-card:hover .mk-photo img{ transform:scale(1.03); } }
+  .mk-body{ padding:14px 16px 16px; }
+  .mk-cat{ font-size:11.5px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--cyan); }
+  .mk-title{ margin-top:6px; font-family:'Rajdhani', sans-serif; font-weight:700; font-style:italic; font-size:19px; line-height:1.2; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mk-meta{ margin-top:4px; font-size:13.5px; color:var(--steel); }
+  .mk-foot{ margin-top:10px; display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+  .mk-price{ font-family:'Rajdhani', sans-serif; font-weight:700; font-size:21px; color:var(--cyan-bright); }
+  .mk-ig{ font-size:12.5px; color:var(--steel); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  /* actions */
+  .act-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px; }
+  .act-card{ display:flex; flex-direction:column; gap:12px; padding:clamp(22px, 3vw, 36px); }
+  .act-title{ font-family:'Rajdhani', sans-serif; font-weight:700; font-style:italic; font-size:clamp(26px, 2.8vw, 34px); line-height:1.05; text-transform:uppercase; }
+  .act-text{ font-size:15px; line-height:1.5; color:#C7D0D2; }
+  .act-foot{ margin-top:auto; padding-top:6px; }
+  .act-btn{
+    display:inline-block; cursor:pointer; text-decoration:none;
+    font-family:'Rajdhani', sans-serif; font-weight:700; font-size:16px; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--cyan-bright); background:transparent; border:1px solid rgba(31,169,207,0.45); border-radius:6px; padding:12px 20px;
+    transition:background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 160ms var(--ease-out);
+  }
+  .act-btn:active{ transform:scale(0.97); }
+  .act-btn:focus-visible{ outline:2px solid #03171D; outline-offset:2px; }
+  .feed-glass:hover .act-btn, .feed-glass:active .act-btn, .feed-glass:has(:focus-visible) .act-btn{ background:#070808; border-color:#070808; color:var(--white); }
+
+  .hero-tail{ margin-top:56px; }
+  @media (max-width: 640px){
+    .feed{ margin-top:56px; }
+    .hero-tail{ margin-top:44px; }
+  }
 </style>
   <script type="text/javascript">
     (function(c,l,a,r,i,t,y){
@@ -898,14 +975,47 @@
           </a>
         </div>
 
-        <!-- Actions, kept apart from the destinations above -->
-        <p class="hub-label">Jump in</p>
-        <div class="jump-grid">
-          <a href="/event-submit" class="jump-btn" aria-label="Host a Meet: put your event on the community calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Host a Meet</a>
-          <!-- Points to marketplace and auto-opens the listing modal via ?list=true -->
-          <a href="/marketplace?list=true" class="jump-btn" aria-label="Sell Something: list your car or parts in minutes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Sell Something</a>
-        </div>
+      </div>
 
+      <!-- Live from Supabase: next approved events (filled by the feed script at the bottom) -->
+      <section class="feed" id="feed-events" aria-labelledby="feed-events-title" hidden>
+        <div class="feed-head">
+          <h2 class="feed-title" id="feed-events-title">This week in the GTA</h2>
+          <a href="/events" class="feed-more">All events →</a>
+        </div>
+        <div class="ev-grid" id="feed-events-list"></div>
+      </section>
+
+      <!-- Live from Supabase: newest active listings with a photo -->
+      <section class="feed" id="feed-market" aria-labelledby="feed-market-title" hidden>
+        <div class="feed-head">
+          <h2 class="feed-title" id="feed-market-title">Fresh on the marketplace</h2>
+          <a href="/marketplace" class="feed-more">Cars, wheels &amp; parts →</a>
+        </div>
+        <div class="mk-grid" id="feed-market-list"></div>
+      </section>
+
+      <!-- Actions: host, sell, feature (replaces the old "Jump in" buttons) -->
+      <section class="feed act-grid" aria-label="Get involved">
+        <div class="feed-glass act-card">
+          <h2 class="act-title">Host a meet</h2>
+          <p class="act-text">Put your meet, show or track day on the calendar the whole GTA checks. Free to post.</p>
+          <div class="act-foot"><a href="/event-submit" class="act-btn">Submit an event</a></div>
+        </div>
+        <div class="feed-glass act-card">
+          <h2 class="act-title">Sell something</h2>
+          <p class="act-text">Cars, wheels and parts, free to post. Or part out a whole car and sell it piece by piece.</p>
+          <!-- auto-opens the listing modal via ?list=true -->
+          <div class="act-foot"><a href="/marketplace?list=true" class="act-btn">Start a listing</a></div>
+        </div>
+        <div class="feed-glass act-card">
+          <h2 class="act-title">Feature my build</h2>
+          <p class="act-text">Show us your whip. Send a few photos and your mod list. If it's picked, we'll feature it and tag you.</p>
+          <div class="act-foot"><button type="button" class="act-btn" id="open-feature-form">Submit my build</button></div>
+        </div>
+      </section>
+
+      <div class="hero hero-tail">
         <p class="capture-label">Get updates as we grow</p>
         <form class="capture" id="signup-form" action="https://app.kit.com/forms/9590783/subscriptions" method="post" data-sv-form="9590783" target="signup-target">
           <div class="capture-row">
@@ -925,10 +1035,6 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
             <span>Automotive business? Get in touch</span>
           </a>
-          <button type="button" class="secondary-btn" id="open-feature-form">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg>
-            <span>Feature my build</span>
-          </button>
         </div>
       </div>
     </main>
@@ -1439,6 +1545,160 @@
       featSubmit.textContent = 'Submit my build';
     }
   });
+</script>
+
+<script>
+/* ============================================================
+   Home feed: next approved events + newest active listings.
+   Read-only, public rows (same queries the Events and Marketplace
+   pages make). Each section stays hidden if it has nothing to show
+   or the request fails, so the page never shows a broken block.
+   ============================================================ */
+(function(){
+  'use strict';
+  var cfg = window.PC_CONFIG || {
+    SUPABASE_URL: 'https://myapluhgfpnyjsfrflhd.supabase.co',
+    SUPABASE_ANON_KEY: 'sb_publishable_yfHWon3pr30Z8do9QW9tSQ_wqlkzDxc'
+  };
+  if (!window.supabase || !window.supabase.createClient) return;
+  var sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
+    auth: { persistSession:false, autoRefreshToken:false, detectSessionInUrl:false }
+  });
+
+  var MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  var DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var TYPES = {
+    meet:   { label:'Meet',          color:'#3DC9F0' },
+    track:  { label:'Track day',     color:'#FF4DA6' },
+    show:   { label:'Car show',      color:'#FFD600' },
+    coffee: { label:'Cars & coffee', color:'#FF8C42' },
+    other:  { label:'Other',         color:'#B34DFF' }
+  };
+  var CATS = { vehicles:'Vehicles', wheels:'Wheels', parts:'Parts', tools:'Tools', fluids:'Fluids' };
+
+  // tiny element helper: text only, never innerHTML, since rows come from the public
+  function el(tag, cls, text){
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null && text !== '') n.textContent = text;
+    return n;
+  }
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+  // local calendar date, so evenings in Toronto don't jump to tomorrow (UTC)
+  function ymd(d){ return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function parseYmd(s){ var p = String(s).split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function time12(t){
+    var m = /^(\d{1,2}):(\d{2})/.exec(t || '');
+    if (!m) return 'Time TBA';
+    var h = +m[1], ap = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return h + ':' + m[2] + ' ' + ap;
+  }
+  function place(ev){
+    var parts = (ev.address || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+    if (parts.length >= 3) return parts[parts.length - 2];          // "100 Portia Dr, Ancaster, ON" -> "Ancaster"
+    var v = (ev.venue_name || '').trim();
+    return (!v || /^tba$/i.test(v)) ? 'Location TBA' : v;
+  }
+
+  function loadEvents(){
+    var today = new Date();
+    return sb.from('events')
+      .select('id,title,event_type,event_date,start_time,venue_name,address')
+      .eq('status','approved')
+      .gte('event_date', ymd(today))
+      .order('event_date', { ascending:true })
+      .order('start_time', { ascending:true, nullsFirst:false })
+      .limit(4)
+      .then(function(res){
+        var rows = (!res.error && res.data) || [];
+        if (!rows.length) return;
+        var weekEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 6);
+        var allThisWeek = rows.every(function(r){ return parseYmd(r.event_date) <= weekEnd; });
+        document.getElementById('feed-events-title').textContent =
+          allThisWeek ? 'This week in the GTA' : 'Coming up in the GTA';
+
+        var list = document.getElementById('feed-events-list');
+        rows.forEach(function(r){
+          var d = parseYmd(r.event_date);
+          var t = TYPES[r.event_type] || TYPES.other;
+          var a = el('a', 'feed-glass ev-tile');
+          a.href = '/events';
+          var top = el('div', 'ev-top');
+          top.appendChild(el('span', 'ev-date', MONTHS[d.getMonth()] + ' ' + d.getDate()));
+          var type = el('span', 'ev-type');
+          var dot = el('span', 'ev-dot');
+          dot.style.background = t.color;
+          dot.setAttribute('aria-hidden', 'true');
+          type.appendChild(dot);
+          type.appendChild(document.createTextNode(t.label));
+          top.appendChild(type);
+          a.appendChild(top);
+          a.appendChild(el('span', 'ev-name', r.title));
+          a.appendChild(el('span', 'ev-meta', DAYS[d.getDay()] + ' ' + time12(r.start_time) + ' · ' + place(r)));
+          list.appendChild(a);
+        });
+        document.getElementById('feed-events').hidden = false;
+      }, function(){ /* offline or blocked: leave the section hidden */ });
+  }
+
+  function money(p){
+    return (p == null || p === '') ? 'Contact seller'
+      : '$' + Number(p).toLocaleString('en-CA', { maximumFractionDigits:0 });
+  }
+  function firstPhoto(l){
+    var urls = l.photo_urls || [];
+    for (var i = 0; i < urls.length; i++) if (/^https:\/\//.test(urls[i] || '')) return urls[i];
+    return null;
+  }
+
+  function loadListings(){
+    return sb.from('listings')
+      .select('id,category,title,price,condition,location,details,photo_urls,instagram')
+      .eq('status','active')
+      .order('created_at', { ascending:false })
+      .limit(12)
+      .then(function(res){
+        var rows = ((!res.error && res.data) || []).filter(firstPhoto).slice(0, 3);
+        if (!rows.length) return;
+        var list = document.getElementById('feed-market-list');
+        rows.forEach(function(l){
+          var det = l.details || {};
+          var a = el('a', 'feed-glass mk-card');
+          a.href = '/listing?id=' + encodeURIComponent(l.id);
+
+          var ph = el('div', 'mk-photo');
+          var img = document.createElement('img');
+          img.src = firstPhoto(l);
+          img.alt = l.title || 'Listing photo';
+          img.loading = 'lazy';
+          img.decoding = 'async';
+          ph.appendChild(img);
+          a.appendChild(ph);
+
+          var body = el('div', 'mk-body');
+          var kicker = [CATS[l.category] || l.category, det.scene].filter(Boolean).join(' · ');
+          if (kicker) body.appendChild(el('div', 'mk-cat', kicker));
+          body.appendChild(el('div', 'mk-title', l.title));
+          var meta = l.category === 'vehicles'
+            ? [det.mileage ? Number(det.mileage).toLocaleString('en-CA') + ' km' : '', det.drivetrain, l.location]
+            : [l.condition, l.location];
+          meta = meta.filter(Boolean).join(' · ');
+          if (meta) body.appendChild(el('div', 'mk-meta', meta));
+          var foot = el('div', 'mk-foot');
+          foot.appendChild(el('span', 'mk-price', money(l.price)));
+          if (l.instagram) foot.appendChild(el('span', 'mk-ig', '@' + String(l.instagram).replace(/^@/, '')));
+          body.appendChild(foot);
+          a.appendChild(body);
+          list.appendChild(a);
+        });
+        document.getElementById('feed-market').hidden = false;
+      }, function(){ /* leave hidden */ });
+  }
+
+  loadEvents();
+  loadListings();
+})();
 </script>
 
 </body>
