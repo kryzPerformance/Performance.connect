@@ -353,10 +353,7 @@ window.PC = window.PC || {};
   }
   function place() {
     var nav = mountPoint();
-    // A page can opt out of the separate top row with <html data-acct-inline>: the pill then
-    // stays pinned at the end of the swipeable menu row on phones too (homepage).
-    var inline = document.documentElement.hasAttribute('data-acct-inline');
-    if (nav && phone.matches && !inline) {
+    if (nav && phone.matches) {
       var hdr = pageHeader(nav);
       if (!topRow) { topRow = document.createElement('div'); topRow.className = 'pc-acct-top'; }
       if (topRow.nextElementSibling !== hdr) hdr.parentNode.insertBefore(topRow, hdr);
