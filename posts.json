@@ -1,5 +1,31 @@
 [
   {
+    "id": "nfs-underground-2-browser-online",
+    "title": "Need for Speed Underground 2 Is Back, and It Runs in Your Browser",
+    "date": "2026-11-02",
+    "excerpt": "A fan-made port of NFS Underground 2 now plays straight in Chrome, with no install, and you can roll through Bayview with other players online. Here's what it is and the catch.",
+    "tags": ["Gaming", "Need for Speed", "Tuner Culture"],
+    "body": [
+      "If you grew up on neon underglow, vinyl stacks and Snoop Dogg and The Doors' \"Riders on the Storm,\" this one's for you. **Need for Speed: Underground 2**, the 2004 game that taught half the scene what a body kit was, is playable again, right inside a web browser.",
+      "No disc, no install, no hunting down a sketchy old download. You open a page, it loads, and you're back in Bayview.",
+      "## What It Actually Is",
+      "This isn't an official EA release. It's a **fan-made project** that started showing up in late October and blew up over the past week, mostly thanks to clips of players piling into each other on the city streets.",
+      "The cool part is how it was built. Instead of running the game in an emulator, the developer **converted the original PC game's code into C and recompiled it for the browser**, the same approach behind recent fan ports of classic console games. The game's old DirectX 9 graphics now run on WebGPU, a modern browser graphics tech, and the audio runs through the browser too. The developer credits Claude Code, an AI coding tool, with helping build it.",
+      "## Bayview, Online Again",
+      "The original game's online servers went dark years ago. This version brings multiplayer back:",
+      "- Free roam Bayview with other players on the same server\n- Race each other, or just cruise and wreck\n- Multiplayer is opt-in, and there's a solo mode if you just want the career\n- Runs in the latest Google Chrome, or Firefox where it supports WebGPU",
+      "Kotaku reports thousands of players have already jumped in. You'll want a decent computer and hardware acceleration turned on in your browser.",
+      "## The Catch",
+      "This is **unofficial**, and that matters. The project says it isn't affiliated with or endorsed by Electronic Arts, and the open-source code on GitHub ships none of the game's files. If you build it yourself, you need **your own PC copy of Underground 2**.",
+      "EA hasn't said anything publicly yet, and publishers have shut down fan projects like this before. If you want to see Bayview again, **don't wait too long**.",
+      "It's not the only one, either. A separate, experimental browser version of **Need for Speed: Most Wanted** has also surfaced, though that one is solo only for now.",
+      "## Our Take",
+      "Underground 2 is a big reason a lot of us got into modifying cars in the first place. Seeing it come back as a multiplayer game you can open in a browser tab, 22 years later, is wild. Whether it lasts is up to EA. In the meantime, we know what we're doing tonight.",
+      "What did you build in Underground 2? **Tell us on our Instagram.** We want to see who was running the Skyline, the RX-8 and the Navigator on 20s."
+    ],
+    "sourceNote": "Sources: Kotaku; the nfsu2-web project on GitHub; Quero Bolsa. Unofficial fan project, not affiliated with or endorsed by Electronic Arts."
+  },
+  {
     "id": "avengers-acura-nsx-roadster-auction",
     "title": "Tony Stark's Acura NSX Roadster Is Up for Auction",
     "date": "2026-10-27",
