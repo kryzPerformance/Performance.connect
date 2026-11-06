@@ -501,20 +501,23 @@ function popupHTML(loc){
   var t = pcTypeFor(loc);
   var web = safeUrl(loc.web);
   var ig  = loc.instagram ? String(loc.instagram).replace(/^@/,'').replace(/[^A-Za-z0-9._]/g,'') : '';
+  var tt  = loc.tiktok ? String(loc.tiktok).replace(/^@/,'').replace(/[^A-Za-z0-9._]/g,'') : '';
+  var isMobile = t.id === 'mobile';   // comes to the customer: no address to drive to
   var tel = loc.phone ? String(loc.phone).replace(/[^0-9+]/g,'') : '';
   var dir = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(loc.address || (loc.lat + ',' + loc.lng));
   return (loc.logo ? '<div class="popup-logo"><img src="' + esc(loc.logo) + '" alt="' + esc(loc.name) + ' logo"></div>' : '') +
     '<div class="popup-cat-tag" style="background:' + t.color + '18;color:' + t.color + '">' +
       '<span class="dot" style="background:' + t.color + '"></span>' + esc(t.label) + '</div>' +
     '<div class="popup-name">' + esc(loc.name) + '</div>' +
-    (loc.address ? '<div class="popup-address">' + esc(loc.address) + '</div>' : '') +
+    ((loc.address || loc.serviceArea) ? '<div class="popup-address">' + esc(loc.address || loc.serviceArea) + '</div>' : '') +
     (loc.notes ? '<div class="popup-notes">' + esc(loc.notes) + '</div>' : '') +
     groupedServicesHTML(loc) +
     '<div class="popup-links">' +
-      '<a href="' + esc(dir) + '" target="_blank" rel="noopener" class="popup-link primary">Directions</a>' +
+      (isMobile ? '' : '<a href="' + esc(dir) + '" target="_blank" rel="noopener" class="popup-link primary">Directions</a>') +
+      (tt  ? '<a href="https://www.tiktok.com/@' + esc(tt) + '" target="_blank" rel="noopener" class="popup-link ' + (isMobile ? 'primary' : 'secondary') + '">TikTok</a>' : '') +
       (web ? '<a href="' + esc(web) + '" target="_blank" rel="noopener" class="popup-link secondary">Website</a>' : '') +
       (tel ? '<a href="tel:' + esc(tel) + '" class="popup-link secondary">' + esc(loc.phone) + '</a>' : '') +
-      (ig  ? '<a href="https://instagram.com/' + esc(ig) + '" target="_blank" rel="noopener" class="popup-link secondary">@' + esc(ig) + '</a>' : '') +
+      (ig  ? '<a href="https://instagram.com/' + esc(ig) + '" target="_blank" rel="noopener" class="popup-link secondary">' + (tt ? 'Instagram' : '@' + esc(ig)) + '</a>' : '') +
     '</div>';
 }
 
@@ -710,7 +713,7 @@ function renderList(){
       '<div class="shop-card-logo">' + logo + '</div>' +
       '<div class="popup-cat-tag" style="margin:0;align-self:flex-start;background:' + t.color + '18;color:' + t.color + '"><span class="dot" style="background:' + t.color + '"></span>' + esc(t.label) + '</div>' +
       '<div class="shop-card-name">' + esc(loc.name) + '</div>' +
-      (loc.address ? '<div class="shop-card-addr">' + esc(loc.address) + '</div>' : '') +
+      ((loc.address || loc.serviceArea) ? '<div class="shop-card-addr">' + esc(loc.address || loc.serviceArea) + '</div>' : '') +
     '</button>';
   }).join('');
 }
