@@ -151,5 +151,20 @@
     "lat": 43.3691,
     "lng": -79.7842,
     "notes": "Aftermarket Performance Parts for European Brands"
+  },
+  {
+    "name": "VCK PPI",
+    "type": "mobile",
+    "services": [
+      "ppi"
+    ],
+    "logo": "assets/affiliates/vck-ppi.webp",
+    "serviceArea": "Mobile: comes to you across the GTA",
+    "phone": "(365) 888-6202",
+    "tiktok": "@vckppi",
+    "instagram": "@vckppi",
+    "lat": 43.75,
+    "lng": -79.4,
+    "notes": "Pre-purchase inspections at the vehicle, with fault code scanning and a test drive. Packages from $199, with a $20 deposit to book. Travel fees may apply."
   }
 ]
