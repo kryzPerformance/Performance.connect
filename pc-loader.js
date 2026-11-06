@@ -93,11 +93,12 @@
     '.pcl-media{display:block;height:min(88vh,150vw);height:min(88dvh,150vw);width:auto;aspect-ratio:2/3;' +
     'max-width:100vw;object-fit:contain;background:#000;pointer-events:none;user-select:none}' +
     // wide screens (tablets, laptops, desktops): Toronto skyline backdrop extends the scene to the screen edges.
-    // The scene is 4x the animation's height wide, centred on it; its horizon lines line up with the art's.
+    // The original animation stays its own fixed-proportion layer (2:3, never stretched); the scene sits behind it,
+    // 3.2x the animation's height wide and 0.9x tall, centred, with its horizon lines on the art's lines.
     '.pcl-scene{display:none;position:absolute;left:50%;transform:translateX(-50%);pointer-events:none;' +
     'top:calc(50% - min(44vh,75vw));top:calc(50% - min(44dvh,75vw));' +
-    'width:calc(4 * min(88vh,150vw));width:calc(4 * min(88dvh,150vw));' +
-    'height:calc(0.874 * min(88vh,150vw));height:calc(0.874 * min(88dvh,150vw))}' +
+    'width:calc(3.2 * min(88vh,150vw));width:calc(3.2 * min(88dvh,150vw));' +
+    'height:calc(0.9 * min(88vh,150vw));height:calc(0.9 * min(88dvh,150vw))}' +
     '@media (min-aspect-ratio:3/4){' +
       '.pcl-overlay{overflow:hidden}' +
       '.pcl-scene{display:block;background:url("' + BASE + 'skyline.webp") 0 0/100% 100% no-repeat}' +
