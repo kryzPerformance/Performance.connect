@@ -92,10 +92,23 @@
     '.pcl-overlay.pcl-on{opacity:1;visibility:visible;transition:opacity ' + FADE + 'ms ease}' +
     '.pcl-media{display:block;height:min(88vh,150vw);height:min(88dvh,150vw);width:auto;aspect-ratio:2/3;' +
     'max-width:100vw;object-fit:contain;background:#000;pointer-events:none;user-select:none}' +
+    // wide screens (tablets, laptops, desktops): Toronto skyline backdrop extends the scene to the screen edges.
+    // The scene is 4x the animation's height wide, centred on it; its horizon lines line up with the art's.
+    '.pcl-scene{display:none;position:absolute;left:50%;transform:translateX(-50%);pointer-events:none;' +
+    'top:calc(50% - min(44vh,75vw));top:calc(50% - min(44dvh,75vw));' +
+    'width:calc(4 * min(88vh,150vw));width:calc(4 * min(88dvh,150vw));' +
+    'height:calc(0.874 * min(88vh,150vw));height:calc(0.874 * min(88dvh,150vw))}' +
+    '@media (min-aspect-ratio:3/4){' +
+      '.pcl-overlay{overflow:hidden}' +
+      '.pcl-scene{display:block;background:url("' + BASE + 'skyline.webp") 0 0/100% 100% no-repeat}' +
+      '.pcl-overlay .pcl-media{position:relative;z-index:1;' +
+      '-webkit-mask-image:linear-gradient(to right,transparent 0,#000 9%,#000 91%,transparent 100%);' +
+      'mask-image:linear-gradient(to right,transparent 0,#000 9%,#000 91%,transparent 100%)}' +
+    '}' +
     '.pcl-inline{display:flex;align-items:center;justify-content:center;padding:16px 0;width:100%}' +
     '.pcl-inline .pcl-media{height:auto;width:min(180px,40vw)}' +
-    '.pcl-rare{position:absolute;left:50%;top:max(14px,calc(50% - min(44vh,75vw) - 2px));transform:translateX(-50%);' +
-    'z-index:2;padding:6px 14px;border-radius:999px;border:1px solid rgba(255,214,102,0.55);' +
+    '.pcl-rare{position:absolute;left:50%;z-index:3;top:max(14px,calc(50% - min(44vh,75vw) - 2px));transform:translateX(-50%);' +
+    'padding:6px 14px;border-radius:999px;border:1px solid rgba(255,214,102,0.55);' +
     'background:rgba(20,16,4,0.72);font:700 12px/1 Rajdhani,Inter,system-ui,sans-serif;letter-spacing:0.22em;' +
     'text-transform:uppercase;white-space:nowrap;color:#FFD666;text-shadow:0 0 12px rgba(255,200,80,0.6);' +
     'animation:pcl-rare-glow 1.6s ease-in-out infinite}' +
@@ -161,6 +174,10 @@
     var sr = document.createElement('span');
     sr.className = 'pcl-sr';
     sr.textContent = CHOSEN.rare ? 'Loading… rare find: ' + CHOSEN.name : 'Loading…';
+    var scene = document.createElement('div');   // skyline backdrop (shown on wide screens only)
+    scene.className = 'pcl-scene';
+    scene.setAttribute('aria-hidden', 'true');
+    overlay.appendChild(scene);
     media = makeMedia();
     overlay.appendChild(media);
     if (CHOSEN.rare) {
