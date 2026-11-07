@@ -118,8 +118,41 @@
     '.pcl-sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}' +
     'html.pcl-lock,html.pcl-lock body{overflow:hidden!important}' +
     // pre-paint cover for page-load mode, until <body> exists and the overlay mounts
-    'html.pcl-boot::after{content:"";position:fixed;inset:0;z-index:2147483101;' +
-    'background:#000 url("' + SRC.poster + '") center/auto min(88vh,150vw) no-repeat}';
+    'html.pcl-boot::after{content:"";position:fixed;inset:0;z-index:2147483101;background:#000}' +
+    // the scene (skyline + centre art + badge) stays hidden until its images are ready, then fades in as one
+    '.pcl-overlay>.pcl-scene,.pcl-overlay>.pcl-media,.pcl-overlay>.pcl-rare{opacity:0;transition:opacity 320ms ease}' +
+    '.pcl-overlay.pcl-ready>.pcl-media,.pcl-overlay.pcl-ready>.pcl-rare,' +
+    '.pcl-overlay.pcl-ready.pcl-sky>.pcl-scene{opacity:1}' +
+    // if the skyline is ever late (very slow connection), it eases in instead of popping
+    '.pcl-overlay.pcl-late>.pcl-scene{transition:opacity 700ms ease}';
+  // ---------- preload: start fetching the scene images right away, in parallel ----------
+  var WIDE = window.matchMedia ? window.matchMedia('(min-aspect-ratio:3/4)').matches : false;
+  var assetsReady = false, readyWaiters = [], skyReady = !WIDE, skyWaiters = [];
+  (function preload() {
+    var urls = [SRC.poster];
+    if (WIDE) urls.push(BASE + 'skyline.webp');
+    var left = urls.length;
+    function one() {
+      if (--left > 0 || assetsReady) return;
+      assetsReady = true;
+      readyWaiters.forEach(function (fn) { fn(); }); readyWaiters = [];
+    }
+    urls.forEach(function (u) {
+      var im = new Image();
+      try { im.fetchPriority = 'high'; } catch (e) {}
+      var isSky = u.indexOf('skyline') !== -1;
+      function done() {
+        if (isSky && !skyReady) { skyReady = true; skyWaiters.forEach(function (fn) { fn(); }); skyWaiters = []; }
+        one();
+      }
+      im.onload = function () { (im.decode ? im.decode() : Promise.resolve()).then(done, done); };
+      im.onerror = done;
+      im.src = u;
+    });
+    setTimeout(function () { if (!assetsReady) { left = 0; one(); } }, 3000);   // never wait longer than 3 s (then show what's ready; a late skyline eases in)
+  })();
+  function whenReady(fn) { if (assetsReady) fn(); else readyWaiters.push(fn); }
+
   var style = document.createElement('style');
   style.id = 'pc-loader-css';
   style.textContent = css;
@@ -189,6 +222,13 @@
       overlay.appendChild(badge);
     }
     overlay.appendChild(sr);
+    var ov = overlay;
+    whenReady(function () { requestAnimationFrame(function () {
+      if (!skyReady) ov.classList.add('pcl-late');
+      ov.classList.add('pcl-ready');
+    }); });
+    function sky() { requestAnimationFrame(function () { ov.classList.add('pcl-sky'); }); }
+    if (skyReady) sky(); else skyWaiters.push(sky);
   }
   function mount(cb) {
     build();
