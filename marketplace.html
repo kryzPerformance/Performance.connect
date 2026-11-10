@@ -553,7 +553,28 @@
     transition:border-color 0.15s;
   }
   .fit-bar input#fit-year{ flex:0 1 90px; }
+  .fit-bar select{
+    flex:1 1 130px;min-width:0;padding:9px 30px 9px 12px;
+    background:#070808 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238FA0A6' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 10px center;
+    border:0.5px solid #23292b;border-radius:7px;color:var(--white);
+    font-family:'Inter',sans-serif;font-size:14px;outline:none;cursor:pointer;
+    appearance:none;-webkit-appearance:none;transition:border-color 0.15s;
+  }
+  .fit-bar select:focus{ border-color:var(--cyan); }
+  .fit-bar select option{ background:#0E1112;color:var(--white); }
   .fit-bar input:focus{ border-color:var(--cyan); }
+  .fit-more{
+    padding:9px 12px;border-radius:7px;border:1px solid rgba(31,169,207,0.45);background:rgba(31,169,207,0.06);
+    color:var(--cyan-bright);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;
+  }
+  .fit-more[aria-expanded="true"]{ background:rgba(31,169,207,0.14); }
+  .fit-row2{ flex-basis:100%;display:none;flex-wrap:wrap;align-items:center;gap:8px;padding-top:8px;border-top:0.5px solid var(--line); }
+  .fit-row2.open{ display:flex; }
+  .fit-row2-label{ font-family:'Inter',sans-serif;font-size:11.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--steel);margin-right:2px; }
+  .fit-row2 .pcfit-tire{ display:flex;gap:8px;flex:2 1 260px; }
+  .fit-row2 .pcfit-tire select{ flex:1 1 0; }
+  .pcfit-tire{ display:grid;grid-template-columns:repeat(3, minmax(0,1fr));gap:8px; }
+  .fgroup .pcfit-other{ margin-top:8px; }
   .fit-bar input::placeholder{ color:var(--steel-dim); }
   .fit-clear{
     padding:9px 14px;border-radius:7px;border:1px solid var(--line);background:transparent;
@@ -564,6 +585,7 @@
   .fit-note b{ color:var(--cyan-bright);font-weight:600; }
   @media(max-width:640px){
     .fit-bar-label{ width:100%; }
+    .fit-row2-label{ width:100%; }
     .fit-bar input{ flex:1 1 40%; }
   }
   .listing-spec{
@@ -1409,6 +1431,7 @@
 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+<script src="pc-fitment.js"></script>
 <script src="pc-account.js"></script>
   <script type="text/javascript">
     (function(c,l,a,r,i,t,y){
@@ -1633,7 +1656,17 @@
           <input type="text" id="fit-model" placeholder="Model" aria-label="Your car's model">
           <input type="number" id="fit-year" placeholder="Year" aria-label="Your car's year" min="1960" max="2030">
           <input type="text" id="fit-bolt" placeholder="Bolt pattern" aria-label="Wheel bolt pattern, like 5x114.3">
+          <button type="button" class="fit-more" id="fit-more" aria-expanded="false" aria-controls="fit-row2">Wheel &amp; tire specs</button>
           <button type="button" class="fit-clear" id="fit-clear">Clear</button>
+          <div class="fit-row2" id="fit-row2">
+            <span class="fit-row2-label">Wheels</span>
+            <input type="text" id="fit-diam" aria-label="Wheel diameter">
+            <input type="text" id="fit-width" aria-label="Wheel width">
+            <input type="text" id="fit-offmin" aria-label="Offset from">
+            <input type="text" id="fit-offmax" aria-label="Offset to">
+            <span class="fit-row2-label">Tires</span>
+            <input type="text" id="fit-tire" aria-label="Tire size">
+          </div>
         </div>
         <div class="fit-note" id="fit-note"></div>
 
@@ -1740,9 +1773,9 @@
         <!-- VEHICLES -->
         <div id="form-vehicles" class="cat-form" style="display:none;">
           <div class="frow frow-3">
-            <div class="fgroup"><label>Make</label><input type="text" id="v-make" placeholder="Honda"></div>
-            <div class="fgroup"><label>Model</label><input type="text" id="v-model" placeholder="Civic Si"></div>
-            <div class="fgroup"><label>Year</label><input type="number" id="v-year" placeholder="2009" min="1960" max="2026"></div>
+            <div class="fgroup"><label>Make <span class="req">*</span></label><input type="text" id="v-make" placeholder="Honda"></div>
+            <div class="fgroup"><label>Model <span class="req">*</span></label><input type="text" id="v-model" placeholder="Civic Si"></div>
+            <div class="fgroup"><label>Year <span class="req">*</span></label><input type="number" id="v-year" placeholder="2009" min="1960" max="2030"></div>
           </div>
           <div class="frow frow-2">
             <div class="fgroup">
@@ -1795,6 +1828,7 @@
           </div>
           <div class="fgroup"><label>Location (city)</label><input type="text" id="v-location" placeholder="Toronto, ON"></div>
           <div class="fgroup"><label>Description &amp; mod list</label><textarea id="v-desc" placeholder="Tell buyers what makes this build special — mods, maintenance history, any known issues..."></textarea></div>
+          <div class="form-err" id="v-error" role="alert"></div>
         </div>
 
         <!-- WHEELS & TIRES -->
@@ -1814,11 +1848,11 @@
             <div class="fgroup"><label>Width (in) <span class="req w-wheel-req">*</span></label><input type="number" id="w-width" placeholder="8.5" step="0.5"></div>
             <div class="fgroup"><label>Offset (ET) <span class="req w-wheel-req">*</span></label><input type="number" id="w-offset" placeholder="35"></div>
           </div>
-          <div class="frow frow-3">
+          <div class="frow frow-2">
             <div class="fgroup"><label>Bolt pattern <span class="req w-wheel-req">*</span></label><input type="text" id="w-bolt" placeholder="5x114.3"></div>
-            <div class="fgroup"><label>Center bore (mm)</label><input type="number" id="w-bore" placeholder="73.1" step="0.1"></div>
-            <div class="fgroup"><label>Tire size <span class="req w-tire-req">*</span></label><input type="text" id="w-tiresize" placeholder="225/40R18"></div>
+            <div class="fgroup"><label>Center bore (mm) <span class="req w-wheel-req">*</span></label><input type="number" id="w-bore" placeholder="73.1" step="0.1"></div>
           </div>
+          <div class="fgroup"><label>Tire size: width / aspect ratio / rim <span class="req w-tire-req">*</span></label><input type="text" id="w-tiresize" placeholder="225/40R18"></div>
           <div class="frow frow-2">
             <div class="fgroup"><label>Brand</label><input type="text" id="w-brand" placeholder="Enkei"></div>
             <div class="fgroup">
@@ -1838,14 +1872,14 @@
           </div>
           <hr class="section-rule">
           <p class="step-eyebrow" style="margin-bottom:10px;">Fitment</p>
-          <p class="form-hint">What do they fit? The car they came off is a good start.</p>
+          <p class="form-hint">What do they fit? The car they came off is a good start. Required, so buyers shopping for that car can find them.</p>
           <div class="frow frow-2">
-            <div class="fgroup"><label>Make</label><input type="text" id="w-make" placeholder="Infiniti"></div>
-            <div class="fgroup"><label>Model</label><input type="text" id="w-model" placeholder="G37"></div>
+            <div class="fgroup"><label>Make <span class="req">*</span></label><input type="text" id="w-make" placeholder="Infiniti"></div>
+            <div class="fgroup"><label>Model <span class="req">*</span></label><input type="text" id="w-model" placeholder="G37"></div>
           </div>
           <div class="frow frow-2">
-            <div class="fgroup"><label>Year from</label><input type="number" id="w-year-from" placeholder="2008" min="1960" max="2030"></div>
-            <div class="fgroup"><label>Year to</label><input type="number" id="w-year-to" placeholder="2013" min="1960" max="2030"></div>
+            <div class="fgroup"><label>Year from <span class="req">*</span></label><input type="number" id="w-year-from" placeholder="2008" min="1960" max="2030"></div>
+            <div class="fgroup"><label>Year to <span class="req">*</span></label><input type="number" id="w-year-to" placeholder="2013" min="1960" max="2030"></div>
           </div>
           <hr class="section-rule">
           <div class="fgroup"><label>Description</label><textarea id="w-desc" placeholder="Where the curb rash is and how bad, tire tread left, center caps, lug nuts, spacers…"></textarea></div>
@@ -1888,8 +1922,8 @@
           </div>
           <div id="fitment-fields">
             <div class="frow frow-3">
-              <div class="fgroup"><label>Make</label><input type="text" id="p-make" placeholder="Honda"></div>
-              <div class="fgroup"><label>Model</label><input type="text" id="p-model" placeholder="Civic Si"></div>
+              <div class="fgroup"><label>Make <span class="req">*</span></label><input type="text" id="p-make" placeholder="Honda"></div>
+              <div class="fgroup"><label>Model <span class="req">*</span></label><input type="text" id="p-model" placeholder="Civic Si"></div>
               <div class="fgroup"><label>Scene</label>
                 <select id="p-scene">
                   <option value="">Any</option>
@@ -1902,8 +1936,8 @@
               </div>
             </div>
             <div class="frow frow-2">
-              <div class="fgroup"><label>Year from</label><input type="number" id="p-year-from" placeholder="2006" min="1960" max="2026"></div>
-              <div class="fgroup"><label>Year to</label><input type="number" id="p-year-to" placeholder="2011" min="1960" max="2026"></div>
+              <div class="fgroup"><label>Year from <span class="req">*</span></label><input type="number" id="p-year-from" placeholder="2006" min="1960" max="2030"></div>
+              <div class="fgroup"><label>Year to <span class="req">*</span></label><input type="number" id="p-year-to" placeholder="2011" min="1960" max="2030"></div>
             </div>
           </div>
           <hr class="section-rule">
@@ -1912,6 +1946,7 @@
             <div class="fgroup"><label>Location (city)</label><input type="text" id="p-location" placeholder="Toronto, ON"></div>
           </div>
           <div class="fgroup"><label>Description</label><textarea id="p-desc" placeholder="Part number, install notes, reason for selling, any damage..."></textarea></div>
+          <div class="form-err" id="p-error" role="alert"></div>
         </div>
 
         <!-- TOOLS -->
@@ -2516,30 +2551,73 @@
     document.querySelectorAll('.w-tire-req').forEach(function(e){ e.style.display = inc === 'Wheels only' ? 'none' : ''; });
   });
 
-  // Wheels: the specs buyers filter by are required.
+  // Every fitment spec is required, so listings show up when buyers shop for their car.
+  function fv(id){ return document.getElementById(id).value.trim(); }
+  function yearsMsg(fromId, toId){
+    if(!fv(fromId)) return 'Pick the first model year it fits.';
+    if(!fv(toId)) return 'Pick the last model year it fits (same year if it\'s just one).';
+    if(parseInt(fv(toId), 10) < parseInt(fv(fromId), 10)) return '"Year to" can\'t be before "Year from".';
+    return '';
+  }
   function validateWheels(){
-    function v(id){ return document.getElementById(id).value.trim(); }
-    var inc = v('w-included');
+    var inc = fv('w-included');
     if(!inc) return 'Select what\'s included.';
     var hasWheels = inc !== 'Tires only', hasTires = inc !== 'Wheels only';
-    if(!v('w-diam')) return 'Add the diameter.';
+    if(!fv('w-diam')) return 'Pick the diameter.';
     if(hasWheels){
-      if(!v('w-width')) return 'Add the wheel width.';
-      if(v('w-offset') === '') return 'Add the offset (ET). Not sure? It\'s stamped on the back of the wheel.';
-      if(!/^\d{1,2}\s*[x×]\s*\d{2,3}(\.\d+)?$/i.test(v('w-bolt'))) return 'Add the bolt pattern, like 5x114.3.';
+      if(!fv('w-width')) return 'Pick the wheel width.';
+      if(fv('w-offset') === '') return 'Pick the offset (ET). Not sure? It\'s stamped on the back of the wheel.';
+      if(!/^\d{1,2}\s*[x×]\s*\d{2,3}(\.\d+)?$/i.test(fv('w-bolt'))) return 'Pick the bolt pattern, like 5x114.3.';
+      if(!fv('w-bore')) return 'Pick the center bore. It\'s often cast on the back of the wheel, or check the manufacturer\'s spec.';
     }
-    if(hasTires && !v('w-tiresize')) return 'Add the tire size, like 225/40R18. It\'s on the tire sidewall.';
+    if(hasTires && !fv('w-tiresize')) return 'Pick the full tire size: width, aspect ratio and rim. It\'s on the tire sidewall.';
+    if(!fv('w-make')) return 'Pick the make these fit.';
+    if(!fv('w-model')) return 'Pick the model these fit.';
+    return yearsMsg('w-year-from', 'w-year-to');
+  }
+  function validateParts(){
+    if(document.getElementById('universal-fit').checked) return '';
+    if(!fv('p-make')) return 'Pick the make this part fits, or tick Universal fit.';
+    if(!fv('p-model')) return 'Pick the model this part fits.';
+    return yearsMsg('p-year-from', 'p-year-to');
+  }
+  function validateVehicle(){
+    if(!fv('v-make')) return 'Pick the make.';
+    if(!fv('v-model')) return 'Pick the model.';
+    if(!fv('v-year')) return 'Pick the year.';
     return '';
+  }
+
+  // Dropdowns for makes, models, years and wheel/tire specs (pc-fitment.js)
+  if(window.PC_FIT){
+    var F = PC_FIT, yearOpts = F.YEARS;
+    F.makeModel(document.getElementById('v-make'), document.getElementById('v-model'));
+    F.select(document.getElementById('v-year'), yearOpts, { placeholder:'Select year', other:false });
+    F.select(document.getElementById('w-diam'), F.DIAMETERS, { placeholder:'Select', other:false });
+    F.select(document.getElementById('w-width'), F.WIDTHS, { placeholder:'Select', other:false });
+    F.select(document.getElementById('w-offset'), F.OFFSETS, { placeholder:'Select', other:false });
+    F.select(document.getElementById('w-bolt'), F.BOLTS, { placeholder:'Select' });
+    F.select(document.getElementById('w-bore'), F.BORES, { placeholder:'Select' });
+    F.tireSize(document.getElementById('w-tiresize'));
+    F.makeModel(document.getElementById('w-make'), document.getElementById('w-model'));
+    F.select(document.getElementById('w-year-from'), yearOpts, { placeholder:'From', other:false });
+    F.select(document.getElementById('w-year-to'), yearOpts, { placeholder:'To', other:false });
+    F.makeModel(document.getElementById('p-make'), document.getElementById('p-model'));
+    F.select(document.getElementById('p-year-from'), yearOpts, { placeholder:'From', other:false });
+    F.select(document.getElementById('p-year-to'), yearOpts, { placeholder:'To', other:false });
+    F.makeModel(document.getElementById('po-make'), document.getElementById('po-model'));
+    F.select(document.getElementById('po-year'), yearOpts, { placeholder:'Select year', other:false });
   }
 
   // Step 2 — back + continue
   document.getElementById('step2-back').addEventListener('click', function(){ goStep(1); });
   document.getElementById('step2-next').addEventListener('click', function(){
-    if(selectedCat === 'wheels'){
-      var wErr = validateWheels();
-      var wErrEl = document.getElementById('w-error');
-      if(wErr){ wErrEl.textContent = wErr; wErrEl.style.display = 'block'; return; }
-      wErrEl.style.display = 'none';
+    var stepErr = { wheels:['w-error', validateWheels], parts:['p-error', validateParts], vehicles:['v-error', validateVehicle] }[selectedCat];
+    if(stepErr){
+      var stepMsg = stepErr[1]();
+      var stepErrEl = document.getElementById(stepErr[0]);
+      if(stepMsg){ stepErrEl.textContent = stepMsg; stepErrEl.style.display = 'block'; return; }
+      stepErrEl.style.display = 'none';
     }
     // Part-out builds its title from the vehicle; hide the manual title field.
     var titleGroup = document.getElementById('title-field-group');
@@ -3305,6 +3383,8 @@
     var fitmentFields = document.getElementById('fitment-fields');
     if(fitmentFields){ fitmentFields.style.display = 'block'; }
     if(typeof poSeedParts === 'function'){ poSeedParts(); } // clear part-out rows back to one
+    if(window.PC_FIT){ PC_FIT.syncAll(); }
+    ['w-error','p-error','v-error'].forEach(function(id){ var e = document.getElementById(id); if(e) e.style.display = 'none'; });
   }
 
   // ── Load and display listings ──
@@ -3345,11 +3425,14 @@
 
   // ── Shop for my car ──────────────────────────────────────────────────────
   // Filters wheels and parts by what fits the buyer's car. Saved per browser.
-  var myCar = { make:'', model:'', year:'', bolt:'' };
+  function emptyCar(){ return { make:'', model:'', year:'', bolt:'', diam:'', width:'', offmin:'', offmax:'', tire:'' }; }
+  var myCar = emptyCar();
   try { var savedCar = JSON.parse(localStorage.getItem('pc_my_car') || 'null'); if(savedCar) myCar = Object.assign(myCar, savedCar); } catch(e){}
-  var fitInputs = { make:'fit-make', model:'fit-model', year:'fit-year', bolt:'fit-bolt' };
+  var fitInputs = { make:'fit-make', model:'fit-model', year:'fit-year', bolt:'fit-bolt',
+                    diam:'fit-diam', width:'fit-width', offmin:'fit-offmin', offmax:'fit-offmax', tire:'fit-tire' };
   Object.keys(fitInputs).forEach(function(k){
     var el = document.getElementById(fitInputs[k]);
+    if(k === 'tire') return; // tire size has its own three-part handler below
     el.value = myCar[k] || '';
     el.addEventListener('input', function(){
       myCar[k] = el.value.trim();
@@ -3358,13 +3441,43 @@
     });
   });
   document.getElementById('fit-clear').addEventListener('click', function(){
-    myCar = { make:'', model:'', year:'', bolt:'' };
+    myCar = emptyCar();
     Object.keys(fitInputs).forEach(function(k){ document.getElementById(fitInputs[k]).value = ''; });
+    if(window.PC_FIT){ PC_FIT.syncAll(); }
     try { localStorage.removeItem('pc_my_car'); } catch(e){}
     renderListings();
   });
 
-  function fitActive(){ return !!(myCar.make || myCar.model || myCar.year || myCar.bolt); }
+  // Turn the search inputs into dropdowns
+  if(window.PC_FIT){
+    PC_FIT.makeModel(document.getElementById('fit-make'), document.getElementById('fit-model'), { makePlaceholder:'Make', modelPlaceholder:'Model' });
+    PC_FIT.select(document.getElementById('fit-year'), PC_FIT.YEARS, { placeholder:'Year', other:false });
+    PC_FIT.select(document.getElementById('fit-bolt'), PC_FIT.BOLTS, { placeholder:'Bolt pattern', other:false });
+    PC_FIT.select(document.getElementById('fit-diam'), PC_FIT.DIAMETERS, { placeholder:'Diameter', other:false });
+    PC_FIT.select(document.getElementById('fit-width'), PC_FIT.WIDTHS, { placeholder:'Width', other:false });
+    PC_FIT.select(document.getElementById('fit-offmin'), PC_FIT.OFFSETS, { placeholder:'Offset from', other:false });
+    PC_FIT.select(document.getElementById('fit-offmax'), PC_FIT.OFFSETS, { placeholder:'Offset to', other:false });
+    PC_FIT.tireSize(document.getElementById('fit-tire'));
+    var fitTireParts = document.getElementById('fit-tire')._pcfit.parts;
+    // Search can match on any part of the tire size, so pass partial picks through too.
+    fitTireParts.forEach(function(sel){
+      sel.addEventListener('change', function(){
+        myCar.tire = fitTireParts.map(function(p){ return p.value; }).join('|');
+        try { localStorage.setItem('pc_my_car', JSON.stringify(myCar)); } catch(e){}
+        renderListings();
+      });
+    });
+    if(myCar.tire && myCar.tire.indexOf('|') !== -1){
+      myCar.tire.split('|').forEach(function(v, i){ fitTireParts[i].value = v; });
+    }
+  }
+  var fitMoreBtn = document.getElementById('fit-more'), fitRow2 = document.getElementById('fit-row2');
+  function setFitRow2(open){ fitRow2.classList.toggle('open', open); fitMoreBtn.setAttribute('aria-expanded', open ? 'true' : 'false'); }
+  fitMoreBtn.addEventListener('click', function(){ setFitRow2(!fitRow2.classList.contains('open')); });
+  if(myCar.diam || myCar.width || myCar.offmin || myCar.offmax || (myCar.tire && myCar.tire.replace(/\|/g, ''))) setFitRow2(true);
+
+  function wheelSpecActive(){ return !!(myCar.diam || myCar.width || myCar.offmin || myCar.offmax || (myCar.tire && myCar.tire.replace(/\|/g, ''))); }
+  function fitActive(){ return !!(myCar.make || myCar.model || myCar.year || myCar.bolt || wheelSpecActive()); }
   function normTxt(s){ return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
   function looseMatch(listed, wanted){
     var a = normTxt(listed), b = normTxt(wanted);
@@ -3395,10 +3508,27 @@
     if(myCar.model && !model && !make) return false;
     return yearOk(from, to);
   }
+  function wheelSpecsOk(d){
+    if(myCar.diam && parseFloat(d.diameter) !== parseFloat(myCar.diam)) return false;
+    if(myCar.width && parseFloat(d.width) !== parseFloat(myCar.width)) return false;
+    var off = parseFloat(d.offset);
+    if(myCar.offmin){ if(isNaN(off) || off < parseFloat(myCar.offmin)) return false; }
+    if(myCar.offmax){ if(isNaN(off) || off > parseFloat(myCar.offmax)) return false; }
+    var want = (myCar.tire || '').split('|');
+    if(want.join('')){
+      var t = window.PC_FIT ? PC_FIT.parseTire(d.tire_size) : null;
+      if(!t) return false;
+      if(want[0] && t.w !== want[0]) return false;
+      if(want[1] && t.a !== want[1]) return false;
+      if(want[2] && t.r !== want[2]) return false;
+    }
+    return true;
+  }
   function fitsMyCar(l){
     if(!fitActive()) return true;
     if(l.category !== 'wheels' && l.category !== 'parts') return false;
     var d = l.details || {};
+    if(wheelSpecActive() && (l.category !== 'wheels' || !wheelSpecsOk(d))) return false;
     var wantsCar = !!(myCar.make || myCar.model || myCar.year);
     if(l._isPart){
       if(myCar.bolt) return false;
@@ -3427,8 +3557,16 @@
     var bits = [];
     if(car) bits.push(escHtml(car));
     if(myCar.bolt) bits.push(escHtml(myCar.bolt) + ' bolt pattern');
-    note.innerHTML = '<b>' + filtered.length + '</b> wheel and part listing' + (filtered.length !== 1 ? 's' : '') +
-      ' that fit ' + bits.join(', ') + '. Universal parts included.';
+    var specBits = [];
+    if(myCar.diam && myCar.width) specBits.push(myCar.diam + 'x' + myCar.width);
+    else if(myCar.diam) specBits.push(myCar.diam + '"');
+    else if(myCar.width) specBits.push(myCar.width + '" wide');
+    if(myCar.offmin || myCar.offmax) specBits.push('ET ' + (myCar.offmin || 'any') + ' to ' + (myCar.offmax || 'any'));
+    var tw = (myCar.tire || '').split('|');
+    if(tw.join('')) specBits.push((tw[0] || '___') + '/' + (tw[1] || '__') + 'R' + (tw[2] || '__'));
+    if(specBits.length) bits.push(escHtml(specBits.join(', ')));
+    note.innerHTML = '<b>' + filtered.length + '</b> ' + (wheelSpecActive() ? 'wheel' : 'wheel and part') + ' listing' + (filtered.length !== 1 ? 's' : '') +
+      (filtered.length === 1 ? ' that fits ' : ' that fit ') + bits.join(', ') + '.' + (wheelSpecActive() ? '' : ' Universal parts included.');
     note.style.display = 'block';
   }
   function detailsText(l){
