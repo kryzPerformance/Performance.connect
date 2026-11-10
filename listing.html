@@ -598,7 +598,10 @@
       addSpec(grid,'Diameter',d.diameter?d.diameter+'"':null);
       addSpec(grid,'Width',d.width?d.width+'"':null);
       addSpec(grid,'Offset',d.offset?'ET'+d.offset:null);
-      addSpec(grid,'Bolt Pattern',d.bolt_pattern);addSpec(grid,'Tire Size',d.tire_size);addSpec(grid,'Brand',d.brand);
+      addSpec(grid,'Bolt Pattern',d.bolt_pattern);addSpec(grid,'Center Bore',d.center_bore?d.center_bore+' mm':null);
+      addSpec(grid,'Tire Size',d.tire_size);addSpec(grid,'Brand',d.brand);
+      var wy=d.fitment_year_from&&d.fitment_year_to?d.fitment_year_from+'–'+d.fitment_year_to:(d.fitment_year_from||d.fitment_year_to||'');
+      addSpec(grid,'Fits',[wy,d.fitment_make,d.fitment_model].filter(Boolean).join(' ')||null);
     } else if(l.category==='parts'){
       addSpec(grid,'Type',d.subcategory);
       if(d.universal_fit){ addSpec(grid,'Fitment','Universal Fit',true); }
