@@ -535,24 +535,36 @@
 
   /* ── SHOP FOR MY CAR (fitment filter) ── */
   .fit-bar{
-    display:flex;flex-wrap:wrap;align-items:center;gap:8px;
     background:var(--panel);border:1px solid var(--line);border-radius:10px;
-    padding:10px 12px;margin-bottom:16px;transition:border-color 0.15s;
+    padding:10px;margin-bottom:16px;transition:border-color 0.15s;
   }
   .fit-bar.active{ border-color:var(--cyan); }
-  .fit-bar-label{
-    display:flex;align-items:center;gap:8px;margin-right:4px;
-    font-family:'Inter',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.12em;
-    text-transform:uppercase;color:var(--cyan);white-space:nowrap;
+  .fit-tabs{ display:flex;flex-wrap:wrap;gap:8px; }
+  .fit-tab{
+    display:flex;align-items:center;gap:9px;flex:1 1 240px;min-width:0;
+    padding:11px 14px;border-radius:8px;border:1px solid var(--line);background:#070808;
+    color:var(--white);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-align:left;
+    transition:border-color 0.15s, background 0.15s;
   }
-  .fit-bar-label svg{ width:18px;height:18px; }
+  .fit-tab:hover{ border-color:rgba(31,169,207,0.45); }
+  .fit-tab svg{ width:18px;height:18px;flex-shrink:0;color:var(--cyan-bright); }
+  .fit-tab span{ flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+  .fit-tab .fit-chev{ width:12px;height:8px;color:var(--steel);transition:transform 0.2s; }
+  .fit-tab[aria-expanded="true"]{ border-color:var(--cyan);background:rgba(31,169,207,0.08); }
+  .fit-tab[aria-expanded="true"] .fit-chev{ transform:rotate(180deg); }
+  .fit-count{
+    display:none;min-width:20px;height:20px;padding:0 6px;border-radius:999px;box-sizing:border-box;
+    background:var(--cyan-bright);color:#03171d;font-size:11.5px;font-weight:700;line-height:20px;text-align:center;
+  }
+  .fit-count.on{ display:inline-block; }
+  .fit-row{ display:none;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--line); }
+  .fit-row.open{ display:flex; }
+  .fit-row-label{ font-family:'Inter',sans-serif;font-size:11.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--steel);margin-right:2px; }
   .fit-bar input{
     flex:1 1 120px;min-width:0;padding:9px 12px;
     background:#070808;border:0.5px solid #23292b;border-radius:7px;
     color:var(--white);font-family:'Inter',sans-serif;font-size:14px;outline:none;
-    transition:border-color 0.15s;
   }
-  .fit-bar input#fit-year{ flex:0 1 90px; }
   .fit-bar select{
     flex:1 1 130px;min-width:0;padding:9px 30px 9px 12px;
     background:#070808 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238FA0A6' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 10px center;
@@ -560,33 +572,26 @@
     font-family:'Inter',sans-serif;font-size:14px;outline:none;cursor:pointer;
     appearance:none;-webkit-appearance:none;transition:border-color 0.15s;
   }
-  .fit-bar select:focus{ border-color:var(--cyan); }
+  .fit-bar select:focus, .fit-bar input:focus{ border-color:var(--cyan); }
   .fit-bar select option{ background:#0E1112;color:var(--white); }
-  .fit-bar input:focus{ border-color:var(--cyan); }
-  .fit-more{
-    padding:9px 12px;border-radius:7px;border:1px solid rgba(31,169,207,0.45);background:rgba(31,169,207,0.06);
-    color:var(--cyan-bright);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;
-  }
-  .fit-more[aria-expanded="true"]{ background:rgba(31,169,207,0.14); }
-  .fit-row2{ flex-basis:100%;display:none;flex-wrap:wrap;align-items:center;gap:8px;padding-top:8px;border-top:0.5px solid var(--line); }
-  .fit-row2.open{ display:flex; }
-  .fit-row2-label{ font-family:'Inter',sans-serif;font-size:11.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--steel);margin-right:2px; }
-  .fit-row2 .pcfit-tire{ display:flex;gap:8px;flex:2 1 260px; }
-  .fit-row2 .pcfit-tire select{ flex:1 1 0; }
+  .fit-break{ flex-basis:100%;height:0; }
+  .fit-row-label{ min-width:62px; }
+  .fit-row .pcfit-tire{ display:flex;gap:8px;flex:1 1 300px;max-width:560px; }
+  .fit-row .pcfit-tire select{ flex:1 1 0; }
   .pcfit-tire{ display:grid;grid-template-columns:repeat(3, minmax(0,1fr));gap:8px; }
   .fgroup .pcfit-other{ margin-top:8px; }
-  .fit-bar input::placeholder{ color:var(--steel-dim); }
   .fit-clear{
-    padding:9px 14px;border-radius:7px;border:1px solid var(--line);background:transparent;
+    display:none;padding:11px 16px;border-radius:8px;border:1px solid var(--line);background:transparent;
     color:var(--steel);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;
   }
+  .fit-clear.on{ display:block; }
   .fit-clear:hover{ color:var(--white);border-color:var(--steel); }
   .fit-note{ font-size:12.5px;color:var(--steel);margin:-8px 0 16px 2px;display:none; }
   .fit-note b{ color:var(--cyan-bright);font-weight:600; }
   @media(max-width:640px){
-    .fit-bar-label{ width:100%; }
-    .fit-row2-label{ width:100%; }
-    .fit-bar input{ flex:1 1 40%; }
+    .fit-tab{ flex-basis:100%; }
+    .fit-clear.on{ flex-basis:100%; }
+    .fit-row-label{ width:100%; }
   }
   .listing-spec{
     font-size:12.5px;font-weight:600;color:var(--cyan-bright);
@@ -1648,23 +1653,35 @@
 
         <!-- Shop for my car: filters wheels and parts by fitment -->
         <div class="fit-bar" id="fit-bar">
-          <div class="fit-bar-label">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14M6 17v2M18 17v2M3 13l2-6a2 2 0 0 1 2-1.4h10A2 2 0 0 1 19 7l2 6v4H3z"/><circle cx="7.5" cy="13.5" r="1"/><circle cx="16.5" cy="13.5" r="1"/></svg>
-            Shop for my car
+          <div class="fit-tabs">
+            <button type="button" class="fit-tab" id="fit-tab-car" aria-expanded="false" aria-controls="fit-row-car">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14M6 17v2M18 17v2M3 13l2-6a2 2 0 0 1 2-1.4h10A2 2 0 0 1 19 7l2 6v4H3z"/><circle cx="7.5" cy="13.5" r="1"/><circle cx="16.5" cy="13.5" r="1"/></svg>
+              <span>Search by make &amp; model</span>
+              <b class="fit-count" id="fit-count-car"></b>
+              <svg class="fit-chev" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M1 1l5 5 5-5"/></svg>
+            </button>
+            <button type="button" class="fit-tab" id="fit-tab-wheel" aria-expanded="false" aria-controls="fit-row-wheel">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/></svg>
+              <span>Search by wheel &amp; tire size</span>
+              <b class="fit-count" id="fit-count-wheel"></b>
+              <svg class="fit-chev" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M1 1l5 5 5-5"/></svg>
+            </button>
+            <button type="button" class="fit-clear" id="fit-clear">Clear</button>
           </div>
-          <input type="text" id="fit-make" placeholder="Make" aria-label="Your car's make">
-          <input type="text" id="fit-model" placeholder="Model" aria-label="Your car's model">
-          <input type="number" id="fit-year" placeholder="Year" aria-label="Your car's year" min="1960" max="2030">
-          <input type="text" id="fit-bolt" placeholder="Bolt pattern" aria-label="Wheel bolt pattern, like 5x114.3">
-          <button type="button" class="fit-more" id="fit-more" aria-expanded="false" aria-controls="fit-row2">Wheel &amp; tire specs</button>
-          <button type="button" class="fit-clear" id="fit-clear">Clear</button>
-          <div class="fit-row2" id="fit-row2">
-            <span class="fit-row2-label">Wheels</span>
+          <div class="fit-row" id="fit-row-car">
+            <input type="text" id="fit-make" placeholder="Make" aria-label="Your car's make">
+            <input type="text" id="fit-model" placeholder="Model" aria-label="Your car's model">
+            <input type="number" id="fit-year" placeholder="Year" aria-label="Your car's year" min="1960" max="2030">
+          </div>
+          <div class="fit-row" id="fit-row-wheel">
+            <span class="fit-row-label">Wheels</span>
+            <input type="text" id="fit-bolt" placeholder="Bolt pattern" aria-label="Wheel bolt pattern, like 5x114.3">
             <input type="text" id="fit-diam" aria-label="Wheel diameter">
             <input type="text" id="fit-width" aria-label="Wheel width">
             <input type="text" id="fit-offmin" aria-label="Offset from">
             <input type="text" id="fit-offmax" aria-label="Offset to">
-            <span class="fit-row2-label">Tires</span>
+            <span class="fit-break"></span>
+            <span class="fit-row-label">Tires</span>
             <input type="text" id="fit-tire" aria-label="Tire size">
           </div>
         </div>
@@ -3471,10 +3488,24 @@
       myCar.tire.split('|').forEach(function(v, i){ fitTireParts[i].value = v; });
     }
   }
-  var fitMoreBtn = document.getElementById('fit-more'), fitRow2 = document.getElementById('fit-row2');
-  function setFitRow2(open){ fitRow2.classList.toggle('open', open); fitMoreBtn.setAttribute('aria-expanded', open ? 'true' : 'false'); }
-  fitMoreBtn.addEventListener('click', function(){ setFitRow2(!fitRow2.classList.contains('open')); });
-  if(myCar.diam || myCar.width || myCar.offmin || myCar.offmax || (myCar.tire && myCar.tire.replace(/\|/g, ''))) setFitRow2(true);
+  // Two "Search by" buttons; each opens its own row of dropdowns. Picks in both rows still apply together.
+  var fitTabs = { car: document.getElementById('fit-tab-car'), wheel: document.getElementById('fit-tab-wheel') };
+  var fitRows = { car: document.getElementById('fit-row-car'), wheel: document.getElementById('fit-row-wheel') };
+  function openFitRow(which){
+    ['car','wheel'].forEach(function(k){
+      var open = k === which && !fitRows[k].classList.contains('open');
+      fitRows[k].classList.toggle('open', open);
+      fitTabs[k].setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  }
+  fitTabs.car.addEventListener('click', function(){ openFitRow('car'); });
+  fitTabs.wheel.addEventListener('click', function(){ openFitRow('wheel'); });
+  function carCount(){ return ['make','model','year'].filter(function(k){ return myCar[k]; }).length; }
+  function wheelCount(){
+    var n = ['bolt','diam','width','offmin','offmax'].filter(function(k){ return myCar[k]; }).length;
+    return n + ((myCar.tire || '').split('|').filter(Boolean).length ? 1 : 0);
+  }
+  if(carCount()) openFitRow('car'); else if(wheelCount()) openFitRow('wheel');
 
   function wheelSpecActive(){ return !!(myCar.diam || myCar.width || myCar.offmin || myCar.offmax || (myCar.tire && myCar.tire.replace(/\|/g, ''))); }
   function fitActive(){ return !!(myCar.make || myCar.model || myCar.year || myCar.bolt || wheelSpecActive()); }
@@ -3552,6 +3583,10 @@
   function updateFitNote(filtered){
     var note = document.getElementById('fit-note');
     document.getElementById('fit-bar').classList.toggle('active', fitActive());
+    [['fit-count-car', carCount()], ['fit-count-wheel', wheelCount()]].forEach(function(c){
+      var el = document.getElementById(c[0]); el.textContent = c[1] || ''; el.classList.toggle('on', c[1] > 0);
+    });
+    document.getElementById('fit-clear').classList.toggle('on', fitActive());
     if(!fitActive()){ note.style.display = 'none'; return; }
     var car = [myCar.year, myCar.make, myCar.model].filter(Boolean).join(' ');
     var bits = [];
