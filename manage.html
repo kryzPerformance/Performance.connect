@@ -559,7 +559,7 @@
   var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   function esc(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function catLabel(c){ return {vehicles:'Vehicle',wheels:'Wheels & Tires',parts:'Parts',tools:'Tools',fluids:'Fluids & Products'}[c]||c; }
+  function catLabel(c){ return {vehicles:'Vehicle',wheels:'Wheels & Tires',parts:'Parts',tools:'Tools',fluids:'Fluids & Products',powersports:'Powersports',electrical:'Audio & Electrical',accessories:'Accessories'}[c]||c; }
   function fmtDate(iso){ return new Date(iso).toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'}); }
   function normaliseKey(raw){ var c=raw.replace(/[^A-Z0-9]/gi,'').toUpperCase(); if(c.length===8) return 'PC-'+c.slice(0,4)+'-'+c.slice(4,8); return null; }
 

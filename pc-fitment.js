@@ -74,6 +74,7 @@
     MAKES: MAKES,
     makes: function(){ return Object.keys(MAKES).map(function(m){ return [m, m]; }); },
     models: function(make){ return (MAKES[make] || []).map(function(m){ return [m, m]; }); },
+    PS_MAKES: ['Aprilia','Arctic Cat','BMW','Can-Am','CFMOTO','Ducati','Harley-Davidson','Honda','Husqvarna','Indian','Kawasaki','KTM','Lynx','Polaris','Royal Enfield','Sea-Doo','Segway','Ski-Doo','Suzuki','Triumph','Yamaha'].map(function(m){ return [m, m]; }),
     YEARS: range(thisYear + 1, 1960, -1),
     BOLTS: ['4x98','4x100','4x108','4x114.3','5x98','5x100','5x105','5x108','5x110','5x112','5x114.3','5x115','5x120','5x120.7','5x127','5x130','5x135','5x139.7','6x114.3','6x120','6x135','6x139.7','8x165.1','8x170'].map(function(b){ return [b, b]; }),
     DIAMETERS: range(13, 24, 1, function(n){ return n + '"'; }),

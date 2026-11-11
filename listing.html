@@ -518,7 +518,7 @@
 
   function esc(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function fmtDate(iso){ return new Date(iso).toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'}); }
-  function catLabel(c){ return {vehicles:'Vehicle',wheels:'Wheels & Tires',parts:'Parts',tools:'Tools',fluids:'Fluids & Products'}[c]||c; }
+  function catLabel(c){ return {vehicles:'Vehicle',wheels:'Wheels & Tires',parts:'Parts',tools:'Tools',fluids:'Fluids & Products',powersports:'Powersports',electrical:'Audio & Electrical',accessories:'Accessories'}[c]||c; }
 
   /* ── GALLERY ── */
   var photos = [], cur = 0, touchX = 0;
@@ -611,6 +611,16 @@
       }
     } else if(l.category==='tools'){
       addSpec(grid,'Type',d.subcategory);addSpec(grid,'Brand / Model',d.brand);
+    } else if(l.category==='powersports'){
+      addSpec(grid,'Type',d.type);addSpec(grid,'Make',d.make);addSpec(grid,'Model',d.model);addSpec(grid,'Year',d.year);
+      addSpec(grid,'Engine',d.engine_cc?d.engine_cc+' cc':null);addSpec(grid,'Km / hours',d.usage);
+    } else if(l.category==='electrical'||l.category==='accessories'){
+      addSpec(grid,'Type',d.subcategory);addSpec(grid,'Brand',d.brand);
+      if(d.universal_fit){ addSpec(grid,'Fitment','Universal Fit',true); }
+      else {
+        var fa=[d.fitment_make,d.fitment_model,d.fitment_year_from&&d.fitment_year_to?d.fitment_year_from+'–'+d.fitment_year_to:''].filter(Boolean).join(' ');
+        addSpec(grid,'Fitment',fa||null);
+      }
     } else if(l.category==='fluids'){
       addSpec(grid,'Type',d.subcategory);addSpec(grid,'Brand',d.brand);addSpec(grid,'Quantity',d.quantity);
     }

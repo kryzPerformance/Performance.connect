@@ -6,11 +6,11 @@
 <script src="/pc-loader.js" data-pageload></script>
 <script src="/pc-nav.js" defer></script>
 <title>Performance Cars &amp; Parts for Sale in the GTA — Performance Connect</title>
-<meta name="description" content="Buy and sell performance cars, parts, wheels, tools and fluids across Toronto and the GTA. JDM, Euro, USDM and domestic — listed by enthusiasts, for enthusiasts.">
+<meta name="description" content="Buy and sell performance cars, powersports, parts, wheels, audio, accessories, tools and fluids across Toronto and the GTA. JDM, Euro, USDM and domestic — listed by enthusiasts, for enthusiasts.">
 <link rel="canonical" href="https://performanceconnect.ca/marketplace">
 <!-- Link previews (iMessage, Instagram, Discord, Facebook) -->
 <meta property="og:title" content="Performance Cars &amp; Parts for Sale in the GTA — Performance Connect">
-<meta property="og:description" content="Buy and sell performance cars, parts, wheels, tools and fluids across Toronto and the GTA. JDM, Euro, USDM and domestic — listed by enthusiasts, for enthusiasts.">
+<meta property="og:description" content="Buy and sell performance cars, powersports, parts, wheels, audio, accessories, tools and fluids across Toronto and the GTA. JDM, Euro, USDM and domestic — listed by enthusiasts, for enthusiasts.">
 <meta property="og:url" content="https://performanceconnect.ca/marketplace">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Performance Connect">
@@ -219,7 +219,7 @@
 
   @media (min-width:1100px){
     .pillar-grid{
-      grid-template-columns:repeat(5, 1fr);
+      grid-template-columns:repeat(3, 1fr);
     }
   }
 
@@ -315,6 +315,7 @@
     background:linear-gradient(180deg,rgba(7,8,8,0.55) 0%,rgba(7,8,8,0.3) 40%,rgba(7,8,8,0.65) 100%);
     pointer-events:none;
   }
+  .card-video--plain{ background:radial-gradient(ellipse at 50% 35%, rgba(31,169,207,0.14) 0%, rgba(7,8,8,0) 70%); }
   .pillar-card:hover .card-video video,
   .pillar-card.touch-active .card-video video{ opacity:0.6; }
 
@@ -1510,6 +1511,27 @@
             </div>
         </div>
 
+        <div class="pillar-card" tabindex="0" data-cat="powersports">
+            <div class="card-front">
+              <div class="card-video card-video--plain"></div>
+              <div class="pillar-icon"><img src="assets/icons/powersports_icon.svg" alt=""></div>
+              <div class="pillar-name">Powersports</div>
+              <p class="pillar-desc">Bikes, sleds, ATVs, side-by-sides and jet skis — plus the parts and gear.</p>
+              <div class="card-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                Tap to explore
+              </div>
+            </div>
+            <div class="card-back">
+              <div class="card-back-head">
+                <div class="card-back-title">Powersports</div>
+                <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
+              </div>
+              <div class="back-listings" id="back-powersports"><div class="back-loading"><div class="spin"></div></div></div>
+              <div class="card-back-footer"><button class="view-all-btn" data-filter="powersports">View all powersports →</button></div>
+            </div>
+        </div>
+
         <div class="pillar-card" tabindex="0" data-cat="wheels">
             <div class="card-front">
               <div class="card-video">
@@ -1555,6 +1577,48 @@
               </div>
               <div class="back-listings" id="back-parts"><div class="back-loading"><div class="spin"></div></div></div>
               <div class="card-back-footer"><button class="view-all-btn" data-filter="parts">View all parts →</button></div>
+            </div>
+        </div>
+
+        <div class="pillar-card" tabindex="0" data-cat="electrical">
+            <div class="card-front">
+              <div class="card-video card-video--plain"></div>
+              <div class="pillar-icon"><img src="assets/icons/audio_icon.svg" alt=""></div>
+              <div class="pillar-name">Audio &amp; Electrical</div>
+              <p class="pillar-desc">Head units, subs, amps, lighting, remote starts and wiring — with fitment.</p>
+              <div class="card-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                Tap to explore
+              </div>
+            </div>
+            <div class="card-back">
+              <div class="card-back-head">
+                <div class="card-back-title">Audio &amp; Electrical</div>
+                <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
+              </div>
+              <div class="back-listings" id="back-electrical"><div class="back-loading"><div class="spin"></div></div></div>
+              <div class="card-back-footer"><button class="view-all-btn" data-filter="electrical">View all audio &amp; electrical →</button></div>
+            </div>
+        </div>
+
+        <div class="pillar-card" tabindex="0" data-cat="accessories">
+            <div class="card-front">
+              <div class="card-video card-video--plain"></div>
+              <div class="pillar-icon"><img src="assets/icons/accessories_icon.svg" alt=""></div>
+              <div class="pillar-name">Accessories</div>
+              <p class="pillar-desc">Mats, covers, racks, interior bits, merch and collectibles.</p>
+              <div class="card-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                Tap to explore
+              </div>
+            </div>
+            <div class="card-back">
+              <div class="card-back-head">
+                <div class="card-back-title">Accessories</div>
+                <div class="card-back-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Back</div>
+              </div>
+              <div class="back-listings" id="back-accessories"><div class="back-loading"><div class="spin"></div></div></div>
+              <div class="card-back-footer"><button class="view-all-btn" data-filter="accessories">View all accessories →</button></div>
             </div>
         </div>
 
@@ -1692,8 +1756,11 @@
           <div class="filter-btns-wrap" id="filter-btns">
             <button class="filter-btn active" data-filter="all">All</button>
             <button class="filter-btn" data-filter="vehicles">Vehicles</button>
+            <button class="filter-btn" data-filter="powersports">Powersports</button>
             <button class="filter-btn" data-filter="wheels">Wheels</button>
             <button class="filter-btn" data-filter="parts">Parts</button>
+            <button class="filter-btn" data-filter="electrical">Audio &amp; Electrical</button>
+            <button class="filter-btn" data-filter="accessories">Accessories</button>
             <button class="filter-btn" data-filter="tools">Tools</button>
             <button class="filter-btn" data-filter="fluids">Fluids</button>
           </div>
@@ -1756,6 +1823,10 @@
             <img src="vehicles_icon.png" alt="">
             <span>Vehicles</span>
           </button>
+          <button class="cat-btn" data-cat="powersports">
+            <img src="assets/icons/powersports_icon.svg" alt="">
+            <span>Powersports</span>
+          </button>
           <button class="cat-btn" data-cat="wheels">
             <img src="wheels_icon.png" alt="">
             <span>Wheels &amp; Tires</span>
@@ -1763,6 +1834,14 @@
           <button class="cat-btn" data-cat="parts">
             <img src="parts_icon.png" alt="">
             <span>Parts</span>
+          </button>
+          <button class="cat-btn" data-cat="electrical">
+            <img src="assets/icons/audio_icon.svg" alt="">
+            <span>Audio &amp; Electrical</span>
+          </button>
+          <button class="cat-btn" data-cat="accessories">
+            <img src="assets/icons/accessories_icon.svg" alt="">
+            <span>Accessories</span>
           </button>
           <button class="cat-btn" data-cat="tools">
             <img src="tools_icon.png" alt="">
@@ -1964,6 +2043,166 @@
           </div>
           <div class="fgroup"><label>Description</label><textarea id="p-desc" placeholder="Part number, install notes, reason for selling, any damage..."></textarea></div>
           <div class="form-err" id="p-error" role="alert"></div>
+        </div>
+
+        <!-- POWERSPORTS -->
+        <div id="form-powersports" class="cat-form" style="display:none;">
+          <div class="frow frow-2">
+            <div class="fgroup">
+              <label>Type <span class="req">*</span></label>
+              <select id="ps-type">
+                <option value="">Select</option>
+                <option>Street / sport bike</option>
+                <option>Cruiser / touring</option>
+                <option>Dirt bike</option>
+                <option>ATV</option>
+                <option>UTV / side-by-side</option>
+                <option>Snowmobile</option>
+                <option>Jet ski / PWC</option>
+                <option>Parts &amp; gear</option>
+              </select>
+            </div>
+            <div class="fgroup">
+              <label>Condition</label>
+              <select id="ps-cond">
+                <option value="">Select</option>
+                <option>New</option>
+                <option>Like New</option>
+                <option>Used</option>
+                <option>Project / For Parts</option>
+              </select>
+            </div>
+          </div>
+          <div class="frow frow-3">
+            <div class="fgroup"><label>Make <span class="req">*</span></label><input type="text" id="ps-make" placeholder="Yamaha"></div>
+            <div class="fgroup"><label>Model <span class="req">*</span></label><input type="text" id="ps-model" placeholder="YZF-R6"></div>
+            <div class="fgroup"><label>Year <span class="req ps-year-req">*</span></label><input type="number" id="ps-year" placeholder="2019" min="1960" max="2030"></div>
+          </div>
+          <p class="form-hint" id="ps-gear-hint" style="display:none;">Selling parts or gear? Make, model and year are what it fits.</p>
+          <div class="frow frow-2">
+            <div class="fgroup"><label>Engine (cc)</label><input type="number" id="ps-cc" placeholder="600"></div>
+            <div class="fgroup"><label>Kilometres / hours</label><input type="text" id="ps-usage" placeholder="12,000 km or 80 hrs"></div>
+          </div>
+          <div class="frow frow-2">
+            <div class="fgroup"><label>Asking price ($)</label><input type="number" id="ps-price" placeholder="9500"></div>
+            <div class="fgroup"><label>Location (city)</label><input type="text" id="ps-location" placeholder="Toronto, ON"></div>
+          </div>
+          <div class="fgroup"><label>Description</label><textarea id="ps-desc" placeholder="Mods, service history, ownership, plated or not, any damage…"></textarea></div>
+          <div class="form-err" id="ps-error" role="alert"></div>
+        </div>
+
+        <!-- AUDIO & ELECTRICAL -->
+        <div id="form-electrical" class="cat-form" style="display:none;">
+          <div class="fgroup"><label>Item title</label><input type="text" id="ae-title" placeholder="JL Audio 10W3v3 sub + ported box"></div>
+          <div class="frow frow-2">
+            <div class="fgroup">
+              <label>Sub-category <span class="req">*</span></label>
+              <select id="ae-subcat">
+                <option value="">Select</option>
+                <option>Head units &amp; CarPlay</option>
+                <option>Speakers</option>
+                <option>Subwoofers &amp; enclosures</option>
+                <option>Amplifiers</option>
+                <option>Wiring &amp; install kits</option>
+                <option>Lighting</option>
+                <option>Remote start &amp; security</option>
+                <option>Gauges &amp; displays</option>
+                <option>Dash cams</option>
+                <option>Batteries &amp; charging</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="fgroup">
+              <label>Condition</label>
+              <select id="ae-cond">
+                <option value="">Select</option>
+                <option>New</option>
+                <option>Like New</option>
+                <option>Used</option>
+                <option>For Parts</option>
+              </select>
+            </div>
+          </div>
+          <div class="fgroup"><label>Brand / model</label><input type="text" id="ae-brand" placeholder="JL Audio 10W3v3-4"></div>
+          <hr class="section-rule">
+          <p class="step-eyebrow" style="margin-bottom:10px;">Fitment</p>
+          <div class="fitment-toggle">
+            <input type="checkbox" id="ae-universal" class="universal-toggle" data-fields="ae-fitment">
+            <label for="ae-universal">Universal fit — works with most/all vehicles</label>
+          </div>
+          <div id="ae-fitment">
+            <div class="frow frow-2">
+              <div class="fgroup"><label>Make <span class="req">*</span></label><input type="text" id="ae-make" placeholder="Honda"></div>
+              <div class="fgroup"><label>Model <span class="req">*</span></label><input type="text" id="ae-model" placeholder="Civic Si"></div>
+            </div>
+            <div class="frow frow-2">
+              <div class="fgroup"><label>Year from <span class="req">*</span></label><input type="number" id="ae-year-from" placeholder="2006" min="1960" max="2030"></div>
+              <div class="fgroup"><label>Year to <span class="req">*</span></label><input type="number" id="ae-year-to" placeholder="2011" min="1960" max="2030"></div>
+            </div>
+          </div>
+          <hr class="section-rule">
+          <div class="frow frow-2">
+            <div class="fgroup"><label>Asking price ($)</label><input type="number" id="ae-price" placeholder="250"></div>
+            <div class="fgroup"><label>Location (city)</label><input type="text" id="ae-location" placeholder="Toronto, ON"></div>
+          </div>
+          <div class="fgroup"><label>Description</label><textarea id="ae-desc" placeholder="Specs (watts, ohms, size), what's included, any wear or issues…"></textarea></div>
+          <div class="form-err" id="ae-error" role="alert"></div>
+        </div>
+
+        <!-- ACCESSORIES -->
+        <div id="form-accessories" class="cat-form" style="display:none;">
+          <div class="fgroup"><label>Item title</label><input type="text" id="ac-title" placeholder="WeatherTech floor liners — front + rear"></div>
+          <div class="frow frow-2">
+            <div class="fgroup">
+              <label>Sub-category <span class="req">*</span></label>
+              <select id="ac-subcat">
+                <option value="">Select</option>
+                <option>Interior</option>
+                <option>Exterior</option>
+                <option>Floor mats &amp; liners</option>
+                <option>Racks &amp; carriers</option>
+                <option>Covers</option>
+                <option>Car care</option>
+                <option>Apparel &amp; merch</option>
+                <option>Keychains &amp; collectibles</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="fgroup">
+              <label>Condition</label>
+              <select id="ac-cond">
+                <option value="">Select</option>
+                <option>New</option>
+                <option>Like New</option>
+                <option>Used</option>
+                <option>For Parts</option>
+              </select>
+            </div>
+          </div>
+          <div class="fgroup"><label>Brand</label><input type="text" id="ac-brand" placeholder="WeatherTech"></div>
+          <hr class="section-rule">
+          <p class="step-eyebrow" style="margin-bottom:10px;">Fitment</p>
+          <div class="fitment-toggle">
+            <input type="checkbox" id="ac-universal" class="universal-toggle" data-fields="ac-fitment">
+            <label for="ac-universal">Universal fit — works with most/all vehicles</label>
+          </div>
+          <div id="ac-fitment">
+            <div class="frow frow-2">
+              <div class="fgroup"><label>Make <span class="req">*</span></label><input type="text" id="ac-make" placeholder="Honda"></div>
+              <div class="fgroup"><label>Model <span class="req">*</span></label><input type="text" id="ac-model" placeholder="Civic Si"></div>
+            </div>
+            <div class="frow frow-2">
+              <div class="fgroup"><label>Year from <span class="req">*</span></label><input type="number" id="ac-year-from" placeholder="2006" min="1960" max="2030"></div>
+              <div class="fgroup"><label>Year to <span class="req">*</span></label><input type="number" id="ac-year-to" placeholder="2011" min="1960" max="2030"></div>
+            </div>
+          </div>
+          <hr class="section-rule">
+          <div class="frow frow-2">
+            <div class="fgroup"><label>Asking price ($)</label><input type="number" id="ac-price" placeholder="120"></div>
+            <div class="fgroup"><label>Location (city)</label><input type="text" id="ac-location" placeholder="Toronto, ON"></div>
+          </div>
+          <div class="fgroup"><label>Description</label><textarea id="ac-desc" placeholder="Size, colour, what's included, any wear…"></textarea></div>
+          <div class="form-err" id="ac-error" role="alert"></div>
         </div>
 
         <!-- TOOLS -->
@@ -2556,7 +2795,8 @@
     document.querySelectorAll('.cat-form').forEach(function(f){ f.style.display = 'none'; });
     document.getElementById('form-' + selectedCat).style.display = 'block';
     // update heading
-    var headings = { vehicles:'Vehicle details', wheels:'Wheel &amp; tire details', parts:'Part details', tools:'Tool details', fluids:'Fluids &amp; product details', partout:'Part out vehicle' };
+    var headings = { vehicles:'Vehicle details', wheels:'Wheel &amp; tire details', parts:'Part details', tools:'Tool details', fluids:'Fluids &amp; product details', partout:'Part out vehicle',
+                     powersports:'Powersports details', electrical:'Audio &amp; electrical details', accessories:'Accessory details' };
     document.getElementById('step2-heading').innerHTML = headings[selectedCat];
     goStep(2);
   });
@@ -2598,6 +2838,20 @@
     if(!fv('p-model')) return 'Pick the model this part fits.';
     return yearsMsg('p-year-from', 'p-year-to');
   }
+  function validateFitted(px){
+    if(!fv(px + '-subcat')) return 'Pick a sub-category.';
+    if(document.getElementById(px + '-universal').checked) return '';
+    if(!fv(px + '-make')) return 'Pick the make it fits, or tick Universal fit.';
+    if(!fv(px + '-model')) return 'Pick the model it fits.';
+    return yearsMsg(px + '-year-from', px + '-year-to');
+  }
+  function validatePowersports(){
+    if(!fv('ps-type')) return 'Pick the type.';
+    if(!fv('ps-make')) return 'Pick the make.';
+    if(!fv('ps-model')) return 'Add the model.';
+    if(!fv('ps-year')) return 'Pick the year.';
+    return '';
+  }
   function validateVehicle(){
     if(!fv('v-make')) return 'Pick the make.';
     if(!fv('v-model')) return 'Pick the model.';
@@ -2623,13 +2877,23 @@
     F.select(document.getElementById('p-year-from'), yearOpts, { placeholder:'From', other:false });
     F.select(document.getElementById('p-year-to'), yearOpts, { placeholder:'To', other:false });
     F.makeModel(document.getElementById('po-make'), document.getElementById('po-model'));
+    ['ae','ac'].forEach(function(px){
+      F.makeModel(document.getElementById(px + '-make'), document.getElementById(px + '-model'));
+      F.select(document.getElementById(px + '-year-from'), yearOpts, { placeholder:'From', other:false });
+      F.select(document.getElementById(px + '-year-to'), yearOpts, { placeholder:'To', other:false });
+    });
+    F.select(document.getElementById('ps-make'), F.PS_MAKES, { placeholder:'Select make' });
+    F.select(document.getElementById('ps-year'), yearOpts, { placeholder:'Select year', other:false });
     F.select(document.getElementById('po-year'), yearOpts, { placeholder:'Select year', other:false });
   }
 
   // Step 2 — back + continue
   document.getElementById('step2-back').addEventListener('click', function(){ goStep(1); });
   document.getElementById('step2-next').addEventListener('click', function(){
-    var stepErr = { wheels:['w-error', validateWheels], parts:['p-error', validateParts], vehicles:['v-error', validateVehicle] }[selectedCat];
+    var stepErr = { wheels:['w-error', validateWheels], parts:['p-error', validateParts], vehicles:['v-error', validateVehicle],
+                    powersports:['ps-error', validatePowersports],
+                    electrical:['ae-error', function(){ return validateFitted('ae'); }],
+                    accessories:['ac-error', function(){ return validateFitted('ac'); }] }[selectedCat];
     if(stepErr){
       var stepMsg = stepErr[1]();
       var stepErrEl = document.getElementById(stepErr[0]);
@@ -2723,6 +2987,40 @@
         subcategory: document.getElementById('fl-subcat').value,
         brand: document.getElementById('fl-brand').value,
         quantity: document.getElementById('fl-qty').value
+      };
+    }
+    if(cat === 'powersports'){
+      var psType = document.getElementById('ps-type').value;
+      data.title = [document.getElementById('ps-year').value, document.getElementById('ps-make').value, document.getElementById('ps-model').value].filter(Boolean).join(' ') +
+        (psType === 'Parts &amp; gear' || psType === 'Parts & gear' ? ' parts & gear' : '');
+      data.price = parseFloat(document.getElementById('ps-price').value) || null;
+      data.condition = document.getElementById('ps-cond').value;
+      data.location = document.getElementById('ps-location').value;
+      data.description = document.getElementById('ps-desc').value;
+      data.details = {
+        type: psType,
+        make: document.getElementById('ps-make').value,
+        model: document.getElementById('ps-model').value,
+        year: document.getElementById('ps-year').value,
+        engine_cc: document.getElementById('ps-cc').value,
+        usage: document.getElementById('ps-usage').value
+      };
+    } else if(cat === 'electrical' || cat === 'accessories'){
+      var px = cat === 'electrical' ? 'ae' : 'ac';
+      var uni = document.getElementById(px + '-universal').checked;
+      data.title = document.getElementById(px + '-title').value;
+      data.price = parseFloat(document.getElementById(px + '-price').value) || null;
+      data.condition = document.getElementById(px + '-cond').value;
+      data.location = document.getElementById(px + '-location').value;
+      data.description = document.getElementById(px + '-desc').value;
+      data.details = {
+        subcategory: document.getElementById(px + '-subcat').value,
+        brand: document.getElementById(px + '-brand').value,
+        universal_fit: uni,
+        fitment_make: uni ? null : document.getElementById(px + '-make').value,
+        fitment_model: uni ? null : document.getElementById(px + '-model').value,
+        fitment_year_from: uni ? null : document.getElementById(px + '-year-from').value,
+        fitment_year_to: uni ? null : document.getElementById(px + '-year-to').value
       };
     }
     // override title if user typed one in step 3
@@ -3384,7 +3682,10 @@
      'p-title','p-make','p-model','p-year-from','p-year-to','p-location','p-desc',
      't-title','t-brand','t-location','t-desc',
      'po-make','po-model','po-year','po-trim','po-mileage','po-engine',
-     'po-ext','po-int','po-vin','po-location','po-desc'].forEach(function(id){
+     'po-ext','po-int','po-vin','po-location','po-desc',
+     'ps-make','ps-model','ps-year','ps-cc','ps-usage','ps-price','ps-location','ps-desc',
+     'ae-title','ae-brand','ae-make','ae-model','ae-year-from','ae-year-to','ae-price','ae-location','ae-desc',
+     'ac-title','ac-brand','ac-make','ac-model','ac-year-from','ac-year-to','ac-price','ac-location','ac-desc'].forEach(function(id){
       var el = document.getElementById(id);
       if(el) el.value = '';
     });
@@ -3401,7 +3702,10 @@
     if(fitmentFields){ fitmentFields.style.display = 'block'; }
     if(typeof poSeedParts === 'function'){ poSeedParts(); } // clear part-out rows back to one
     if(window.PC_FIT){ PC_FIT.syncAll(); }
-    ['w-error','p-error','v-error'].forEach(function(id){ var e = document.getElementById(id); if(e) e.style.display = 'none'; });
+    ['w-error','p-error','v-error','ps-error','ae-error','ac-error'].forEach(function(id){ var e = document.getElementById(id); if(e) e.style.display = 'none'; });
+    ['ps-type','ps-cond','ae-subcat','ae-cond','ac-subcat','ac-cond'].forEach(function(id){ var e = document.getElementById(id); if(e) e.selectedIndex = 0; });
+    document.querySelectorAll('.universal-toggle').forEach(function(cb){ cb.checked = false; document.getElementById(cb.getAttribute('data-fields')).style.display = 'block'; });
+    document.getElementById('ps-gear-hint').style.display = 'none';
   }
 
   // ── Load and display listings ──
@@ -3557,7 +3861,8 @@
   }
   function fitsMyCar(l){
     if(!fitActive()) return true;
-    if(l.category !== 'wheels' && l.category !== 'parts') return false;
+    var fitted = l.category === 'parts' || l.category === 'electrical' || l.category === 'accessories';
+    if(l.category !== 'wheels' && !fitted) return false;
     var d = l.details || {};
     if(wheelSpecActive() && (l.category !== 'wheels' || !wheelSpecsOk(d))) return false;
     var wantsCar = !!(myCar.make || myCar.model || myCar.year);
@@ -3567,7 +3872,7 @@
       return (!myCar.make || looseMatch(name, myCar.make) || normTxt(name).indexOf(normTxt(myCar.make)) !== -1) &&
              (!myCar.model || normTxt(name).indexOf(normTxt(myCar.model)) !== -1);
     }
-    if(l.category === 'parts'){
+    if(fitted){
       if(myCar.bolt && !wantsCar) return false;
       if(d.universal_fit) return true;
       return vehicleOk(d.fitment_make, d.fitment_model, d.fitment_year_from, d.fitment_year_to);
@@ -3600,7 +3905,7 @@
     var tw = (myCar.tire || '').split('|');
     if(tw.join('')) specBits.push((tw[0] || '___') + '/' + (tw[1] || '__') + 'R' + (tw[2] || '__'));
     if(specBits.length) bits.push(escHtml(specBits.join(', ')));
-    note.innerHTML = '<b>' + filtered.length + '</b> ' + (wheelSpecActive() ? 'wheel' : 'wheel and part') + ' listing' + (filtered.length !== 1 ? 's' : '') +
+    note.innerHTML = '<b>' + filtered.length + '</b> ' + (wheelSpecActive() ? 'wheel' : 'wheel, part and accessory') + ' listing' + (filtered.length !== 1 ? 's' : '') +
       (filtered.length === 1 ? ' that fits ' : ' that fit ') + bits.join(', ') + '.' + (wheelSpecActive() ? '' : ' Universal parts included.');
     note.style.display = 'block';
   }
@@ -3613,13 +3918,16 @@
   }
   function specLine(l){
     var d = l.details || {};
+    if(l.category === 'powersports'){
+      return [d.type, d.engine_cc ? d.engine_cc + 'cc' : '', d.usage].filter(Boolean).join(' · ');
+    }
     if(l.category === 'wheels'){
       var size = d.diameter ? (d.width ? d.diameter + 'x' + d.width : d.diameter + '"') : '';
       var off = (d.offset !== undefined && d.offset !== null && d.offset !== '') ? 'ET' + d.offset : '';
       var parts = [ [size, off].filter(Boolean).join(' '), d.bolt_pattern, d.tire_size ].filter(Boolean);
       return parts.join(' · ');
     }
-    if(l.category === 'parts' && !l._isPart){
+    if((l.category === 'parts' || l.category === 'electrical' || l.category === 'accessories') && !l._isPart){
       if(d.universal_fit) return 'Universal fit';
       var yrs = d.fitment_year_from && d.fitment_year_to ? d.fitment_year_from + '–' + d.fitment_year_to : (d.fitment_year_from || d.fitment_year_to || '');
       var car = [yrs, d.fitment_make, d.fitment_model].filter(Boolean).join(' ');
@@ -3744,7 +4052,8 @@
       thumb = '<div class="listing-thumb-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
     }
 
-    var catLabel = { vehicles:'Vehicle', wheels:'Wheels & Tires', parts:'Part', tools:'Tool', fluids:'Fluids & Products' }[l.category] || l.category;
+    var catLabel = { vehicles:'Vehicle', wheels:'Wheels & Tires', parts:'Part', tools:'Tool', fluids:'Fluids & Products',
+                     powersports:'Powersports', electrical:'Audio & Electrical', accessories:'Accessory' }[l.category] || l.category;
     if(l._isPart) catLabel = 'Part Out';
 
     var meta = [];
@@ -3800,6 +4109,16 @@
 
   // ── Load listings on page load ──
   loadListings();
+
+  // Universal fit toggles on Audio & Electrical / Accessories
+  document.querySelectorAll('.universal-toggle').forEach(function(cb){
+    cb.addEventListener('change', function(){
+      document.getElementById(cb.getAttribute('data-fields')).style.display = cb.checked ? 'none' : 'block';
+    });
+  });
+  document.getElementById('ps-type').addEventListener('change', function(){
+    document.getElementById('ps-gear-hint').style.display = this.value.indexOf('Parts') === 0 ? 'block' : 'none';
+  });
 
   // Universal fit toggle — hides/shows fitment fields
   var universalCheck = document.getElementById('universal-fit');

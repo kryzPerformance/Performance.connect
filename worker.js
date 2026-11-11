@@ -22,7 +22,7 @@ const SUPABASE_URL = 'https://myapluhgfpnyjsfrflhd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_yfHWon3pr30Z8do9QW9tSQ_wqlkzDxc';
 const DEFAULT_IMAGE = SITE + '/og-image.jpg';
 
-const CAT_LABEL = { vehicles: 'Vehicle', wheels: 'Wheels & Tires', parts: 'Parts', tools: 'Tools', fluids: 'Fluids & Products' };
+const CAT_LABEL = { vehicles: 'Vehicle', wheels: 'Wheels & Tires', parts: 'Parts', tools: 'Tools', fluids: 'Fluids & Products', powersports: 'Powersports', electrical: 'Audio & Electrical', accessories: 'Accessories' };
 
 export default {
   async fetch(request, env) {
