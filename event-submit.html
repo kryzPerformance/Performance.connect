@@ -423,7 +423,9 @@
             statusEl.textContent = '✓ Filled in what we could read — please check everything below.';
           } else {
             statusEl.className = 'flyer-status err';
-            statusEl.textContent = "Couldn't read that one. Fill in the details manually below.";
+            statusEl.textContent = res.status === 429
+              ? "Auto-fill is busy right now. Fill in the details manually below, or try again later."
+              : "Couldn't read that one. Fill in the details manually below.";
           }
         } catch(e){
           statusEl.className = 'flyer-status err';

@@ -11,16 +11,22 @@
  * Runs as a Supabase Edge Function so it sits next to the database.
  * Deployed with verify_jwt = false: the site uses a publishable key
  * (sb_publishable_...), which the gateway's JWT check doesn't understand.
- * Access is limited by the origin check below instead.
+ * Access is limited by the origin check and the rate limits below.
+ *
+ * Secrets (Dashboard → Edge Functions → Secrets):
+ *   OPENAI_API_KEY        — added by Krys
+ *   SUPABASE_SECRET_KEYS  — provided by Supabase automatically (for flyer_log)
  *
  * Request:  POST { "image": "data:image/jpeg;base64,...." }
  * Response: { confidenceScore, extractedFields, rawText }
  */
 
+import { createClient } from "npm:@supabase/supabase-js@2.118.0";
+
 const MODEL = "gpt-5-mini";
 
 // Only pages on these sites may call this function (blocks other websites
-// from using your OpenAI balance). Preview deploys end in .workers.dev.
+// from using your OpenAI balance). Preview deploys end in .krys-taylor.workers.dev.
 const ALLOWED_ORIGINS = [
   "https://performanceconnect.ca",
   "https://www.performanceconnect.ca",
@@ -30,10 +36,31 @@ function originAllowed(origin: string | null): boolean {
   if (ALLOWED_ORIGINS.includes(origin)) return true;
   try {
     const host = new URL(origin).hostname;
-    return host.endsWith(".workers.dev") || host === "localhost" || host === "127.0.0.1";
+    return host.endsWith(".krys-taylor.workers.dev") || host === "localhost" || host === "127.0.0.1";
   } catch {
     return false;
   }
+}
+
+// Rate limits. The origin check stops other websites, but a script can fake
+// its origin, so every attempt is also counted (by a hash of the caller's IP)
+// before OpenAI is called. A real organiser reads a handful of flyers at most.
+const PER_IP_10MIN = 5;
+const PER_IP_DAY = 20;
+const ALL_DAY = 150;          // whole site, every visitor combined
+
+async function sha256(s: string): Promise<string> {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function adminClient() {
+  const keys = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}");
+  const key = keys["default"] ?? Object.values(keys)[0];
+  if (!key) throw new Error("No secret key available");
+  return createClient(Deno.env.get("SUPABASE_URL")!, key as string, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
 
 // ~6 MB of base64 ≈ 4.5 MB image. The page shrinks photos before sending,
@@ -121,6 +148,32 @@ Deno.serve(async (req: Request) => {
   }
   if (typeof imageData !== "string" || !imageData) return fail(400, "Missing image");
   if (imageData.length > MAX_IMAGE_CHARS) return fail(413, "Image too large");
+
+  // ── Rate limits (checked, then the attempt is logged, before any OpenAI call) ──
+  try {
+    const db = adminClient();
+    const ip = (req.headers.get("cf-connecting-ip") ?? req.headers.get("x-forwarded-for") ?? "")
+      .split(",")[0].trim();
+    const ipHash = await sha256("pc-flyer:" + ip);
+    const now = Date.now();
+    const since10 = new Date(now - 10 * 60 * 1000).toISOString();
+    const sinceDay = new Date(now - 24 * 60 * 60 * 1000).toISOString();
+    const [a, b, c] = await Promise.all([
+      db.from("flyer_log").select("id", { count: "exact", head: true }).eq("ip_hash", ipHash).gte("created_at", since10),
+      db.from("flyer_log").select("id", { count: "exact", head: true }).eq("ip_hash", ipHash).gte("created_at", sinceDay),
+      db.from("flyer_log").select("id", { count: "exact", head: true }).gte("created_at", sinceDay),
+    ]);
+    if (a.error || b.error || c.error) throw a.error ?? b.error ?? c.error;
+    if ((a.count ?? 0) >= PER_IP_10MIN || (b.count ?? 0) >= PER_IP_DAY || (c.count ?? 0) >= ALL_DAY) {
+      return fail(429, "Too many flyers right now — fill the form in by hand, or try again later");
+    }
+    const ins = await db.from("flyer_log").insert({ ip_hash: ipHash });
+    if (ins.error) throw ins.error;
+  } catch (e) {
+    // If the limiter can't run, don't spend money: the form still works by hand.
+    console.error("flyer-parser: rate limit check failed", e);
+    return fail(503, "Auto-fill is unavailable right now");
+  }
 
   const url = imageData.startsWith("data:image/")
     ? imageData

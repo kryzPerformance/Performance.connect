@@ -1,0 +1,20 @@
+# Security headers for every page and file Cloudflare serves directly.
+# (Listing, part-out and sitemap pages go through worker.js, which adds the
+#  same headers itself — keep the two lists in step.)
+#
+# Strict-Transport-Security  browsers always use https:// for this site (1 year).
+#                            No includeSubDomains: events.performanceconnect.ca
+#                            is hosted elsewhere.
+# X-Content-Type-Options     browsers trust our file types, never guess them.
+# Referrer-Policy            other sites only see "performanceconnect.ca", not full paths.
+# X-Frame-Options / frame-ancestors
+#                            other sites can't load ours inside a frame (click-jacking).
+# object-src / base-uri      blocks old plugin embeds and <base> tag tricks.
+# Permissions-Policy         the site never needs camera, mic, location, payments or USB.
+/*
+  Strict-Transport-Security: max-age=31536000
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: frame-ancestors 'self'; object-src 'none'; base-uri 'self'; upgrade-insecure-requests
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()

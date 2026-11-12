@@ -24,19 +24,35 @@ const DEFAULT_IMAGE = SITE + '/og-image.jpg';
 
 const CAT_LABEL = { vehicles: 'Vehicle', wheels: 'Wheels & Tires', parts: 'Parts', tools: 'Tools', fluids: 'Fluids & Products' };
 
+/* Security headers. Pages Cloudflare serves directly get these from the
+   _headers file; pages built here get them below. Keep the two in step. */
+const SECURITY_HEADERS = {
+  'Strict-Transport-Security': 'max-age=31536000',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'X-Frame-Options': 'SAMEORIGIN',
+  'Content-Security-Policy': "frame-ancestors 'self'; object-src 'none'; base-uri 'self'; upgrade-insecure-requests",
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+};
+function secure(res) {
+  const out = new Response(res.body, res);   // copy so the headers can be changed
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) out.headers.set(k, v);
+  return out;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const path = url.pathname;
 
     try {
-      if (path === '/sitemap.xml') return await sitemap(request, env);
-      if (path === '/listing') return await listingPage(request, env, url);
-      if (path === '/partout') return await partoutPage(request, env, url);
+      if (path === '/sitemap.xml') return secure(await sitemap(request, env));
+      if (path === '/listing') return secure(await listingPage(request, env, url));
+      if (path === '/partout') return secure(await partoutPage(request, env, url));
     } catch (e) {
       // Fall through to the untouched static file on any error
     }
-    return env.ASSETS.fetch(request);
+    return secure(await env.ASSETS.fetch(request));
   }
 };
 
