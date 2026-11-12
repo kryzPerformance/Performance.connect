@@ -240,6 +240,7 @@
   // kicks backwards, limps, stalls with twitches, bursts, then clunks to a stop.
   var wheel = document.getElementById('wheel');
   var WX = 920.75, WY = 488.25, ang = 0, last = null, twitchAt = 0;
+  var SLOW = 0.2;                  // overall spin speed (1 = full speed); 0.2 keeps it from stealing focus
   function speed(c) {              // degrees per second at time c (0..5.4) in the loop
     if (c < 1.3) return 1150 * Math.pow(c / 1.3, 1.6);                  // spool up
     if (c < 1.5) return 0;                                              // seize
@@ -257,11 +258,11 @@
   function spin(t) {
     var dt = last == null ? 0 : Math.min(0.05, (t - last) / 1000); last = t;
     var c = (t / 1000) % 5.4;
-    ang = (ang + speed(c) * dt) % 360;
+    ang = (ang + speed(c) * SLOW * dt) % 360;
     var jx = 0, jy = 0;
-    if (shaking(c)) { jx = (Math.random() - 0.5) * 3; jy = (Math.random() - 0.5) * 3; }
+    if (shaking(c)) { jx = (Math.random() - 0.5) * 1.2; jy = (Math.random() - 0.5) * 1.2; }
     if (c >= 2.6 && c < 3.1 && t > twitchAt) {                          // stalled: little twitches
-      ang += (Math.random() - 0.5) * 14; twitchAt = t + 90 + Math.random() * 160;
+      ang += (Math.random() - 0.5) * 5; twitchAt = t + 90 + Math.random() * 160;
     }
     wheel.setAttribute('transform', 'translate(' + jx.toFixed(2) + ' ' + jy.toFixed(2) + ') rotate(' + ang.toFixed(2) + ' ' + WX + ' ' + WY + ')');
   }
