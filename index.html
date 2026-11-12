@@ -325,7 +325,6 @@
     color:var(--white);
     white-space:nowrap;
   }
-  .hub-title::after{ content:"\00a0→"; color:var(--cyan-bright); display:inline-block; transition:transform 200ms var(--ease-out); }
   .hub-sub{
     font-family:'Inter', sans-serif;
     font-size:13px;
@@ -772,7 +771,6 @@
     .cta-primary:hover, .btn:hover, .modal-submit:hover{ background:#62D6F5; }
     .cta-secondary:hover{ border-color:var(--cyan-bright); background:rgba(31,169,207,0.12); }
     .hub-card:hover{ border-color:rgba(31,169,207,0.55); background:rgba(31,169,207,0.08); }
-    .hub-card:hover .hub-title::after{ transform:translateX(3px); }
     .jump-btn:hover{ border-color:var(--cyan-bright); background:rgba(31,169,207,0.12); }
     .secondary-btn:hover{ color:var(--cyan-bright); border-color:var(--cyan); background:rgba(31,169,207,0.06); }
     .socials a:hover{ color:var(--cyan-bright); border-color:var(--cyan); background:rgba(31,169,207,0.08); }
@@ -1030,7 +1028,7 @@
       <section class="feed" id="feed-events" aria-labelledby="feed-events-title" hidden>
         <div class="feed-head">
           <h2 class="feed-title" id="feed-events-title">This week in the GTA</h2>
-          <a href="/events" class="feed-more">All events →</a>
+          <a href="/events" class="feed-more">All events</a>
         </div>
         <div class="ev-grid" id="feed-events-list"></div>
       </section>

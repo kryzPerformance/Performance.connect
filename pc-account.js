@@ -245,7 +245,7 @@ window.PC = window.PC || {};
       // No key yet: keys are created automatically with a seller's first listing (marketplace.html)
       var getKey = document.createElement('p'); getKey.className = 'pc-acct-help pc-acct-getkey';
       getKey.innerHTML = '<strong>Don’t have a key?</strong> You get one automatically the first time you post a listing or part-out — ' +
-        'it’s shown once you submit, so save it somewhere safe. <a href="/marketplace?list=true">Post your first listing →</a>';
+        'it’s shown once you submit, so save it somewhere safe. <a href="/marketplace?list=true">Post your first listing</a>';
       card.appendChild(getKey);
 
       // Forgot-key help: email or Instagram DM
