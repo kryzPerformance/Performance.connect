@@ -500,7 +500,7 @@ Back
 </div>
 
 <div class="state-screen" id="state-error" style="display:none;">
-  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#5C6A6E" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+  <div class="pc-abduct"></div>
   <p id="state-error-msg">This part out couldn't be found or may have been removed.</p>
   <a href="/marketplace">Back to marketplace</a>
 </div>
@@ -664,6 +664,7 @@ Back
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 <script src="pc-account.js"></script>
 <script src="pc-contact.js"></script>
+<script src="/pc-abduct.js"></script>
 <script>
   var SUPABASE_URL = 'https://myapluhgfpnyjsfrflhd.supabase.co';
   var SUPABASE_KEY = 'sb_publishable_yfHWon3pr30Z8do9QW9tSQ_wqlkzDxc';
@@ -957,6 +958,7 @@ Back
     function showError(msg){
       document.getElementById('state-loading').style.display='none';
       document.getElementById('state-error').style.display='flex';
+      var sh=document.getElementById('share-btn-header'); if(sh) sh.style.display='none';  // nothing to share
       if(msg) document.getElementById('state-error-msg').textContent=msg;
     }
 
