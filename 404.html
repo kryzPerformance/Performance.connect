@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="/pc-nav.js" defer></script>
 <title>Page not found — Performance Connect</title>
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#070808">
@@ -54,12 +53,13 @@
   .stage{
     position:relative;flex:none;
     /* as big as fits with the text still on screen, never wider than the window */
-    width:min(100vw, max(640px, calc((100svh - 420px) * 1.7747)), 1670px);
+    width:min(100vw, max(640px, calc((100svh - 300px) * 1.7747)), 1670px);
     aspect-ratio:1670/941;
   }
   .stage img,.stage svg{position:absolute;inset:0;width:100%;height:100%;display:block}
   /* the artwork is drawn on pure black; 'lighten' lets the site's near-black show through, so no black box */
-  .stage img,.smoke{mix-blend-mode:lighten}
+  /* moving layers sit on a solid page-colour backing so the still art underneath never shows through */
+  .stage img,.lift{mix-blend-mode:lighten}
   /* phones: zoom in on the crash (P, alien, 404) instead of shrinking the whole skyline */
   @media (max-width:700px){
     .scene{justify-content:flex-start}
@@ -164,8 +164,17 @@
         </defs>
 
         <!-- smoke -->
-        <g class="smoke" mask="url(#smokeMask)">
-          <image href="/assets/404/crash-scene.webp" x="0" y="0" width="1670" height="941" filter="url(#wobble)"/>
+        <g mask="url(#smokeMask)">
+          <rect x="990" y="0" width="490" height="460" fill="#070808"/>
+          <image class="lift" href="/assets/404/crash-scene.webp" x="0" y="0" width="1670" height="941" filter="url(#wobble)"/>
+        </g>
+
+        <!-- the turbo wheel: a round cut-out of the art, spun by the script below.
+             Inside this circle it's only spokes on black, so turning it never shows a seam. -->
+        <clipPath id="wheelClip"><circle cx="920.75" cy="488.25" r="56"/></clipPath>
+        <g clip-path="url(#wheelClip)">
+          <circle cx="920.75" cy="488.25" r="56" fill="#070808"/>
+          <image class="lift" id="wheel" href="/assets/404/crash-scene.webp" x="0" y="0" width="1670" height="941"/>
         </g>
 
         <!-- crash glow under the P -->
@@ -227,12 +236,44 @@
     var s = 1.25 + 0.3 * Math.sin(a);
     el.setAttribute('transform', 'translate(' + x.toFixed(2) + ' ' + y.toFixed(2) + ') rotate(' + (-16 + a * 57.3 * 0.5).toFixed(1) + ') scale(' + s.toFixed(3) + ')');
   }
+  // Turbo wheel: a busted spin. One 5.4s loop: spools up, seizes and shudders,
+  // kicks backwards, limps, stalls with twitches, bursts, then clunks to a stop.
+  var wheel = document.getElementById('wheel');
+  var WX = 920.75, WY = 488.25, ang = 0, last = null, twitchAt = 0;
+  function speed(c) {              // degrees per second at time c (0..5.4) in the loop
+    if (c < 1.3) return 1150 * Math.pow(c / 1.3, 1.6);                  // spool up
+    if (c < 1.5) return 0;                                              // seize
+    if (c < 1.68) return -320;                                          // kick back
+    if (c < 2.6) return 260 + 330 * Math.sin(c * 23) * Math.sin(c * 7);  // limping, stuttering
+    if (c < 3.1) return 0;                                              // stall
+    if (c < 3.45) return 1500;                                          // sudden burst
+    if (c < 4.7) {                                                      // winding down, with clunks
+      var d = (c - 3.45) / 1.25, v = 1500 * Math.pow(1 - d, 2);
+      return (c * 10 % 3 < 0.45) ? v * 0.1 : v;
+    }
+    return 0;                                                           // dead
+  }
+  function shaking(c) { return (c >= 1.3 && c < 1.62) || (c >= 3.0 && c < 3.12); }
+  function spin(t) {
+    var dt = last == null ? 0 : Math.min(0.05, (t - last) / 1000); last = t;
+    var c = (t / 1000) % 5.4;
+    ang = (ang + speed(c) * dt) % 360;
+    var jx = 0, jy = 0;
+    if (shaking(c)) { jx = (Math.random() - 0.5) * 3; jy = (Math.random() - 0.5) * 3; }
+    if (c >= 2.6 && c < 3.1 && t > twitchAt) {                          // stalled: little twitches
+      ang += (Math.random() - 0.5) * 14; twitchAt = t + 90 + Math.random() * 160;
+    }
+    wheel.setAttribute('transform', 'translate(' + jx.toFixed(2) + ' ' + jy.toFixed(2) + ') rotate(' + ang.toFixed(2) + ' ' + WX + ' ' + WY + ')');
+  }
+
   function frame(t) {
+    spin(t);
     var a = (t / PERIOD) * Math.PI * 2;
     place(s1, a + 3.6);   // start roughly where the drawn stars were
     place(s2, a + 0.45);
     if (!still && !document.hidden) requestAnimationFrame(frame);
   }
+  document.addEventListener('visibilitychange', function () { last = null; });
   if (still) {
     if (svg.pauseAnimations) svg.pauseAnimations();
     frame(0);
