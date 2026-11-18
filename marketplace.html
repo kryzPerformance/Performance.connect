@@ -324,6 +324,7 @@
     position:relative;z-index:3;
   }
   .pillar-icon img{ width:100%;height:auto;display:block;transition:filter 0.3s ease; }
+  .pillar-icon--blank{ height:66px; }
   .pillar-card:hover .pillar-icon img,
   .pillar-card.touch-active .pillar-icon img{
     filter:drop-shadow(0 0 14px rgba(61,201,240,0.75)) drop-shadow(0 0 28px rgba(61,201,240,0.35));
@@ -1514,7 +1515,7 @@
         <div class="pillar-card" tabindex="0" data-cat="powersports">
             <div class="card-front">
               <div class="card-video card-video--plain"></div>
-              <div class="pillar-icon"><img src="assets/icons/powersports_icon.svg" alt=""></div>
+              <div class="pillar-icon pillar-icon--blank" aria-hidden="true"></div>
               <div class="pillar-name">Powersports</div>
               <p class="pillar-desc">Bikes, sleds, ATVs, side-by-sides and jet skis — plus the parts and gear.</p>
               <div class="card-hint">
@@ -1583,7 +1584,7 @@
         <div class="pillar-card" tabindex="0" data-cat="electrical">
             <div class="card-front">
               <div class="card-video card-video--plain"></div>
-              <div class="pillar-icon"><img src="assets/icons/audio_icon.svg" alt=""></div>
+              <div class="pillar-icon pillar-icon--blank" aria-hidden="true"></div>
               <div class="pillar-name">Audio &amp; Electrical</div>
               <p class="pillar-desc">Head units, subs, amps, lighting, remote starts and wiring — with fitment.</p>
               <div class="card-hint">
@@ -1604,7 +1605,7 @@
         <div class="pillar-card" tabindex="0" data-cat="accessories">
             <div class="card-front">
               <div class="card-video card-video--plain"></div>
-              <div class="pillar-icon"><img src="assets/icons/accessories_icon.svg" alt=""></div>
+              <div class="pillar-icon pillar-icon--blank" aria-hidden="true"></div>
               <div class="pillar-name">Accessories</div>
               <p class="pillar-desc">Mats, covers, racks, interior bits, merch and collectibles.</p>
               <div class="card-hint">
@@ -1824,7 +1825,6 @@
             <span>Vehicles</span>
           </button>
           <button class="cat-btn" data-cat="powersports">
-            <img src="assets/icons/powersports_icon.svg" alt="">
             <span>Powersports</span>
           </button>
           <button class="cat-btn" data-cat="wheels">
@@ -1836,11 +1836,9 @@
             <span>Parts</span>
           </button>
           <button class="cat-btn" data-cat="electrical">
-            <img src="assets/icons/audio_icon.svg" alt="">
             <span>Audio &amp; Electrical</span>
           </button>
           <button class="cat-btn" data-cat="accessories">
-            <img src="assets/icons/accessories_icon.svg" alt="">
             <span>Accessories</span>
           </button>
           <button class="cat-btn" data-cat="tools">
