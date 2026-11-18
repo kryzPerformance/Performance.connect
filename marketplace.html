@@ -1440,6 +1440,7 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 <script src="pc-fitment.js"></script>
+<script src="pc-img.js"></script>
 <script src="pc-account.js"></script>
   <script type="text/javascript">
     (function(c,l,a,r,i,t,y){
@@ -2503,7 +2504,7 @@
     container.innerHTML = '';
     rows.forEach(function(l){
       var thumbInner = l.photo_urls && l.photo_urls.length
-        ? '<img src="'+escHtml(l.photo_urls[0])+'" alt="'+escHtml(l.title)+'" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:5px;">'
+        ? '<img src="'+escHtml(pcImg(l.photo_urls[0], 200))+'" alt="'+escHtml(l.title)+'" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:5px;">'
         : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.04);border-radius:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(140,160,166,0.4)" stroke-width="1.5" width="18" height="18"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
       var price = l.price
         ? '<div class="back-listing-price">$'+Number(l.price).toLocaleString()+'</div>'
@@ -3037,9 +3038,36 @@
   }
 
   // ── Upload photos to Supabase Storage ──
+  // Phone photos are 3–5 MB. Shrink each one in the browser before upload:
+  // longest side 1600px, WebP (JPEG if the browser can't make WebP).
+  // Anything that can't be read as an image is uploaded as-is.
+  async function shrinkPhoto(file){
+    var MAX = 1600, Q = 0.82;
+    try {
+      if (!file || !/^image\//.test(file.type) || /gif|svg/.test(file.type)) return file;
+      var bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
+      var scale = Math.min(1, MAX / Math.max(bmp.width, bmp.height));
+      var w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);
+      var c = document.createElement('canvas'); c.width = w; c.height = h;
+      c.getContext('2d').drawImage(bmp, 0, 0, w, h);
+      if (bmp.close) bmp.close();
+      var blob = await new Promise(function(res){ c.toBlob(res, 'image/webp', Q); });
+      var ext = 'webp';
+      if (!blob || blob.type !== 'image/webp'){ blob = await new Promise(function(res){ c.toBlob(res, 'image/jpeg', Q); }); ext = 'jpg'; }
+      if (!blob || blob.size >= file.size) return file; // already small: keep the original
+      var base = String(file.name || 'photo').replace(/\.[^.]+$/, '');
+      return new File([blob], base + '.' + ext, { type: blob.type });
+    } catch (e) {
+      return file;
+    }
+  }
+
   async function uploadPhotos(files, listingId) {
 
     var BUCKET = 'listing-photos';
+    if (files && files.length) {
+      files = await Promise.all(Array.prototype.map.call(files, shrinkPhoto));
+    }
 
     // ── PRE-FLIGHT CHECKS ──────────────────────────────────────────
     if (!listingId) {
@@ -4035,7 +4063,7 @@
 
     var thumb = '';
     if(l.photo_urls && l.photo_urls.length > 0){
-      thumb = '<div class="listing-thumb-wrap"><img class="listing-thumb" src="' + l.photo_urls[0] + '" alt="' + escHtml(l.title) + '" loading="lazy"></div>';
+      thumb = '<div class="listing-thumb-wrap"><img class="listing-thumb" src="' + escHtml(pcImg(l.photo_urls[0], 640)) + '" alt="' + escHtml(l.title) + '" loading="lazy" decoding="async"></div>';
     } else {
       thumb = '<div class="listing-thumb-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
     }

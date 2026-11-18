@@ -662,6 +662,7 @@ Back
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+<script src="pc-img.js"></script>
 <script src="pc-account.js"></script>
 <script src="pc-contact.js"></script>
 <script>
@@ -694,7 +695,7 @@ Back
     photos = urls;
     var multi = urls.length > 1;
     main.innerHTML =
-      '<img id="gal-img" src="'+esc(urls[0])+'" alt="Vehicle photo">' +
+      '<img id="gal-img" src="'+esc(pcImg(urls[0],1400))+'" alt="Vehicle photo" fetchpriority="high">' +
       '<div class="gallery-nav">' +
         '<button class="gallery-arrow hidden" id="gal-prev" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>' +
         '<button class="gallery-arrow'+(multi?'':' hidden')+'" id="gal-next" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></button>' +
@@ -713,7 +714,7 @@ Back
       urls.forEach(function(u,i){
         var t=document.createElement('div');
         t.className='gallery-thumb'+(i===0?' active':'');
-        t.innerHTML='<img src="'+esc(u)+'" alt="Photo '+(i+1)+'" loading="lazy">';
+        t.innerHTML='<img src="'+esc(pcImg(u,200))+'" alt="Photo '+(i+1)+'" loading="lazy" decoding="async">';
         t.onclick=function(){goPhoto(i);};
         thumbsEl.appendChild(t);
       });
@@ -729,7 +730,7 @@ Back
     if(!photos.length) return;
     cur=Math.max(0,Math.min(n,photos.length-1));
     var img=document.getElementById('gal-img');
-    if(img){img.style.opacity='0';setTimeout(function(){img.src=photos[cur];img.style.opacity='1';},180);}
+    if(img){img.style.opacity='0';setTimeout(function(){img.src=pcImg(photos[cur],1400);img.style.opacity='1';},180);}
     var p=document.getElementById('gal-prev'),nx=document.getElementById('gal-next');
     if(p)p.classList.toggle('hidden',cur===0);
     if(nx)nx.classList.toggle('hidden',cur===photos.length-1);
@@ -795,7 +796,7 @@ Back
     var sub = partSubline(p);
 
     var thumbHtml = (p.photos && p.photos.length)
-      ? '<div class="part-thumb"><img src="'+esc(p.photos[0])+'" alt="" loading="lazy"></div>'
+      ? '<div class="part-thumb"><img src="'+esc(pcImg(p.photos[0],200))+'" alt="" loading="lazy" decoding="async"></div>'
       : '<div class="part-thumb part-thumb-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
 
     row.innerHTML =
@@ -851,7 +852,7 @@ Back
     if(p.photos&&p.photos.length){
       html+='<div class="part-photos">';
       p.photos.forEach(function(u,i){
-        html+='<div class="part-photo"><img src="'+esc(u)+'" alt="'+esc(p.name)+' photo '+(i+1)+'" loading="lazy"></div>';
+        html+='<div class="part-photo"><img src="'+esc(pcImg(u,800))+'" alt="'+esc(p.name)+' photo '+(i+1)+'" loading="lazy" decoding="async"></div>';
       });
       html+='</div>';
     }
