@@ -111,7 +111,11 @@
     bar.className = 'pcn-bar';
     bar.setAttribute('aria-label', 'Main');
     if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(bar, anchor.nextSibling);
-    else document.body.insertBefore(bar, document.body.firstChild);
+    else {
+      // top of the page, but after a 'Skip to content' link so that stays the first thing you tab to
+      var skip = document.querySelector('body > a.skip');
+      document.body.insertBefore(bar, skip ? skip.nextSibling : document.body.firstChild);
+    }
     fill(bar, 'pcn-link');
   }
 

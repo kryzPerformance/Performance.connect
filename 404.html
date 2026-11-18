@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page not found — Performance Connect</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#070808">
+<link rel="icon" href="/favicon.ico">
+<link rel="preload" as="image" href="/assets/404/crash-scene.webp" fetchpriority="high">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:ital,wght@0,500;0,600;0,700;1,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<!--
+  404 page. Cloudflare serves this file for any URL that doesn't exist
+  (wrangler.jsonc: assets.not_found_handling = "404-page"), so every
+  path in here must be absolute (/assets/..., not assets/...).
+
+  The scene: the alien (our car thief) crashed the P mid-getaway.
+  Animated on top of the artwork, all in the artwork's own 1670x941 coordinates:
+    - the smoke drifts upward (SVG displacement filter, masked to the smoke)
+    - dizzy stars orbit his head (the drawn ones were removed from the image)
+    - the crash glow under the P flickers, the cyan sparkles twinkle
+  Everything holds still for people who ask for reduced motion.
+-->
+<style>
+  :root{
+    --black:#070808;
+    --line:#23292b;
+    --cyan:#1FA9CF;
+    --cyan-bright:#3DC9F0;
+    --steel:#8FA0A6;
+    --white:#F2F6F7;
+    --cyan-hover:#62D6F5;
+    --body:#C7D0D2;
+    --ease-out:cubic-bezier(0.23,1,0.32,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{background:var(--black)}
+  body{
+    background:var(--black);color:var(--body);
+    font-family:'Inter',sans-serif;line-height:1.6;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden;
+    min-height:100svh;display:flex;flex-direction:column;
+  }
+  a{color:var(--cyan-bright);text-decoration:none}
+  :focus-visible{outline:2px solid var(--cyan-bright);outline-offset:3px;border-radius:6px}
+
+  main{flex:1;display:flex;flex-direction:column;align-items:center}
+
+  /* ---------- scene ---------- */
+  .scene{width:100%;overflow:hidden;display:flex;justify-content:center}
+  .stage{
+    position:relative;flex:none;
+    /* as big as fits with the text still on screen, never wider than the window */
+    width:min(100vw, max(640px, calc((100svh - 300px) * 1.7747)), 1670px);
+    aspect-ratio:1670/941;
+  }
+  .stage img,.stage svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+  /* the artwork is drawn on pure black; 'lighten' lets the site's near-black show through, so no black box */
+  /* moving layers sit on a solid page-colour backing so the still art underneath never shows through */
+  .stage img,.lift{mix-blend-mode:lighten}
+  /* phones: zoom in on the crash (P, alien, 404) instead of shrinking the whole skyline */
+  @media (max-width:700px){
+    .scene{justify-content:flex-start}
+    .stage{width:170vw;margin-left:-41vw}
+  }
+
+  .glow{mix-blend-mode:screen;animation:flicker 3.2s steps(1,end) infinite, pulse 2.4s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+  @keyframes pulse{from{transform:scale(0.92)}to{transform:scale(1.08)}}
+  @keyframes flicker{
+    0%{opacity:.85}  8%{opacity:.55} 11%{opacity:.9} 40%{opacity:.75}
+    43%{opacity:.4}  45%{opacity:.85} 70%{opacity:.7} 100%{opacity:.85}
+  }
+  .twinkle{mix-blend-mode:screen;opacity:0;transform-box:fill-box;transform-origin:center;animation:twinkle 3.6s ease-in-out infinite}
+  @keyframes twinkle{0%,100%{opacity:0;transform:scale(.6)}50%{opacity:.9;transform:scale(1.15)}}
+
+  /* ---------- copy ---------- */
+  .copy{
+    width:100%;max-width:640px;text-align:center;
+    padding:clamp(4px,1.5vh,16px) 16px 40px;
+    animation:rise .6s var(--ease-out) .15s both;
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  h1{
+    font-family:'Rajdhani',sans-serif;font-style:italic;font-weight:700;
+    font-size:clamp(30px,6vw,44px);line-height:1.05;letter-spacing:0.01em;
+    color:var(--white);text-transform:uppercase;
+  }
+  h1 span{color:var(--cyan-bright)}
+  .lede{margin:12px auto 0;max-width:46ch;font-size:15.5px;color:var(--body)}
+  .lede code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em;color:var(--cyan-bright);
+    background:rgba(61,201,240,0.08);border:0.5px solid rgba(61,201,240,0.25);
+    padding:1px 7px;border-radius:6px;overflow-wrap:anywhere;
+  }
+  .actions{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;
+    padding:0 26px;border-radius:6px;
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;letter-spacing:0.08em;text-transform:uppercase;
+    transition:transform .16s var(--ease-out),background .15s ease,border-color .15s ease,color .15s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn:active{transform:scale(0.97)}
+  .btn-primary{background:var(--cyan-bright);color:#03171D}
+  .btn-ghost{background:rgba(31,169,207,0.06);color:var(--cyan-bright);border:1px solid rgba(31,169,207,0.45)}
+  .btn:focus-visible{outline:2px solid var(--white);outline-offset:2px}
+  @media (hover:hover) and (pointer:fine){
+    .btn-primary:hover{background:var(--cyan-hover)}
+    .btn-ghost:hover{background:rgba(31,169,207,0.1);border-color:var(--cyan-bright)}
+  }
+  @media (max-width:420px){ .actions .btn{flex:1 1 100%} }
+
+  @media (prefers-reduced-motion: reduce){
+    .glow,.twinkle,.copy{animation:none}
+    .glow{opacity:.8}
+  }
+</style>
+</head>
+<body>
+
+
+<main>
+  <div class="scene">
+    <div class="stage">
+      <img src="/assets/404/crash-scene.webp" width="1670" height="941"
+           alt="404, page not found: a dazed alien sits beside the cracked Performance Connect logo, which has crash-landed in front of the Toronto skyline">
+
+      <svg id="fx" viewBox="0 0 1670 941" aria-hidden="true" focusable="false">
+        <defs>
+          <!-- Rising-smoke wobble. The noise is one seamless 160px-tall tile, repeated
+               and scrolled up by exactly one tile per loop, so the loop never jumps. -->
+          <filter id="wobble" filterUnits="userSpaceOnUse" x="990" y="-10" width="490" height="820"
+                  primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.0125 0.025" numOctaves="2" seed="7"
+                          stitchTiles="stitch" x="990" y="-10" width="490" height="160" result="tile"/>
+            <feTile in="tile" x="990" y="-10" width="490" height="820" result="noise"/>
+            <feOffset in="noise" dx="0" dy="0" result="flow">
+              <animate attributeName="dy" from="0" to="-160" dur="5.5s" repeatCount="indefinite"/>
+            </feOffset>
+            <feDisplacementMap in="SourceGraphic" in2="flow" scale="10" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+          <linearGradient id="smokeFade" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#fff"/>
+            <stop offset="0.78" stop-color="#fff"/>
+            <stop offset="1" stop-color="#000"/>
+          </linearGradient>
+          <mask id="smokeMask" maskUnits="userSpaceOnUse" x="990" y="0" width="490" height="460">
+            <rect x="990" y="0" width="490" height="460" fill="url(#smokeFade)"/>
+          </mask>
+          <radialGradient id="crashGlow">
+            <stop offset="0" stop-color="#E9F7FF" stop-opacity=".95"/>
+            <stop offset=".35" stop-color="#5C8BFF" stop-opacity=".55"/>
+            <stop offset=".7" stop-color="#7A3CFF" stop-opacity=".18"/>
+            <stop offset="1" stop-color="#7A3CFF" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="spark">
+            <stop offset="0" stop-color="#E6FAFF"/>
+            <stop offset=".3" stop-color="#3DC9F0" stop-opacity=".7"/>
+            <stop offset="1" stop-color="#3DC9F0" stop-opacity="0"/>
+          </radialGradient>
+          <path id="star" d="M0,-10 L2.9,-3.6 9.5,-3.1 4.5,1.4 5.9,8.1 0,4.6 -5.9,8.1 -4.5,1.4 -9.5,-3.1 -2.9,-3.6Z"/>
+        </defs>
+
+        <!-- smoke -->
+        <g mask="url(#smokeMask)">
+          <rect x="990" y="0" width="490" height="460" fill="#070808"/>
+          <image class="lift" href="/assets/404/crash-scene.webp" x="0" y="0" width="1670" height="941" filter="url(#wobble)"/>
+        </g>
+
+        <!-- the turbo wheel: a round cut-out of the art, spun by the script below.
+             Inside this circle it's only spokes on black, so turning it never shows a seam. -->
+        <clipPath id="wheelClip"><circle cx="920.75" cy="488.25" r="56"/></clipPath>
+        <g clip-path="url(#wheelClip)">
+          <circle cx="920.75" cy="488.25" r="56" fill="#070808"/>
+          <image class="lift" id="wheel" href="/assets/404/crash-scene.webp" x="0" y="0" width="1670" height="941"/>
+        </g>
+
+        <!-- crash glow under the P -->
+        <ellipse class="glow" cx="860" cy="694" rx="78" ry="42" fill="url(#crashGlow)"/>
+
+        <!-- sparkles twinkling over the drawn ones -->
+        <g>
+          <circle class="twinkle" cx="100" cy="161" r="22" fill="url(#spark)" style="animation-delay:-.4s"/>
+          <circle class="twinkle" cx="470" cy="232" r="22" fill="url(#spark)" style="animation-delay:-2.1s"/>
+          <circle class="twinkle" cx="981" cy="137" r="24" fill="url(#spark)" style="animation-delay:-1.2s"/>
+          <circle class="twinkle" cx="758" cy="309" r="20" fill="url(#spark)" style="animation-delay:-3s"/>
+          <circle class="twinkle" cx="617" cy="391" r="18" fill="url(#spark)" style="animation-delay:-.9s"/>
+          <circle class="twinkle" cx="116" cy="456" r="18" fill="url(#spark)" style="animation-delay:-2.6s"/>
+          <circle class="twinkle" cx="1197" cy="321" r="20" fill="url(#spark)" style="animation-delay:-1.7s"/>
+          <circle class="twinkle" cx="1526" cy="197" r="22" fill="url(#spark)" style="animation-delay:-.2s"/>
+          <circle class="twinkle" cx="1560" cy="455" r="20" fill="url(#spark)" style="animation-delay:-2.4s"/>
+        </g>
+
+        <!-- dizzy stars orbiting his head (positions set by the script below) -->
+        <g id="dizzy" transform="translate(1161 583) rotate(16)">
+          <ellipse id="ringBack" cx="0" cy="0" rx="52" ry="13" fill="none" stroke="#0a0a0a" stroke-width="6"/>
+          <ellipse cx="0" cy="0" rx="52" ry="13" fill="none" stroke="#F7D51D" stroke-width="2.6"/>
+          <g id="s1"><use href="#star" fill="#F7D51D" stroke="#0a0a0a" stroke-width="2.2" stroke-linejoin="round"/></g>
+          <g id="s2"><use href="#star" fill="#F7D51D" stroke="#0a0a0a" stroke-width="2.2" stroke-linejoin="round"/></g>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <section class="copy">
+    <h1>This page got <span>abducted.</span></h1>
+    <p class="lede">Our resident car thief tried to beam it up mid-getaway and crashed. Nothing's parked at <code id="path">this address</code> anymore, but the rest of the site is right where you left it.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="/">
+        Chase him home
+      </a>
+      <a class="btn btn-ghost" href="/marketplace">Marketplace</a>
+      <a class="btn btn-ghost" href="/events">Events</a>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  // show the address they tried
+  var p = decodeURI(location.pathname + location.search);
+  if (p && p !== '/404' && p !== '/404.html') {
+    document.getElementById('path').textContent = p.length > 60 ? p.slice(0, 57) + '…' : p;
+  }
+
+  var svg = document.getElementById('fx');
+  var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var s1 = document.getElementById('s1'), s2 = document.getElementById('s2');
+  var RX = 52, RY = 13, PERIOD = 2600; // one lap every 2.6s
+
+  function place(el, a) {
+    // front of the ring (lower half) = closer = bigger, back = smaller
+    var x = RX * Math.cos(a), y = RY * Math.sin(a);
+    var s = 1.25 + 0.3 * Math.sin(a);
+    el.setAttribute('transform', 'translate(' + x.toFixed(2) + ' ' + y.toFixed(2) + ') rotate(' + (-16 + a * 57.3 * 0.5).toFixed(1) + ') scale(' + s.toFixed(3) + ')');
+  }
+  // Turbo wheel: a busted spin. One 5.4s loop: spools up, seizes and shudders,
+  // kicks backwards, limps, stalls with twitches, bursts, then clunks to a stop.
+  var wheel = document.getElementById('wheel');
+  var WX = 920.75, WY = 488.25, ang = 0, last = null, twitchAt = 0;
+  var SLOW = 0.2;                  // overall spin speed (1 = full speed); 0.2 keeps it from stealing focus
+  function speed(c) {              // degrees per second at time c (0..5.4) in the loop
+    if (c < 1.3) return 1150 * Math.pow(c / 1.3, 1.6);                  // spool up
+    if (c < 1.5) return 0;                                              // seize
+    if (c < 1.68) return -320;                                          // kick back
+    if (c < 2.6) return 260 + 330 * Math.sin(c * 23) * Math.sin(c * 7);  // limping, stuttering
+    if (c < 3.1) return 0;                                              // stall
+    if (c < 3.45) return 1500;                                          // sudden burst
+    if (c < 4.7) {                                                      // winding down, with clunks
+      var d = (c - 3.45) / 1.25, v = 1500 * Math.pow(1 - d, 2);
+      return (c * 10 % 3 < 0.45) ? v * 0.1 : v;
+    }
+    return 0;                                                           // dead
+  }
+  function shaking(c) { return (c >= 1.3 && c < 1.62) || (c >= 3.0 && c < 3.12); }
+  function spin(t) {
+    var dt = last == null ? 0 : Math.min(0.05, (t - last) / 1000); last = t;
+    var c = (t / 1000) % 5.4;
+    ang = (ang + speed(c) * SLOW * dt) % 360;
+    var jx = 0, jy = 0;
+    if (shaking(c)) { jx = (Math.random() - 0.5) * 1.2; jy = (Math.random() - 0.5) * 1.2; }
+    if (c >= 2.6 && c < 3.1 && t > twitchAt) {                          // stalled: little twitches
+      ang += (Math.random() - 0.5) * 5; twitchAt = t + 90 + Math.random() * 160;
+    }
+    wheel.setAttribute('transform', 'translate(' + jx.toFixed(2) + ' ' + jy.toFixed(2) + ') rotate(' + ang.toFixed(2) + ' ' + WX + ' ' + WY + ')');
+  }
+
+  function frame(t) {
+    spin(t);
+    var a = (t / PERIOD) * Math.PI * 2;
+    place(s1, a + 3.6);   // start roughly where the drawn stars were
+    place(s2, a + 0.45);
+    if (!still && !document.hidden) requestAnimationFrame(frame);
+  }
+  document.addEventListener('visibilitychange', function () { last = null; });
+  if (still) {
+    if (svg.pauseAnimations) svg.pauseAnimations();
+    frame(0);
+  } else {
+    requestAnimationFrame(frame);
+    document.addEventListener('visibilitychange', function () {
+      if (svg.pauseAnimations) document.hidden ? svg.pauseAnimations() : svg.unpauseAnimations();
+      if (!document.hidden) requestAnimationFrame(frame);
+    });
+  }
+})();
+</script>
+</body>
+</html>
