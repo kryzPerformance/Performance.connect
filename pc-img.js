@@ -13,7 +13,7 @@
    Free plan: 5,000 unique resized copies a month.
    ============================================================ */
 (function(){
-  var ENABLED = false;
+  var ENABLED = true;
   var STORAGE = 'https://myapluhgfpnyjsfrflhd.supabase.co/storage/v1/object/public/';
   var HOSTS = { 'performanceconnect.ca':1, 'www.performanceconnect.ca':1 };
 
